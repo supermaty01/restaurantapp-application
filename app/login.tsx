@@ -1,7 +1,47 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AuthContext } from '../context/AuthContext';
+import FormInput from '@/components/FormInput';
 
-export default function LoginScreen() {
+// Definición del esquema de validación
+const loginSchema = z.object({
+  email: z
+    .string()
+    .nonempty({ message: 'El email es requerido' })
+    .email({ message: 'Email inválido' }),
+  password: z
+    .string()
+    .min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
+});
+
+// Inferimos el tipo a partir del esquema
+type LoginFormData = z.infer<typeof loginSchema>;
+
+const LoginScreen: React.FC = () => {
+  const { login } = useContext(AuthContext);
+  const router = useRouter();
+
+  const {
+    control,
+    handleSubmit,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    const result = await login(data.email, data.password);
+    if (result.success) {
+      Alert.alert('Inicio de sesión exitoso');
+      // Aquí puedes navegar a la pantalla principal
+    } else {
+      Alert.alert('Error', result.error || 'Error desconocido');
+    }
+  };
+
   return (
     <View className="flex-1 bg-muted">
       <View className="flex-1 px-5 py-8 items-center justify-center">
@@ -15,64 +55,41 @@ export default function LoginScreen() {
         </Text>
 
         <View className="w-full bg-white p-5 rounded-lg">
-          <Text className="text-base mb-2 text-gray-800">
-            Email
-          </Text>
-          <TextInput
-            className="w-full h-12 px-4 mb-4 border border-gray-200 rounded-lg bg-white placeholder:text-gray-500"
+          <FormInput
+            control={control}
+            name="email"
+            label="Email"
             placeholder="Ingresa tu email"
             keyboardType="email-address"
           />
 
-          <Text className="text-base mb-2 text-gray-800">
-            Contraseña
-          </Text>
-          <TextInput
-            className="w-full h-12 px-4 mb-4 border border-gray-200 rounded-lg bg-white placeholder:text-gray-500"
+          <FormInput
+            control={control}
+            name="password"
+            label="Contraseña"
             placeholder="Ingresa tu contraseña"
             secureTextEntry
           />
 
           <View className="flex-row justify-between items-center mb-4">
             <TouchableOpacity>
-              <Text className="text-primary mb-6">
-                ¿Olvidaste tu contraseña?
-              </Text>
+              <Text className="text-primary mb-6">¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Text className="text-primary mb-6">
-                Registrarme
-              </Text>
+            <TouchableOpacity onPress={() => router.push('/register')}>
+              <Text className="text-primary mb-6">Registrarme</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity className="w-full bg-primary py-4 rounded-lg items-center mb-6">
-            <Text className="text-white font-semibold text-base">
-              Iniciar sesión
-            </Text>
+          <TouchableOpacity
+            onPress={handleSubmit(onSubmit)}
+            className="w-full bg-primary py-4 rounded-lg items-center mb-6"
+          >
+            <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
           </TouchableOpacity>
-
-          {/* <View className="flex-row items-center mb-6">
-            <View className="flex-1 h-[1px] bg-gray-400" />
-            <Text className="px-3 text-gray-600">
-              O continúa con
-            </Text>
-            <View className="flex-1 h-[1px] bg-gray-400" />
-          </View>
-
-          <View className="flex flex-row justify-center gap-2">
-            <TouchableOpacity className="w-12 h-12 border border-gray-200 rounded-lg bg-white items-center justify-center">
-              <Text>fb</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="w-12 h-12 border border-gray-200 rounded-lg bg-white items-center justify-center">
-              <Text>ms</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="w-12 h-12 border border-gray-200 rounded-lg bg-white items-center justify-center">
-              <Text>G</Text>
-            </TouchableOpacity>
-          </View> */}
         </View>
       </View>
     </View>
   );
-}
+};
+
+export default LoginScreen;
