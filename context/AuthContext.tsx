@@ -48,7 +48,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
   const login = async (body: LoginFormData): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await api.post('/auth/login', { ...body });
-      console.log('Login exitoso', response.data);
       const token = response.data.data.token;
       await AsyncStorage.setItem('userToken', token);
       setUserToken(token);
