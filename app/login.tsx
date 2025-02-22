@@ -1,40 +1,33 @@
-import React, { useContext } from 'react';
+import { FC, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../context/AuthContext';
 import FormInput from '@/components/FormInput';
+import { LoginFormData, loginSchema } from '@/schemas/auth/login';
+import { NativeModules } from "react-native";
 
-// Definición del esquema de validación
-const loginSchema = z.object({
-  email: z
-    .string()
-    .nonempty({ message: 'El email es requerido' })
-    .email({ message: 'Email inválido' }),
-  password: z
-    .string()
-    .min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
-});
-
-// Inferimos el tipo a partir del esquema
-type LoginFormData = z.infer<typeof loginSchema>;
-
-const LoginScreen: React.FC = () => {
+const LoginScreen: FC = () => {
   const { login } = useContext(AuthContext);
   const router = useRouter();
-
+  const DeviceInfo = NativeModules.DeviceInfo;
+  const deviceName = DeviceInfo?.getName() || 'Unknown';
   const {
     control,
     handleSubmit,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      device_name: deviceName,
+    },
   });
-
   const onSubmit = async (data: LoginFormData) => {
-    const result = await login(data.email, data.password);
+    const result = await login(data);
     if (result.success) {
+      console.log("Inicio de sesión exitoso", result);
       Alert.alert('Inicio de sesión exitoso');
       // Aquí puedes navegar a la pantalla principal
     } else {

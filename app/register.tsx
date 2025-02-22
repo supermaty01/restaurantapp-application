@@ -2,28 +2,10 @@ import { FC, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../context/AuthContext';
 import FormInput from '@/components/FormInput';
-
-// Esquema de validación para el registro
-const registerSchema = z
-  .object({
-    email: z
-      .string()
-      .nonempty({ message: 'El email es requerido' })
-      .email({ message: 'Email inválido' }),
-    password: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
-    confirmPassword: z.string().min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-  });
-
-// Inferimos el tipo del formulario a partir del esquema
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { RegisterFormData, registerSchema } from '@/schemas/auth/register';
 
 const RegisterScreen: FC = () => {
   const { register: registerUser } = useContext(AuthContext);
@@ -31,11 +13,18 @@ const RegisterScreen: FC = () => {
 
   const { control, handleSubmit } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      name: '',
+      password: '',
+      password_confirmation: '',
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     // Solo enviamos email y password al registro
-    const result = await registerUser(data.email, data.password);
+    const result = await registerUser(data);
+    console.log('Registro', result);
     if (result.success) {
       Alert.alert('Registro exitoso');
       // Redirige a la pantalla de login o a la pantalla principal
@@ -57,6 +46,12 @@ const RegisterScreen: FC = () => {
         <View className="w-full bg-white p-5 rounded-lg">
           <FormInput
             control={control}
+            name="name"
+            label="Nombre"
+            placeholder="Ingresa tu nombre"
+          />
+          <FormInput
+            control={control}
             name="email"
             label="Email"
             placeholder="Ingresa tu email"
@@ -73,7 +68,7 @@ const RegisterScreen: FC = () => {
 
           <FormInput
             control={control}
-            name="confirmPassword"
+            name="password_confirmation"
             label="Confirmar Contraseña"
             placeholder="Confirma tu contraseña"
             secureTextEntry

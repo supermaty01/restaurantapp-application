@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'https://tu-api.com', // Reemplaza con la URL de tu API
+  baseURL: "https://restaurantapp-api-production.up.railway.app/api/v1",
 });
 
 api.interceptors.request.use(

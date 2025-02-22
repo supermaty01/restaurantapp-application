@@ -1,16 +1,14 @@
 import { createContext, useState, useEffect, ReactNode, FC } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '@/services/api';
+import { RegisterFormData } from '@/schemas/auth/register';
+import { LoginFormData } from '@/schemas/auth/login';
 
 interface AuthContextData {
   userToken: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (
-    email: string,
-    password: string,
-    others?: Record<string, unknown>
-  ) => Promise<{ success: boolean; data?: any; error?: string }>;
+  login: (body: LoginFormData) => Promise<{ success: boolean; error?: string }>;
+  register: (body: RegisterFormData) => Promise<{ success: boolean; data?: any; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -47,10 +45,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     loadToken();
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (body: LoginFormData): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await api.post('/login', { email, password });
-      const token = response.data.token;
+      const response = await api.post('/auth/login', { ...body });
+      console.log('Login exitoso', response.data);
+      const token = response.data.data.token;
       await AsyncStorage.setItem('userToken', token);
       setUserToken(token);
       return { success: true };
@@ -63,13 +62,9 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (
-    email: string,
-    password: string,
-    others: Record<string, unknown> = {}
-  ): Promise<{ success: boolean; data?: any; error?: string }> => {
+  const register = async (body: RegisterFormData): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
-      const response = await api.post('/register', { email, password, ...others });
+      const response = await api.post('/auth/register', { ...body });
       return { success: true, data: response.data };
     } catch (error: any) {
       console.error('Error en registro', error);
