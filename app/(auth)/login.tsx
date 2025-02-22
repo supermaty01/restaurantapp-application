@@ -1,4 +1,4 @@
-import { FC, useContext } from 'react';
+import React, { FC, useContext } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
@@ -35,7 +35,7 @@ const LoginScreen: FC = () => {
   };
 
   return (
-    <View>
+    <>
       <Text className="text-2xl font-bold mb-8 text-gray-800">
         Ingresa a tu cuenta
       </Text>
@@ -72,7 +72,7 @@ const LoginScreen: FC = () => {
           <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import { FC, useContext } from 'react';
+import React, { FC, useContext } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
@@ -32,7 +32,7 @@ const RegisterScreen: FC = () => {
   };
 
   return (
-    <View>
+    <>
       <Text className="text-2xl font-bold mb-8 text-gray-800">Regístrate</Text>
       <View className="w-full bg-white p-5 rounded-lg">
         <FormInput
@@ -78,7 +78,7 @@ const RegisterScreen: FC = () => {
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </>
   );
 };
 
