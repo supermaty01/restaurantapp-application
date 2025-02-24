@@ -7,9 +7,6 @@ import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 
-<<<<<<< Updated upstream
-const sampleTags: TagDTO[] = [
-=======
 interface Tag {
   id: string;
   name: string;
@@ -18,7 +15,6 @@ interface Tag {
 
 //datos de prueba (ya se pueden borrar)
 const sampleTags: Tag[] = [
->>>>>>> Stashed changes
   { id: 't1', name: 'Carne', color: '#905c36' },
   { id: 't2', name: 'Elegante', color: '#93ae72' },
   { id: 't3', name: 'Mexicano', color: '#e0e374' },
@@ -35,11 +31,7 @@ export default function TagsScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
 
-<<<<<<< Updated upstream
-  const onSubmit = async (newTag: Pick<TagDTO, "name" | "color">) => {
-=======
   const getTags = async () => {
->>>>>>> Stashed changes
     try {
       const response = await api.get('/tags');
       console.log('Tags fetched:', response.data);
