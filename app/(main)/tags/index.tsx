@@ -5,14 +5,9 @@ import { useRouter } from 'expo-router';
 import TagItem from '@/components/tags/TagItem';
 import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
+import { TagDTO } from '@/types/tag-dto';
 
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-const sampleTags: Tag[] = [
+const sampleTags: TagDTO[] = [
   { id: 't1', name: 'Carne', color: '#905c36' },
   { id: 't2', name: 'Elegante', color: '#93ae72' },
   { id: 't3', name: 'Mexicano', color: '#e0e374' },
@@ -25,7 +20,7 @@ export default function TagsScreen() {
   const router = useRouter();
   const [isModalVisible, setModalVisible] = useState(false);
 
-  const onSubmit = async (newTag: Pick<Tag, "name" | "color">) => {
+  const onSubmit = async (newTag: Pick<TagDTO, "name" | "color">) => {
     try {
       const response = await api.post('/tags', { ...newTag });
       console.log('Tag creado:', response.data);

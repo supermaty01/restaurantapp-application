@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 
 export interface TagProps {
-  label: string;
+  name: string;
   color: string;
 }
 
@@ -19,7 +19,7 @@ function getContrastYIQ(hexColor: string): string {
   return yiq >= 128 ? '#000000' : '#ffffff';
 }
 
-const Tag: React.FC<TagProps> = ({ label, color }) => {
+const Tag: React.FC<TagProps> = ({ name, color }) => {
   const textColor = getContrastYIQ(color);
   return (
     <View
@@ -27,7 +27,7 @@ const Tag: React.FC<TagProps> = ({ label, color }) => {
       className="px-2 py-1 rounded-full mr-2 mb-2"
     >
       <Text style={{ color: textColor }} className="text-xs font-bold">
-        {label}
+        {name}
       </Text>
     </View>
   );

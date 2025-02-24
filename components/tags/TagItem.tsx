@@ -16,7 +16,7 @@ const TagItem: React.FC<TagItemProps> = ({ label, color, onPress }) => {
       activeOpacity={0.8}
       className="bg-white p-4 rounded-xl mb-4 shadow-sm flex-row items-center justify-between"
     >
-      <Tag label={label} color={color} />
+      <Tag name={label} color={color} />
       <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />
     </TouchableOpacity>
   );

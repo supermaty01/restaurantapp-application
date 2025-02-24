@@ -30,7 +30,7 @@ const FormInput: FC<FormInputProps> = ({
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            className={clsx("w-full h-12 px-4 border border-gray-200 rounded-lg bg-white placeholder:text-gray-500", inputClassName)}
+            className={clsx("w-full min-h-12 px-4 border border-gray-200 rounded-lg bg-white placeholder:text-gray-500", inputClassName)}
             {...rest}
           />
           {error && <Text className="text-red-600 mt-1">{error.message}</Text>}
