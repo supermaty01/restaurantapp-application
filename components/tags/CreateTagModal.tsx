@@ -104,7 +104,7 @@ export default function CreateTagModal({
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-muted w-11/12 rounded-md p-4">
+        <View className="bg-white w-11/12 rounded-md p-4">
           <Text className="text-lg font-bold text-gray-800 mb-2">
             Crear Tag
           </Text>
@@ -139,7 +139,7 @@ export default function CreateTagModal({
                       onPress={() => setSelectedColor(color)}
                       className={clsx(
                         'm-2 rounded-full border-2 aspect-square justify-center items-center',
-                        isSelected ? 'border-black' : 'border-black/30'
+                        isSelected ? 'border-black border-[3px]' : 'border-black/20'
                       )}
                       style={{ backgroundColor: color, width: circleWidth, height: circleWidth }}
                     />
