@@ -62,7 +62,6 @@ export default function CreateTagModal({
     control,
     handleSubmit,
     reset,
-    formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { name: '' },
@@ -106,13 +105,12 @@ export default function CreateTagModal({
       <View className="flex-1 bg-black/50 justify-center items-center">
         <View className="bg-white w-11/12 rounded-md p-4">
           <Text className="text-lg font-bold text-gray-800 mb-2">
-            Crear Tag
+            Crear Etiqueta
           </Text>
-          {/* Campo de texto usando FormInput con validación de zod */}
           <FormInput
             control={control}
             name="name"
-            placeholder="Nombre del Tag"
+            placeholder="Nombre de la etiqueta"
             autoFocus
             inputClassName="border border-gray-300 rounded-md px-3 py-2 text-base text-gray-800 mb-4"
           />
