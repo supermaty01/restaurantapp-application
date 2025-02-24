@@ -1,46 +1,23 @@
-import React, { useState,useEffect } from 'react';
-import { FlatList, TouchableOpacity, View, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import TagItem from '@/components/tags/TagItem';
 import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-//datos de prueba (ya se pueden borrar)
-const sampleTags: Tag[] = [
-  { id: 't1', name: 'Carne', color: '#905c36' },
-  { id: 't2', name: 'Elegante', color: '#93ae72' },
-  { id: 't3', name: 'Mexicano', color: '#e0e374' },
-  { id: 't4', name: 'Barato', color: '#cdc8b8' },
-  { id: 't5', name: 'Callejero', color: '#6b6246' },
-  { id: 't6', name: 'Auténtico', color: '#391a07' },
-];
-
 export default function TagsScreen() {
-  const router = useRouter();
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<TagDTO[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [selectedTag, setSelectedTag] = useState<TagDTO | null>(null);
 
   const getTags = async () => {
     try {
       const response = await api.get('/tags');
-      console.log('Tags fetched:', response.data);
       setTags(response.data.data);
     } catch (error: any) {
       console.error('Error fetching tags:', error);
-      setError(error.response ? error.response.data : error.message);
-    } finally {
-      setLoading(false);
+      Alert.alert('Error', 'No se pudieron cargar las etiquetas');
     }
   };
 
@@ -48,19 +25,17 @@ export default function TagsScreen() {
     getTags();
   }, []);
 
-  const handleSubmit = async (tagData: Pick<Tag, "name" | "color"> & { id?: string }) => {
+  const handleSubmit = async (tagData: Pick<TagDTO, "name" | "color"> & { id?: string }) => {
     try {
-      let response;
       if (selectedTag) {
         // Update existing tag
-        response = await api.put(`/tags/${selectedTag.id}`, tagData);
+        await api.put(`/tags/${selectedTag.id}`, tagData);
       } else {
         // Create new tag
-        response = await api.post('/tags', tagData);
+        await api.post('/tags', tagData);
       }
-      
-      console.log('Tag operation successful:', response.data);
-      getTags(); // Refresh the tags list
+      getTags();
+      handleModalClose();
       return { success: true };
     } catch (error: any) {
       console.error('Error in tag operation:', error);
@@ -71,7 +46,7 @@ export default function TagsScreen() {
     }
   };
 
-  const handleTagPress = (tag: Tag) => {
+  const handleTagPress = (tag: TagDTO) => {
     setSelectedTag(tag);
     setModalVisible(true);
   };
