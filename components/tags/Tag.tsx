@@ -1,0 +1,36 @@
+import React from 'react';
+import { View, Text } from 'react-native';
+
+export interface TagProps {
+  label: string;
+  color: string;
+}
+
+/**
+ * Calcula el color de texto (blanco o negro) según el color de fondo,
+ * usando la fórmula YIQ para asegurar un contraste adecuado.
+ */
+function getContrastYIQ(hexColor: string): string {
+  const color = hexColor.replace(/^#/, '');
+  const r = parseInt(color.substring(0, 2), 16);
+  const g = parseInt(color.substring(2, 4), 16);
+  const b = parseInt(color.substring(4, 6), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? '#000000' : '#ffffff';
+}
+
+const Tag: React.FC<TagProps> = ({ label, color }) => {
+  const textColor = getContrastYIQ(color);
+  return (
+    <View
+      style={{ backgroundColor: color }}
+      className="px-2 py-1 rounded-full mr-2 mb-2"
+    >
+      <Text style={{ color: textColor }} className="text-xs font-bold">
+        {label}
+      </Text>
+    </View>
+  );
+};
+
+export default Tag;
