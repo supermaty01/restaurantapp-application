@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { FlatList, TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,7 +7,18 @@ import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 
+<<<<<<< Updated upstream
 const sampleTags: TagDTO[] = [
+=======
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+//datos de prueba (ya se pueden borrar)
+const sampleTags: Tag[] = [
+>>>>>>> Stashed changes
   { id: 't1', name: 'Carne', color: '#905c36' },
   { id: 't2', name: 'Elegante', color: '#93ae72' },
   { id: 't3', name: 'Mexicano', color: '#e0e374' },
@@ -18,15 +29,49 @@ const sampleTags: TagDTO[] = [
 
 export default function TagsScreen() {
   const router = useRouter();
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
 
+<<<<<<< Updated upstream
   const onSubmit = async (newTag: Pick<TagDTO, "name" | "color">) => {
+=======
+  const getTags = async () => {
+>>>>>>> Stashed changes
     try {
-      const response = await api.post('/tags', { ...newTag });
-      console.log('Tag creado:', response.data);
+      const response = await api.get('/tags');
+      console.log('Tags fetched:', response.data);
+      setTags(response.data.data);
+    } catch (error: any) {
+      console.error('Error fetching tags:', error);
+      setError(error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getTags();
+  }, []);
+
+  const handleSubmit = async (tagData: Pick<Tag, "name" | "color"> & { id?: string }) => {
+    try {
+      let response;
+      if (selectedTag) {
+        // Update existing tag
+        response = await api.put(`/tags/${selectedTag.id}`, tagData);
+      } else {
+        // Create new tag
+        response = await api.post('/tags', tagData);
+      }
+      
+      console.log('Tag operation successful:', response.data);
+      getTags(); // Refresh the tags list
       return { success: true };
     } catch (error: any) {
-      console.error('Error en login', error);
+      console.error('Error in tag operation:', error);
       return {
         success: false,
         error: error.response ? error.response.data : error.message,
@@ -34,41 +79,51 @@ export default function TagsScreen() {
     }
   };
 
+  const handleTagPress = (tag: Tag) => {
+    setSelectedTag(tag);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setSelectedTag(null);
+    setModalVisible(false);
+  };
+
   return (
     <View className="flex-1 bg-[#e5eae0] p-4 relative">
-      {/* Encabezado con el título "Etiquetas" */}
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-2xl font-bold text-gray-800">Etiquetas</Text>
       </View>
 
-      {/* Lista scrolleable de tags */}
       <FlatList
-        data={sampleTags}
+        data={tags}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TagItem
             label={item.name}
             color={item.color}
-            onPress={() => router.push(`/tags/${item.id}/edit`)}
+            onPress={() => handleTagPress(item)}
           />
         )}
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Botón flotante para añadir una nueva etiqueta */}
       <TouchableOpacity
-        onPress={() => setModalVisible(true)}
+        onPress={() => {
+          setSelectedTag(null);
+          setModalVisible(true);
+        }}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>
+
       <CreateTagModal
         visible={isModalVisible}
-        onClose={() => setModalVisible(false)}
-        onAdd={(newTag) => {
-          setModalVisible(false);
-          onSubmit(newTag);
-        }}
+        onClose={handleModalClose}
+        onAdd={handleSubmit}
+        editTag={selectedTag}
+        isEditing={!!selectedTag}
       />
     </View>
   );

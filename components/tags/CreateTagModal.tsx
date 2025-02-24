@@ -1,5 +1,5 @@
 // components/CreateTagModal.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -18,24 +18,20 @@ import clsx from 'clsx';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Definimos el esquema para validar el nombre con zod
 const schema = z.object({
   name: z.string().nonempty({ message: 'El nombre es requerido' }),
 });
 
 type FormData = z.infer<typeof schema>;
 
-// 36 colores de ejemplo
 const ALL_COLORS = [
-  // 12 colores vivos
+  // Colors remain the same...
   '#F44336', '#E91E63', '#9C27B0', '#673AB7',
   '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4',
   '#009688', '#4CAF50', '#FF9800', '#FF5722',
-  // 12 colores pastel
   '#FFB6C1', '#AEC6CF', '#D8BFD8', '#77DD77',
   '#FFFF99', '#FFCC99', '#AAF0D1', '#E6E6FA',
   '#FF9999', '#FFDAB9', '#B2FFFF', '#E0BBE4',
-  // 12 colores neutros
   '#FFFFFF', '#F0F0F0', '#E0E0E0', '#CCCCCC',
   '#B3B3B3', '#999999', '#7F7F7F', '#666666',
   '#4C4C4C', '#333333', '#1A1A1A', '#000000',
@@ -51,33 +47,51 @@ interface CreateTagModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (tag: { name: string; color: string }) => void;
+  editTag?: { id: string; name: string; color: string } | null;
+  isEditing?: boolean;
 }
 
 export default function CreateTagModal({
   visible,
   onClose,
   onAdd,
+  editTag,
+  isEditing = false,
 }: CreateTagModalProps) {
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { name: '' },
   });
+  
   const [selectedColor, setSelectedColor] = useState(ALL_COLORS[0]);
   const [currentPage, setCurrentPage] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
-  React.useEffect(() => {
+  // Effect to handle initialization when modal opens
+  useEffect(() => {
     if (visible) {
-      reset();
-      setSelectedColor(ALL_COLORS[0]);
-      setCurrentPage(0);
-      scrollRef.current?.scrollTo({ x: 0, animated: false });
+      if (isEditing && editTag) {
+        // If editing, set the form values to the existing tag
+        setValue('name', editTag.name);
+        setSelectedColor(editTag.color);
+        // Find and scroll to the page containing the color
+        const colorPageIndex = Math.floor(ALL_COLORS.indexOf(editTag.color) / chunkSize);
+        setCurrentPage(colorPageIndex);
+        scrollRef.current?.scrollTo({ x: colorPageIndex * screenWidth, animated: false });
+      } else {
+        // If creating new, reset to defaults
+        reset();
+        setSelectedColor(ALL_COLORS[0]);
+        setCurrentPage(0);
+        scrollRef.current?.scrollTo({ x: 0, animated: false });
+      }
     }
-  }, [visible, reset]);
+  }, [visible, isEditing, editTag, setValue, reset]);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = e.nativeEvent.contentOffset.x;
@@ -87,12 +101,14 @@ export default function CreateTagModal({
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     if (data.name.trim() && selectedColor) {
-      onAdd({ name: data.name.trim(), color: selectedColor });
+      onAdd({ 
+        name: data.name.trim(), 
+        color: selectedColor,
+        ...(isEditing && editTag ? { id: editTag.id } : {})
+      });
     }
   };
 
-  // Calculamos el ancho de cada círculo para 6 columnas
-  // Restamos 60 para el ancho total del contenedor y 16 en total para los márgenes (m-2: 8px aprox cada uno)
   const circleWidth = (screenWidth - 60) / 6 - 16;
 
   return (
@@ -105,13 +121,13 @@ export default function CreateTagModal({
       <View className="flex-1 bg-black/50 justify-center items-center">
         <View className="bg-white w-11/12 rounded-md p-4">
           <Text className="text-lg font-bold text-gray-800 mb-2">
-            Crear Etiqueta
+            {isEditing ? 'Editar Etiqueta' : 'Crear Etiqueta'}
           </Text>
           <FormInput
             control={control}
             name="name"
             placeholder="Nombre de la etiqueta"
-            autoFocus
+            autoFocus={!isEditing}
             inputClassName="border border-gray-300 rounded-md px-3 py-2 text-base text-gray-800 mb-4"
           />
           <ScrollView
@@ -170,7 +186,9 @@ export default function CreateTagModal({
               onPress={handleSubmit(onSubmit)}
               className="px-4 py-2 rounded-md bg-primary"
             >
-              <Text className="text-white font-semibold">Añadir</Text>
+              <Text className="text-white font-semibold">
+                {isEditing ? 'Guardar' : 'Añadir'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
