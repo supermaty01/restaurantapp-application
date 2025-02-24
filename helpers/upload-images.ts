@@ -16,7 +16,6 @@ export async function uploadImages(
       type: 'image/jpeg',
     } as any);
 
-    console.log(formData)
     return api.post('/images', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',

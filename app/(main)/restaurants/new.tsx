@@ -13,15 +13,7 @@ import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
-
-// Esquema de validación
-const restaurantSchema = z.object({
-  name: z.string().nonempty('El nombre es requerido'),
-  comments: z.string().optional(),
-  rating: z.number().min(1).max(5).optional(),
-});
-
-type RestaurantFormData = z.infer<typeof restaurantSchema>;
+import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
 
 export default function RestaurantCreateScreen() {
   const {
