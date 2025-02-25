@@ -1,3 +1,4 @@
+import { ImageDTO } from "./image-dto";
 import { TagDTO } from "./tag-dto";
 
 export interface RestaurantDTO {
@@ -6,4 +7,5 @@ export interface RestaurantDTO {
   comments: string;
   rating: number;
   tags: TagDTO[];
+  images: ImageDTO[];
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Alert } from 'react-native';
+import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import TagItem from '@/components/tags/TagItem';
 import CreateTagModal from '@/components/tags/CreateTagModal';
@@ -10,14 +10,18 @@ export default function TagsScreen() {
   const [tags, setTags] = useState<TagDTO[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagDTO | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getTags = async () => {
+    setIsLoading(true);
     try {
       const response = await api.get('/tags');
       setTags(response.data.data);
     } catch (error: any) {
       console.error('Error fetching tags:', error);
       Alert.alert('Error', 'No se pudieron cargar las etiquetas');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -28,10 +32,10 @@ export default function TagsScreen() {
   const handleSubmit = async (tagData: Pick<TagDTO, "name" | "color"> & { id?: string }) => {
     try {
       if (selectedTag) {
-        // Update existing tag
+        // Actualizar etiqueta existente
         await api.put(`/tags/${selectedTag.id}`, tagData);
       } else {
-        // Create new tag
+        // Crear nueva etiqueta
         await api.post('/tags', tagData);
       }
       getTags();
@@ -55,6 +59,14 @@ export default function TagsScreen() {
     setSelectedTag(null);
     setModalVisible(false);
   };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-[#e5eae0] justify-center items-center">
+        <ActivityIndicator size="large" color="#905c36" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-[#e5eae0] p-4 relative">

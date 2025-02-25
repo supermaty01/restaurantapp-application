@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import RestaurantItem from '@/components/restaurants/RestaurantItem';
 import api from '@/services/api';
 import { RestaurantDTO } from '@/types/restaurant-dto';
@@ -13,6 +14,7 @@ export default function RestaurantsScreen() {
 
   const getRestaurants = async () => {
     try {
+      setIsLoading(true);
       const response = await api.get('/restaurants');
       setRestaurants(response.data.data);
     } catch (error: any) {
@@ -23,9 +25,12 @@ export default function RestaurantsScreen() {
     }
   };
 
-  useEffect(() => {
-    getRestaurants();
-  }, []);
+  // Se llama cada vez que la pantalla obtiene foco
+  useFocusEffect(
+    useCallback(() => {
+      getRestaurants();
+    }, [])
+  );
 
   if (isLoading) {
     return (
@@ -55,7 +60,10 @@ export default function RestaurantsScreen() {
             comments={item.comments}
             rating={item.rating}
             tags={item.tags}
-            onPress={() => router.push(`/restaurants/${item.id}`)}
+            onPress={() => router.push({
+              pathname: '/restaurants/[id]/view',
+              params: { id: item.id },
+            })}
           />
         )}
         showsVerticalScrollIndicator={false}
