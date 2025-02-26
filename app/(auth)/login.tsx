@@ -5,9 +5,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
+import GithubLogin from '@/components/auth/GithubLogin';
 import { LoginFormData, loginSchema } from '@/schemas/auth/login';
 import { NativeModules } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
 
 const LoginScreen: FC = () => {
   const { login } = useContext(AuthContext);
@@ -57,7 +57,7 @@ const LoginScreen: FC = () => {
           secureTextEntry
         />
 
-        <View className="flex-row justify-between items-center mb-4">
+        <View className="flex-row justify-between items-center">
           <TouchableOpacity>
             <Text className="text-primary mb-6">¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
@@ -77,14 +77,7 @@ const LoginScreen: FC = () => {
           <Text className="mx-2">O continúa con</Text>
           <View className="flex-1 border-b border-gray-400" />
         </View>
-        <View className="flex items-center">
-          <TouchableOpacity
-            onPress={() => console.log('/')}
-            className="border border-gray-300 rounded-lg p-4"
-          >
-            <Ionicons name="logo-github" size={28} color="gray" />
-          </TouchableOpacity>
-        </View>
+        <GithubLogin />
       </View>
     </>
   );
