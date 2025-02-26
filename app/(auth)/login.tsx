@@ -7,6 +7,7 @@ import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
 import { LoginFormData, loginSchema } from '@/schemas/auth/login';
 import { NativeModules } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
 
 const LoginScreen: FC = () => {
   const { login } = useContext(AuthContext);
@@ -67,10 +68,23 @@ const LoginScreen: FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="w-full bg-primary py-4 rounded-lg items-center mb-6"
+          className="w-full bg-primary py-4 rounded-lg items-center mb-2"
         >
           <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
         </TouchableOpacity>
+        <View className="flex-row items-center my-4">
+          <View className="flex-1 border-b border-gray-400" />
+          <Text className="mx-2">O continúa con</Text>
+          <View className="flex-1 border-b border-gray-400" />
+        </View>
+        <View className="flex items-center">
+          <TouchableOpacity
+            onPress={() => console.log('/')}
+            className="border border-gray-300 rounded-lg p-4"
+          >
+            <Ionicons name="logo-github" size={28} color="gray" />
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );
