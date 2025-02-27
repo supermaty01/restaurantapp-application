@@ -50,6 +50,22 @@ export default function TagsScreen() {
     }
   };
 
+  const handleDeleteTag = async (tagId: string) => {
+    try {
+      await api.delete(`/tags/${tagId}`);
+      getTags();
+      handleModalClose();
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting tag:', error);
+      Alert.alert('Error', 'No se pudo eliminar la etiqueta');
+      return {
+        success: false,
+        error: error.response ? error.response.data : error.message,
+      };
+    }
+  };
+
   const handleTagPress = (tag: TagDTO) => {
     setSelectedTag(tag);
     setModalVisible(true);
@@ -101,6 +117,7 @@ export default function TagsScreen() {
         visible={isModalVisible}
         onClose={handleModalClose}
         onAdd={handleSubmit}
+        onDelete={handleDeleteTag}
         editTag={selectedTag}
         isEditing={!!selectedTag}
       />
