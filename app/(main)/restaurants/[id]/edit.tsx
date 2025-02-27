@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader from '@/components/ImagesUploader'; // Ajustado para solo seleccionar imágenes
+import ImagesUploader from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { router, useGlobalSearchParams } from 'expo-router';
 
 export default function RestaurantEditScreen() {
-  const {
-    control,
-    handleSubmit,
-  } = useForm<RestaurantFormData>({
+  // Obtenemos el id del restaurante desde los parámetros de la ruta
+  const { id } = useGlobalSearchParams<{ id: string }>();
+
+  const { control, handleSubmit, reset } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
       name: '',
@@ -30,8 +31,38 @@ export default function RestaurantEditScreen() {
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // Cargar datos del restaurante mediante GET /restaurants/:id
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      api
+        .get(`/restaurants/${id}`)
+        .then((response) => {
+          const restaurant = response.data.data;
+          // Se precargan los campos del formulario
+          reset({
+            name: restaurant.name,
+            comments: restaurant.comments,
+            rating: restaurant.rating,
+          });
+          setSelectedTags(restaurant.tags);
+          setSelectedImages(restaurant.images.map((img: any) => img.url));
+          // Si tu backend maneja la ubicación, se podría precargar aquí:
+          // setLocation(restaurant.location);
+        })
+        .catch((error) => {
+          Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
+          console.log(error);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, reset]);
+
+  // Función para enviar el formulario (PUT /restaurants/:id)
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
+    setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
@@ -41,23 +72,38 @@ export default function RestaurantEditScreen() {
         tags: selectedTags.map((tag) => tag.id),
       };
 
-      const response = await api.post('/restaurants', payload);
-      const restaurantId = response.data.data.id;
+      await api.put(`/restaurants/${id}`, payload);
 
-      if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "RESTAURANT", restaurantId);
+      // Se filtran las imágenes nuevas (locales) para subir solo las que no sean URLs
+      const newImages = selectedImages.filter((img) => !img.startsWith('http'));
+      if (newImages.length > 0) {
+        await uploadImages(newImages, "RESTAURANT", Number(id));
       }
 
-      Alert.alert('Éxito', 'Restaurante creado correctamente.');
+      Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
+      router.replace({
+        pathname: '/restaurants/[id]/view',
+        params: { id },
+      });
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo crear el restaurante');
+      Alert.alert('Error', 'No se pudo actualizar el restaurante');
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView className="flex-1 bg-muted p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
+      <Text className="text-2xl font-bold mb-4">Editar restaurante</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
         {/* Nombre */}
@@ -81,18 +127,13 @@ export default function RestaurantEditScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/* 
-          Si lo deseas, puedes reactivar tu componente LocationPicker
-          <LocationPicker location={location} onLocationChange={setLocation} />
-        */}
+        {/* Si se requiere, se podría reactivar un componente LocationPicker */}
+        {/* <LocationPicker location={location} onLocationChange={setLocation} /> */}
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
-          <RatingStars
-            control={control}
-            name="rating"
-          />
+          <RatingStars control={control} name="rating" />
         </View>
 
         {/* Tags */}
@@ -121,18 +162,20 @@ export default function RestaurantEditScreen() {
           onChangeSelected={setSelectedTags}
         />
 
-        {/* Imágenes (solo se seleccionan, no se suben aún) */}
-        <ImagesUploader
-          images={selectedImages}
-          onChangeImages={setSelectedImages}
-        />
+        {/* Imágenes: se muestran las precargadas y se permite eliminar o agregar nuevas */}
+        <ImagesUploader images={selectedImages} onChangeImages={setSelectedImages} />
 
-        {/* Botón para crear restaurante */}
+        {/* Botón para actualizar restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
+          disabled={loading}
         >
-          <Text className="text-white font-bold">Guardar</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text className="text-white font-bold">Guardar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
