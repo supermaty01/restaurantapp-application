@@ -1,61 +1,44 @@
-// app/(main)/restaurants.tsx
-import React from 'react';
-import { FlatList, TouchableOpacity, View, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import RestaurantItem from '@/components/restaurants/RestaurantItem';
-
-interface Tag {
-  id: string;
-  label: string;
-  color: string;
-}
-
-interface Restaurant {
-  id: string;
-  name: string;
-  description: string;
-  rating: number;
-  tags: Tag[];
-}
-
-// Datos de ejemplo con nuevos tags
-const sampleRestaurants: Restaurant[] = [
-  {
-    id: '1',
-    name: 'Voraz',
-    description: 'Muy elegante y bonito. Me ha gustado siempre.',
-    rating: 5,
-    tags: [
-      { id: 't1', label: 'Carne', color: '#905c36' },
-      { id: 't2', label: 'Elegante', color: '#93ae72' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Guadalupe',
-    description: 'Salchipapas deliciosas y barato.',
-    rating: 4,
-    tags: [
-      { id: 't3', label: 'Mexicano', color: '#e0e374' },
-      { id: 't4', label: 'Barato', color: '#cdc8b8' },
-    ],
-  },
-  {
-    id: '3',
-    name: 'El Pilón',
-    description: 'Comida callejera y auténtica.',
-    rating: 3,
-    tags: [
-      { id: 't5', label: 'Callejero', color: '#6b6246' },
-      { id: 't6', label: 'Auténtico', color: '#391a07' },
-    ],
-  },
-  // Agrega más restaurantes si lo deseas
-];
+import api from '@/services/api';
+import { RestaurantDTO } from '@/types/restaurant-dto';
 
 export default function RestaurantsScreen() {
   const router = useRouter();
+  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const getRestaurants = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/restaurants');
+      setRestaurants(response.data.data);
+    } catch (error: any) {
+      console.error('Error fetching restaurants:', error);
+      Alert.alert('Error', 'No se pudieron cargar los restaurantes');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Se llama cada vez que la pantalla obtiene foco
+  useFocusEffect(
+    useCallback(() => {
+      getRestaurants();
+    }, [])
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-[#e5eae0] justify-center items-center">
+        <ActivityIndicator size="large" color="#905c36" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-[#e5eae0] p-4 relative">
@@ -69,17 +52,18 @@ export default function RestaurantsScreen() {
 
       {/* Lista scrolleable de restaurantes */}
       <FlatList
-        data={sampleRestaurants}
+        data={restaurants}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <RestaurantItem
             name={item.name}
-            description={item.description}
+            comments={item.comments}
             rating={item.rating}
             tags={item.tags}
-            onPress={() => {
-              // Acción al presionar el restaurante (por ejemplo, navegar a detalles)
-            }}
+            onPress={() => router.push({
+              pathname: '/restaurants/[id]/view',
+              params: { id: item.id },
+            })}
           />
         )}
         showsVerticalScrollIndicator={false}

@@ -13,6 +13,8 @@ import DishesScreen from './dishes';
 import VisitsScreen from './visits';
 import TagsScreen from './tags';
 import NewRestaurantScreen from './restaurants/new';
+import RestaurantDetailScreen from './restaurants/[id]/view';
+import RestaurantEditScreen from './restaurants/[id]/edit';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -144,6 +146,16 @@ export default function MainLayout() {
         <Stack.Screen
           name="restaurants/new"
           component={NewRestaurantScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="restaurants/[id]/view"
+          component={RestaurantDetailScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="restaurants/[id]/edit"
+          component={RestaurantEditScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

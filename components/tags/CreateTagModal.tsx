@@ -25,13 +25,15 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const ALL_COLORS = [
-  // Colors remain the same...
+  // 12 colores vivos
   '#F44336', '#E91E63', '#9C27B0', '#673AB7',
   '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4',
   '#009688', '#4CAF50', '#FF9800', '#FF5722',
+  // 12 colores pastel
   '#FFB6C1', '#AEC6CF', '#D8BFD8', '#77DD77',
   '#FFFF99', '#FFCC99', '#AAF0D1', '#E6E6FA',
   '#FF9999', '#FFDAB9', '#B2FFFF', '#E0BBE4',
+  // 12 colores neutros
   '#FFFFFF', '#F0F0F0', '#E0E0E0', '#CCCCCC',
   '#B3B3B3', '#999999', '#7F7F7F', '#666666',
   '#4C4C4C', '#333333', '#1A1A1A', '#000000',
@@ -67,24 +69,20 @@ export default function CreateTagModal({
     resolver: zodResolver(schema),
     defaultValues: { name: '' },
   });
-  
+
   const [selectedColor, setSelectedColor] = useState(ALL_COLORS[0]);
   const [currentPage, setCurrentPage] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
-  // Effect to handle initialization when modal opens
   useEffect(() => {
     if (visible) {
       if (isEditing && editTag) {
-        // If editing, set the form values to the existing tag
         setValue('name', editTag.name);
         setSelectedColor(editTag.color);
-        // Find and scroll to the page containing the color
         const colorPageIndex = Math.floor(ALL_COLORS.indexOf(editTag.color) / chunkSize);
         setCurrentPage(colorPageIndex);
         scrollRef.current?.scrollTo({ x: colorPageIndex * screenWidth, animated: false });
       } else {
-        // If creating new, reset to defaults
         reset();
         setSelectedColor(ALL_COLORS[0]);
         setCurrentPage(0);
@@ -101,8 +99,8 @@ export default function CreateTagModal({
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     if (data.name.trim() && selectedColor) {
-      onAdd({ 
-        name: data.name.trim(), 
+      onAdd({
+        name: data.name.trim(),
         color: selectedColor,
         ...(isEditing && editTag ? { id: editTag.id } : {})
       });

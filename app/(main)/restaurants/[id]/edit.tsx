@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
@@ -15,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
 
-export default function RestaurantCreateScreen() {
+export default function RestaurantEditScreen() {
   const {
     control,
     handleSubmit,
