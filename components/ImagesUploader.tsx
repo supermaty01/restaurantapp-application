@@ -4,11 +4,13 @@ import * as ImagePicker from 'expo-image-picker';
 
 interface ImagesUploaderProps {
   images: string[];
+  disabled?: boolean;
   onChangeImages: (newImages: string[]) => void;
 }
 
 export default function ImagesUploader({
   images,
+  disabled,
   onChangeImages,
 }: ImagesUploaderProps) {
   // Seleccionar de galería
@@ -27,6 +29,7 @@ export default function ImagesUploader({
   const pickFromCamera = async () => {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: false,
+      quality: 0.5,
     });
     if (!result.canceled && result.assets?.length) {
       const uris = result.assets.map((asset) => asset.uri);
@@ -46,12 +49,14 @@ export default function ImagesUploader({
         <TouchableOpacity
           className="bg-gray-300 px-3 py-2 rounded-md mr-2"
           onPress={pickFromGallery}
+          disabled={disabled}
         >
           <Text>Seleccionar archivos</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className="bg-gray-300 px-3 py-2 rounded-md"
           onPress={pickFromCamera}
+          disabled={disabled}
         >
           <Text>Abrir cámara</Text>
         </TouchableOpacity>
@@ -68,6 +73,7 @@ export default function ImagesUploader({
           <TouchableOpacity
             onPress={() => removeImage(uri)}
             className="bg-red-500 px-3 py-2 rounded-md w-24"
+            disabled={disabled}
           >
             <Text className="text-white font-semibold">Eliminar</Text>
           </TouchableOpacity>
