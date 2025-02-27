@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import MapView, { Marker, MapPressEvent } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 interface MapLocationPickerProps {
   location: { latitude: number; longitude: number } | null;
-  onLocationChange: (location: { latitude: number; longitude: number } | null) => void;
+  onLocationChange?: (location: { latitude: number; longitude: number } | null) => void;
+  editable?: boolean;
 }
 
-const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocationChange }) => {
+const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocationChange, editable = true }) => {
   const [mapRegion, setMapRegion] = useState({
-    latitude: 6.2442, // Medellín, Colombia
-    longitude: -75.5812,
+    latitude: location?.latitude ?? 6.2442, // Medellín por defecto
+    longitude: location?.longitude ?? -75.5812,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
   });
@@ -20,51 +21,32 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
   const [address, setAddress] = useState<string | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
 
-  // Obtener la ubicación actual del usuario
   useEffect(() => {
-    const getCurrentLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permiso denegado', 'Necesitamos permisos para acceder a la ubicación.');
-        return;
-      }
+    if (location) {
+      fetchAddress(location.latitude, location.longitude);
+    }
+  }, [location]);
 
-      let location = await Location.getCurrentPositionAsync({});
-      const coords = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-
-      setMapRegion((prev) => ({
-        ...prev,
-        ...coords,
-      }));
-      setSelectedLocation(coords);
-      onLocationChange(coords);
-      fetchAddress(coords.latitude, coords.longitude);
-    };
-
-    getCurrentLocation();
-  }, []);
-
-  // Manejar la selección de ubicación en el mapa
+  // Manejar selección de ubicación en el mapa (Solo si `editable` es true)
   const handleMapPress = (event: MapPressEvent) => {
+    if (!editable) return;
+
     const { latitude, longitude } = event.nativeEvent.coordinate;
     const coords = { latitude, longitude };
 
     setSelectedLocation(coords);
-    onLocationChange(coords);
+    onLocationChange && onLocationChange(coords);
     fetchAddress(latitude, longitude);
   };
 
-  // Obtener una dirección legible a partir de las coordenadas
+  // Obtener dirección a partir de coordenadas
   const fetchAddress = async (latitude: number, longitude: number) => {
     setLoadingAddress(true);
     try {
       const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
       if (geocode.length > 0) {
         const addressInfo = geocode[0];
-        const formattedAddress = `${addressInfo.street || 'Dirección desconocida'}, ${addressInfo.city || ''}, ${addressInfo.region || ''}`;
+        const formattedAddress = `${addressInfo.street || 'Ubicación desconocida'}, ${addressInfo.city || ''}, ${addressInfo.region || ''}`;
         setAddress(formattedAddress);
       } else {
         setAddress('Dirección no disponible');
@@ -79,30 +61,29 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
   return (
     <View style={{ flex: 1, height: 300 }}>
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={{ flex: 1 }}
         region={mapRegion}
         onPress={handleMapPress}
+        scrollEnabled={editable} // Deshabilita el desplazamiento si es solo vista
+        zoomEnabled={editable} // Bloquea el zoom si no es editable
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
       </MapView>
 
       <View style={{ padding: 10, alignItems: 'center' }}>
         {loadingAddress ? (
-          <View style={{ marginVertical: 18 }}>
-            <ActivityIndicator size="small" color="#000" />
-          </View>
-        ) : address ? (
-          <Text style={{ textAlign: 'center', marginVertical: 8 }}>Ubicación seleccionada: {address}</Text>
+          <ActivityIndicator size="small" color="#000" />
         ) : (
-          <Text style={{ textAlign: 'center', marginVertical: 8 }}>Toca el mapa para seleccionar una ubicación</Text>
+          <Text style={{ textAlign: 'center', marginVertical: 8 }}>{address ?? 'Selecciona una ubicación'}</Text>
         )}
 
-        {selectedLocation && (
+        {editable && selectedLocation && (
           <TouchableOpacity
             style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5, marginTop: 10 }}
             onPress={() => {
               setSelectedLocation(null);
-              onLocationChange(null);
+              onLocationChange && onLocationChange(null);
               setAddress(null);
             }}
           >
