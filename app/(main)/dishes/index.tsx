@@ -1,0 +1,79 @@
+import React, { useState, useCallback } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import RestaurantItem from '@/components/restaurants/RestaurantItem';
+import api from '@/services/api';
+import { RestaurantDTO } from '@/types/restaurant-dto';
+
+export default function RestaurantsScreen() {
+  const router = useRouter();
+  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const getRestaurants = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get('/restaurants');
+      setRestaurants(response.data.data);
+    } catch (error: any) {
+      console.error('Error fetching restaurants:', error);
+      Alert.alert('Error', 'No se pudieron cargar los restaurantes');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Se llama cada vez que la pantalla obtiene foco
+  useFocusEffect(
+    useCallback(() => {
+      getRestaurants();
+    }, [])
+  );
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-[#e5eae0] justify-center items-center">
+        <ActivityIndicator size="large" color="#905c36" />
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-[#e5eae0] p-4 relative">
+      {/* Encabezado con título y botón de filtro */}
+      <View className="flex-row items-center justify-between mb-4">
+        <Text className="text-2xl font-bold text-gray-800">Restaurantes</Text>
+        <TouchableOpacity onPress={() => { /* Acción de filtro */ }}>
+          <Ionicons name="filter-outline" size={24} color="#905c36" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Lista scrolleable de restaurantes */}
+      <FlatList
+        data={restaurants}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <RestaurantItem
+            name={item.name}
+            comments={item.comments}
+            rating={item.rating}
+            tags={item.tags}
+            onPress={() => router.push({
+              pathname: '/restaurants/[id]/view',
+              params: { id: item.id },
+            })}
+          />
+        )}
+        showsVerticalScrollIndicator={false}
+      />
+      <TouchableOpacity
+        onPress={() => router.push('/restaurants/new')}
+        className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
+      >
+        <Ionicons name="add" size={24} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+}
