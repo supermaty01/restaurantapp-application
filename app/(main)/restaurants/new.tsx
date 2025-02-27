@@ -90,7 +90,7 @@ export default function RestaurantCreateScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/* 
+        {/*
           Si lo deseas, puedes reactivar tu componente LocationPicker
           <LocationPicker location={location} onLocationChange={setLocation} />
         */}
@@ -98,10 +98,7 @@ export default function RestaurantCreateScreen() {
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
-          <RatingStars
-            control={control}
-            name="rating"
-          />
+          <RatingStars control={control} name="rating" />
         </View>
 
         {/* Tags */}
