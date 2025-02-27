@@ -50,7 +50,7 @@ export default function RestaurantDetailScreen() {
   }
 
   function handleEdit() {
-    router.push({
+    router.replace({
       pathname: '/restaurants/[id]/edit',
       params: { id: id?.toString() },
     });

@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader from '@/components/ImagesUploader';
+import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
@@ -15,7 +15,6 @@ import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
 import { router, useGlobalSearchParams } from 'expo-router';
 
 export default function RestaurantEditScreen() {
-  // Obtenemos el id del restaurante desde los parámetros de la ruta
   const { id } = useGlobalSearchParams<{ id: string }>();
 
   const { control, handleSubmit, reset } = useForm<RestaurantFormData>({
@@ -29,11 +28,11 @@ export default function RestaurantEditScreen() {
 
   const [location, setLocation] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
+  const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Cargar datos del restaurante mediante GET /restaurants/:id
   useEffect(() => {
     if (id) {
       setLoading(true);
@@ -41,16 +40,15 @@ export default function RestaurantEditScreen() {
         .get(`/restaurants/${id}`)
         .then((response) => {
           const restaurant = response.data.data;
-          // Se precargan los campos del formulario
           reset({
             name: restaurant.name,
             comments: restaurant.comments,
             rating: restaurant.rating,
           });
           setSelectedTags(restaurant.tags);
-          setSelectedImages(restaurant.images.map((img: any) => img.url));
-          // Si tu backend maneja la ubicación, se podría precargar aquí:
-          // setLocation(restaurant.location);
+          setSelectedImages(
+            restaurant.images.map((img: any) => ({ id: img.id, uri: img.url }))
+          );
         })
         .catch((error) => {
           Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
@@ -60,7 +58,6 @@ export default function RestaurantEditScreen() {
     }
   }, [id, reset]);
 
-  // Función para enviar el formulario (PUT /restaurants/:id)
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
     try {
@@ -74,17 +71,19 @@ export default function RestaurantEditScreen() {
 
       await api.put(`/restaurants/${id}`, payload);
 
-      // Se filtran las imágenes nuevas (locales) para subir solo las que no sean URLs
-      const newImages = selectedImages.filter((img) => !img.startsWith('http'));
+      const newImages = selectedImages.filter((image) => !image.id);
       if (newImages.length > 0) {
-        await uploadImages(newImages, "RESTAURANT", Number(id));
+        await uploadImages(newImages.map((img) => img.uri), "RESTAURANT", Number(id));
+      }
+
+      if (removedImages.length > 0) {
+        await Promise.all(
+          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+        );
       }
 
       Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
-      router.replace({
-        pathname: '/restaurants/[id]/view',
-        params: { id },
-      });
+      router.replace({ pathname: '/restaurants/[id]/view', params: { id } });
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo actualizar el restaurante');
       console.log(error);
@@ -106,7 +105,6 @@ export default function RestaurantEditScreen() {
       <Text className="text-2xl font-bold mb-4">Editar restaurante</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
-        {/* Nombre */}
         <FormInput
           control={control}
           name="name"
@@ -114,7 +112,6 @@ export default function RestaurantEditScreen() {
           placeholder="Ingresa el nombre"
         />
 
-        {/* Comentarios (opcional) */}
         <FormInput
           control={control}
           name="comments"
@@ -125,18 +122,12 @@ export default function RestaurantEditScreen() {
           numberOfLines={4}
         />
 
-        {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/* Si se requiere, se podría reactivar un componente LocationPicker */}
-        {/* <LocationPicker location={location} onLocationChange={setLocation} /> */}
-
-        {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
         </View>
 
-        {/* Tags */}
         <View className="flex-row items-center justify-between mt-4">
           <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
           <TouchableOpacity
@@ -162,10 +153,15 @@ export default function RestaurantEditScreen() {
           onChangeSelected={setSelectedTags}
         />
 
-        {/* Imágenes: se muestran las precargadas y se permite eliminar o agregar nuevas */}
-        <ImagesUploader images={selectedImages} onChangeImages={setSelectedImages} />
+        <ImagesUploader
+          isEdit
+          images={selectedImages}
+          onChangeImages={setSelectedImages}
+          onRemoveExistingImage={(imageId) =>
+            setRemovedImages((prev) => [...prev, imageId])
+          }
+        />
 
-        {/* Botón para actualizar restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
