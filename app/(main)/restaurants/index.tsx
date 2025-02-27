@@ -34,14 +34,14 @@ export default function RestaurantsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-[#e5eae0] justify-center items-center">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#e5eae0] p-4 relative">
+    <View className="flex-1 bg-muted px-4 pt-2 relative">
       {/* Encabezado con título y botón de filtro */}
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-2xl font-bold text-gray-800">Restaurantes</Text>

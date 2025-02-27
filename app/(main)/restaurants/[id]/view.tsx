@@ -2,27 +2,35 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
   Image,
   Dimensions,
+  ScrollView,
 } from 'react-native';
-import { useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
+import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import Tag from '@/components/tags/Tag';
-import RatingStars from '@/components/RatingStars';
+import ImageViewing from 'react-native-image-viewing';
 import { RestaurantDTO } from '@/types/restaurant-dto';
+import RestaurantDetails from '@/components/restaurants/RestaurantDetails';
+import RestaurantVisits from '@/components/restaurants/RestaurantVisits';
+import RestaurantDishes from '@/components/restaurants/RestaurantDishes';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+const Tab = createMaterialTopTabNavigator();
+const screenWidth = Dimensions.get('window').width;
 
 export default function RestaurantDetailScreen() {
   const router = useRouter();
-  const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
+  const { id } = useGlobalSearchParams();
   const [restaurant, setRestaurant] = useState<RestaurantDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const screenWidth = Dimensions.get('window').width;
+  // Estados para el carrusel y visualizador de imágenes
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchRestaurant();
@@ -31,7 +39,6 @@ export default function RestaurantDetailScreen() {
   async function fetchRestaurant() {
     try {
       setIsLoading(true);
-      console.log('Fetching restaurant:', id);
       const response = await api.get(`/restaurants/${id}`);
       setRestaurant(response.data.data);
     } catch (error) {
@@ -45,8 +52,8 @@ export default function RestaurantDetailScreen() {
   function handleEdit() {
     router.push({
       pathname: '/restaurants/[id]/edit',
-      params: { id },
-    })
+      params: { id: id?.toString() },
+    });
   }
 
   function handleDelete() {
@@ -62,7 +69,7 @@ export default function RestaurantDetailScreen() {
             try {
               await api.delete(`/restaurants/${id}`);
               Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
-              router.back(); // O redirigir a otra pantalla
+              router.back();
             } catch (error) {
               console.log('Error deleting restaurant:', error);
               Alert.alert('Error', 'No se pudo eliminar el restaurante');
@@ -76,7 +83,7 @@ export default function RestaurantDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0]">
+      <View className="flex-1 justify-center items-center bg-muted">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
@@ -84,35 +91,76 @@ export default function RestaurantDetailScreen() {
 
   if (!restaurant) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0] p-4">
-        <Text className="text-base text-gray-800">No se encontró el restaurante</Text>
+      <View className="flex-1 justify-center items-center bg-muted p-4">
+        <Text className="text-base text-gray-800">
+          No se encontró el restaurante
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0]">
+    <View className="flex-1 bg-muted">
       {/* Carrusel de imágenes */}
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-      >
-        {restaurant.images.length > 0 ? (
-          restaurant.images.map((img) => (
-            <Image
-              key={img.id}
-              source={{ uri: img.url }}
+      <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const offsetX = e.nativeEvent.contentOffset.x;
+            const index = Math.round(offsetX / screenWidth);
+            setCurrentImageIndex(index);
+          }}
+          scrollEventThrottle={16}
+        >
+          {restaurant.images.length > 0 ? (
+            restaurant.images.map((img, index) => (
+              <TouchableOpacity
+                key={img.id}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setCurrentImageIndex(index);
+                  setIsImageViewerVisible(true);
+                }}
+              >
+                <Image
+                  source={{ uri: img.url }}
+                  className="h-48"
+                  style={{ width: screenWidth }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View
+              className="bg-gray-400 justify-center items-center"
               style={{ width: screenWidth, height: 200 }}
-              resizeMode="cover"
+            >
+              <Text className="text-white mt-20">Sin imágenes</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Puntos de paginación del carrusel */}
+        <View className="flex-row justify-center items-center my-2">
+          {restaurant.images.map((_, index) => (
+            <View
+              key={index}
+              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
+                }`}
             />
-          ))
-        ) : (
-          <View style={{ width: screenWidth, height: 200, backgroundColor: '#ccc' }}>
-            <Text className="text-center text-white mt-20">Sin imágenes</Text>
-          </View>
-        )}
-      </ScrollView>
+          ))}
+        </View>
+      </View>
+
+      {/* Visualizador de imágenes expandido */}
+      <ImageViewing
+        images={restaurant.images.map((img) => ({ uri: img.url }))}
+        imageIndex={currentImageIndex}
+        visible={isImageViewerVisible}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+      />
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
@@ -120,74 +168,37 @@ export default function RestaurantDetailScreen() {
           {restaurant.name}
         </Text>
         <View className="flex-row">
-          {/* Botón Editar */}
-          <TouchableOpacity
-            className="bg-primary p-2 rounded-full mr-2"
-            onPress={handleEdit}
-          >
+          <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>
-          {/* Botón Eliminar */}
-          <TouchableOpacity
-            className="bg-destructive p-2 rounded-full"
-            onPress={handleDelete}
-          >
+          <TouchableOpacity className="bg-destructive p-2 rounded-full" onPress={handleDelete}>
             <Ionicons name="trash-outline" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Tabs (por ahora solo "Detalles") */}
-      <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
-        <View className="flex-row mb-4">
-          {/* Tab Detalles (seleccionado) */}
-          <View className="flex-1 items-center">
-            <Text className="text-base font-bold text-primary">Detalles</Text>
-            <View className="w-3 h-1 bg-primary mt-1" />
-          </View>
-          {/* Tab Visitas */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Visitas</Text>
-          </View>
-          {/* Tab Platos */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Platos</Text>
-          </View>
-        </View>
-
-        {/* Sección de Detalles */}
-        {/* Descripción */}
-        {restaurant.comments ? (
-          <Text className="text-base text-gray-800 mb-4">{restaurant.comments}</Text>
-        ) : (
-          <Text className="text-base italic text-gray-500 mb-4">
-            Sin descripción
-          </Text>
-        )}
-
-        {/* Etiquetas */}
-        {restaurant.tags?.length > 0 ? (
-          <View className="flex-row flex-wrap mb-4">
-            {restaurant.tags.map((tag) => (
-              <Tag key={tag.id} color={tag.color} name={tag.name} />
-            ))}
-          </View>
-        ) : (
-          <Text className="text-sm italic text-gray-500 mb-4">
-            Sin etiquetas
-          </Text>
-        )}
-
-        {/* Calificación (estrellas) */}
-        <View className="flex-row">
-          <RatingStars
-            value={restaurant.rating}
-            readOnly
-          />
-        </View>
-
-
+      {/* Tabs */}
+      <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
+        <Tab.Navigator
+          screenOptions={{
+            tabBarActiveTintColor: '#93AE72',
+            tabBarInactiveTintColor: '#6b7280',
+            tabBarIndicatorStyle: { backgroundColor: '#93AE72', height: 3 },
+            tabBarLabelStyle: { fontSize: 16, fontWeight: 'bold' },
+            tabBarStyle: { backgroundColor: 'white' },
+          }}
+        >
+          <Tab.Screen name="Details" options={{ tabBarLabel: 'Detalles' }}>
+            {() => <RestaurantDetails restaurant={restaurant} />}
+          </Tab.Screen>
+          <Tab.Screen name="Visits" options={{ tabBarLabel: 'Visitas' }}>
+            {() => <RestaurantVisits restaurant={restaurant} />}
+          </Tab.Screen>
+          <Tab.Screen name="Dishes" options={{ tabBarLabel: 'Platos' }}>
+            {() => <RestaurantDishes restaurant={restaurant} />}
+          </Tab.Screen>
+        </Tab.Navigator>
       </View>
-    </ScrollView>
+    </View>
   );
 }

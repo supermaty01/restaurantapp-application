@@ -126,7 +126,7 @@ export default function MainLayout() {
   if (loading || !userToken) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#e5eae0]">
+    <SafeAreaView className="flex-1 bg-muted">
       <StatusBar style="dark" backgroundColor="#e3e6d6" />
       <Stack.Navigator
         screenOptions={{
