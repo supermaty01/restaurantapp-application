@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
 
 interface MapLocationPickerProps {
   location: { latitude: number; longitude: number } | null;
@@ -20,6 +21,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
   const [selectedLocation, setSelectedLocation] = useState(location);
   const [address, setAddress] = useState<string | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(false);
+  const [gettingCurrentLocation, setGettingCurrentLocation] = useState(false);
 
   useEffect(() => {
     if (location) {
@@ -27,19 +29,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
     }
   }, [location]);
 
-  // Manejar selección de ubicación en el mapa (Solo si `editable` es true)
-  const handleMapPress = (event: MapPressEvent) => {
-    if (!editable) return;
-
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    const coords = { latitude, longitude };
-
-    setSelectedLocation(coords);
-    onLocationChange && onLocationChange(coords);
-    fetchAddress(latitude, longitude);
-  };
-
-  // Obtener dirección a partir de coordenadas
+  // Obtener dirección legible a partir de coordenadas
   const fetchAddress = async (latitude: number, longitude: number) => {
     setLoadingAddress(true);
     try {
@@ -58,6 +48,49 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
     setLoadingAddress(false);
   };
 
+  // Manejar selección en el mapa (Solo si `editable` es true)
+  const handleMapPress = (event: MapPressEvent) => {
+    if (!editable) return;
+
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    const coords = { latitude, longitude };
+
+    setSelectedLocation(coords);
+    onLocationChange && onLocationChange(coords);
+    fetchAddress(latitude, longitude);
+  };
+
+  // 📍 Obtener la ubicación actual del usuario al presionar el botón
+  const handleUseCurrentLocation = async () => {
+    setGettingCurrentLocation(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso Denegado', 'Debes habilitar los permisos de ubicación en la configuración.');
+        setGettingCurrentLocation(false);
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      const coords = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+
+      setMapRegion((prev) => ({
+        ...prev,
+        ...coords,
+      }));
+      setSelectedLocation(coords);
+      onLocationChange && onLocationChange(coords);
+      fetchAddress(coords.latitude, coords.longitude);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo obtener la ubicación actual.');
+      console.error(error);
+    }
+    setGettingCurrentLocation(false);
+  };
+
   return (
     <View style={{ flex: 1, height: 300 }}>
       <MapView
@@ -65,8 +98,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
         style={{ flex: 1 }}
         region={mapRegion}
         onPress={handleMapPress}
-        scrollEnabled={editable} // Deshabilita el desplazamiento si es solo vista
-        zoomEnabled={editable} // Bloquea el zoom si no es editable
+        scrollEnabled={editable}
+        zoomEnabled={editable}
       >
         {selectedLocation && <Marker coordinate={selectedLocation} />}
       </MapView>
@@ -74,13 +107,42 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
       <View style={{ padding: 10, alignItems: 'center' }}>
         {loadingAddress ? (
           <ActivityIndicator size="small" color="#000" />
-        ) : (
+        ) : editable ? (
           <Text style={{ textAlign: 'center', marginVertical: 8 }}>{address ?? 'Selecciona una ubicación'}</Text>
+        ) : (
+          <Text style={{ textAlign: 'center', marginVertical: 8 }}>{address ?? 'Ubicación no disponible'}</Text>
         )}
 
+        {/* Botón "Usar mi ubicación" solo si editable */}
+        {editable && !selectedLocation && (
+          <TouchableOpacity
+            className="bg-primary"
+            style={{
+              flexDirection: 'row',
+              padding: 10,
+              borderRadius: 5,
+              marginTop: 10,
+              alignItems: 'center',
+            }}
+            onPress={handleUseCurrentLocation}
+            disabled={gettingCurrentLocation}
+          >
+            {gettingCurrentLocation ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="location" size={20} color="white" style={{ marginRight: 5 }} />
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Usar mi ubicación</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Botón "Borrar selección" solo si editable */}
         {editable && selectedLocation && (
           <TouchableOpacity
-            style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5, marginTop: 10 }}
+            style={{ padding: 10, borderRadius: 5, marginTop: 10 }}
+            className="bg-destructive"
             onPress={() => {
               setSelectedLocation(null);
               onLocationChange && onLocationChange(null);
