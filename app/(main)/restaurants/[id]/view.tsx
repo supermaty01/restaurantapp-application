@@ -9,18 +9,23 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import { useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
+import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
 import { RestaurantDTO } from '@/types/restaurant-dto';
+import ImageViewing from 'react-native-image-viewing';
 
 export default function RestaurantDetailScreen() {
   const router = useRouter();
-  const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
+  const { id } = useGlobalSearchParams();
   const [restaurant, setRestaurant] = useState<RestaurantDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Estados para el visualizador de imágenes
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -45,8 +50,8 @@ export default function RestaurantDetailScreen() {
   function handleEdit() {
     router.push({
       pathname: '/restaurants/[id]/edit',
-      params: { id },
-    })
+      params: { id: id.toString() },
+    });
   }
 
   function handleDelete() {
@@ -99,13 +104,21 @@ export default function RestaurantDetailScreen() {
         showsHorizontalScrollIndicator={false}
       >
         {restaurant.images.length > 0 ? (
-          restaurant.images.map((img) => (
-            <Image
+          restaurant.images.map((img, index) => (
+            <TouchableOpacity
               key={img.id}
-              source={{ uri: img.url }}
-              style={{ width: screenWidth, height: 200 }}
-              resizeMode="cover"
-            />
+              activeOpacity={0.8}
+              onPress={() => {
+                setCurrentImageIndex(index);
+                setIsImageViewerVisible(true);
+              }}
+            >
+              <Image
+                source={{ uri: img.url }}
+                style={{ width: screenWidth, height: 200 }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
           ))
         ) : (
           <View style={{ width: screenWidth, height: 200, backgroundColor: '#ccc' }}>
@@ -113,6 +126,14 @@ export default function RestaurantDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Visualizador de imágenes expandido */}
+      <ImageViewing
+        images={restaurant.images.map(img => ({ uri: img.url }))}
+        imageIndex={currentImageIndex}
+        visible={isImageViewerVisible}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+      />
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
@@ -185,8 +206,6 @@ export default function RestaurantDetailScreen() {
             readOnly
           />
         </View>
-
-
       </View>
     </ScrollView>
   );

@@ -17,6 +17,8 @@ export default function ImagesUploader({
   const pickFromGallery = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
+      quality: 0.5,
+      allowsMultipleSelection: true,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
     if (!result.canceled && result.assets?.length) {
