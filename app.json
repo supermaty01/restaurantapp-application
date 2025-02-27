@@ -36,6 +36,9 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "permissions": [
+      "ACCESS_FINE_LOCATION"
+    ]
   }
 }
