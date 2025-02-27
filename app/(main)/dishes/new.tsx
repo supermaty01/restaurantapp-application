@@ -13,14 +13,14 @@ import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
-import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { DishFormData, dishSchema } from '@/schemas/dish';
 
-export default function RestaurantCreateScreen() {
+export default function DishCreateScreen() {
   const {
     control,
     handleSubmit,
-  } = useForm<RestaurantFormData>({
-    resolver: zodResolver(restaurantSchema),
+  } = useForm<DishFormData>({
+    resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
       comments: '',
@@ -33,7 +33,7 @@ export default function RestaurantCreateScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
 
-  const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
+  const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     try {
       const payload = {
         name: data.name.trim(),
@@ -43,23 +43,23 @@ export default function RestaurantCreateScreen() {
         tags: selectedTags.map((tag) => tag.id),
       };
 
-      const response = await api.post('/restaurants', payload);
-      const restaurantId = response.data.data.id;
+      const response = await api.post('/dishes', payload);
+      const DishId = response.data.data.id;
 
       if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "RESTAURANT", restaurantId);
+        await uploadImages(selectedImages, "DISH", DishId);
       }
 
-      Alert.alert('Éxito', 'Restaurante creado correctamente.');
+      Alert.alert('Éxito', 'Plato creado correctamente.');
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo crear el restaurante');
+      Alert.alert('Error', 'No se pudo crear el plato');
       console.log(error);
     }
   };
 
   return (
     <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
+      <Text className="text-2xl font-bold mb-4">Añadir plato</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
         {/* Nombre */}
@@ -75,7 +75,7 @@ export default function RestaurantCreateScreen() {
           control={control}
           name="comments"
           label="Comentarios"
-          placeholder="Ejemplo: Ambiente agradable, buena comida..."
+          placeholder="Ejemplo: Bastante cantida, buen sabor..."
           multiline
           inputClassName="h-auto"
           numberOfLines={4}
@@ -129,7 +129,7 @@ export default function RestaurantCreateScreen() {
           onChangeImages={setSelectedImages}
         />
 
-        {/* Botón para crear restaurante */}
+        {/* Botón para crear Dishe */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"

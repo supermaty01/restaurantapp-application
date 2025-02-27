@@ -3,23 +3,23 @@ import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import RestaurantItem from '@/components/restaurants/RestaurantItem';
+import DishItem from '@/components/dishes/DishItem';
 import api from '@/services/api';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { DishDTO } from '@/types/dish-dto';
 
-export default function RestaurantsScreen() {
+export default function DishsScreen() {
   const router = useRouter();
-  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [Dishs, setDishs] = useState<DishDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const getRestaurants = async () => {
+  const getDishs = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/restaurants');
-      setRestaurants(response.data.data);
+      const response = await api.get('/dishes');
+      setDishs(response.data.data);
     } catch (error: any) {
-      console.error('Error fetching restaurants:', error);
-      Alert.alert('Error', 'No se pudieron cargar los restaurantes');
+      console.error('Error fetching platos:', error);
+      Alert.alert('Error', 'No se pudieron cargar los platos');
     } finally {
       setIsLoading(false);
     }
@@ -28,7 +28,7 @@ export default function RestaurantsScreen() {
   // Se llama cada vez que la pantalla obtiene foco
   useFocusEffect(
     useCallback(() => {
-      getRestaurants();
+      getDishs();
     }, [])
   );
 
@@ -44,24 +44,24 @@ export default function RestaurantsScreen() {
     <View className="flex-1 bg-[#e5eae0] p-4 relative">
       {/* Encabezado con título y botón de filtro */}
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-2xl font-bold text-gray-800">Restaurantes</Text>
+        <Text className="text-2xl font-bold text-gray-800">Platos</Text>
         <TouchableOpacity onPress={() => { /* Acción de filtro */ }}>
           <Ionicons name="filter-outline" size={24} color="#905c36" />
         </TouchableOpacity>
       </View>
 
-      {/* Lista scrolleable de restaurantes */}
+      {/* Lista scrolleable de Platos */}
       <FlatList
-        data={restaurants}
+        data={Dishs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RestaurantItem
+          <DishItem
             name={item.name}
             comments={item.comments}
             rating={item.rating}
             tags={item.tags}
             onPress={() => router.push({
-              pathname: '/restaurants/[id]/view',
+              pathname: '/dishes/[id]/view',
               params: { id: item.id },
             })}
           />
@@ -69,7 +69,7 @@ export default function RestaurantsScreen() {
         showsVerticalScrollIndicator={false}
       />
       <TouchableOpacity
-        onPress={() => router.push('/restaurants/new')}
+        onPress={() => router.push('/dishes/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />

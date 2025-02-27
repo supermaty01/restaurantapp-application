@@ -14,29 +14,29 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { DishDTO } from '@/types/dish-dto';
 
-export default function RestaurantDetailScreen() {
+export default function DishDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
-  const [restaurant, setRestaurant] = useState<RestaurantDTO | null>(null);
+  const [dish, setDish] = useState<DishDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
-    fetchRestaurant();
+    fetchDish();
   }, []);
 
-  async function fetchRestaurant() {
+  async function fetchDish() {
     try {
       setIsLoading(true);
-      console.log('Fetching restaurant:', id);
-      const response = await api.get(`/restaurants/${id}`);
-      setRestaurant(response.data.data);
+      console.log('Fetching dish:', id);
+      const response = await api.get(`/dishes/${id}`);
+      setDish(response.data.data);
     } catch (error) {
-      console.log('Error fetching restaurant:', error);
-      Alert.alert('Error', 'No se pudo cargar la información del restaurante');
+      console.log('Error fetching dish:', error);
+      Alert.alert('Error', 'No se pudo cargar la información del plato');
     } finally {
       setIsLoading(false);
     }
@@ -44,15 +44,15 @@ export default function RestaurantDetailScreen() {
 
   function handleEdit() {
     router.push({
-      pathname: '/restaurants/[id]/edit',
+      pathname: '/dishes/[id]/edit',
       params: { id },
     })
   }
 
   function handleDelete() {
     Alert.alert(
-      'Eliminar Restaurante',
-      '¿Estás seguro de que deseas eliminar este restaurante?',
+      'Eliminar Plato',
+      '¿Estás seguro de que deseas eliminar este plato?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -60,12 +60,12 @@ export default function RestaurantDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/restaurants/${id}`);
-              Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
+              await api.delete(`/dishes/${id}`);
+              Alert.alert('Eliminado', 'Plato eliminado correctamente');
               router.back(); // O redirigir a otra pantalla
             } catch (error) {
-              console.log('Error deleting restaurant:', error);
-              Alert.alert('Error', 'No se pudo eliminar el restaurante');
+              console.log('Error deleting Dish:', error);
+              Alert.alert('Error', 'No se pudo eliminar el plato');
             }
           },
         },
@@ -82,10 +82,10 @@ export default function RestaurantDetailScreen() {
     );
   }
 
-  if (!restaurant) {
+  if (!dish) {
     return (
       <View className="flex-1 justify-center items-center bg-[#e5eae0] p-4">
-        <Text className="text-base text-gray-800">No se encontró el restaurante</Text>
+        <Text className="text-base text-gray-800">No se encontró el Plato</Text>
       </View>
     );
   }
@@ -98,8 +98,8 @@ export default function RestaurantDetailScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
       >
-        {restaurant.images.length > 0 ? (
-          restaurant.images.map((img) => (
+        {dish.images.length > 0 ? (
+          dish.images.map((img) => (
             <Image
               key={img.id}
               source={{ uri: img.url }}
@@ -117,7 +117,7 @@ export default function RestaurantDetailScreen() {
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
         <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          {restaurant.name}
+          {dish.name}
         </Text>
         <View className="flex-row">
           {/* Botón Editar */}
@@ -157,8 +157,8 @@ export default function RestaurantDetailScreen() {
 
         {/* Sección de Detalles */}
         {/* Descripción */}
-        {restaurant.comments ? (
-          <Text className="text-base text-gray-800 mb-4">{restaurant.comments}</Text>
+        {dish.comments ? (
+          <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
         ) : (
           <Text className="text-base italic text-gray-500 mb-4">
             Sin descripción
@@ -166,9 +166,9 @@ export default function RestaurantDetailScreen() {
         )}
 
         {/* Etiquetas */}
-        {restaurant.tags?.length > 0 ? (
+        {dish.tags?.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
-            {restaurant.tags.map((tag) => (
+            {dish.tags.map((tag) => (
               <Tag key={tag.id} color={tag.color} name={tag.name} />
             ))}
           </View>
@@ -181,7 +181,7 @@ export default function RestaurantDetailScreen() {
         {/* Calificación (estrellas) */}
         <View className="flex-row">
           <RatingStars
-            value={restaurant.rating}
+            value={dish.rating}
             readOnly
           />
         </View>
