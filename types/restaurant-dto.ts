@@ -8,4 +8,5 @@ export interface RestaurantDTO {
   rating: number;
   tags: TagDTO[];
   images: ImageDTO[];
+  location: { latitude: number; longitude: number } | null;
 }
