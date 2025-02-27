@@ -65,7 +65,7 @@ export default function RestaurantCreateScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
+    <ScrollView className="flex-1 bg-muted p-4">
       <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
