@@ -63,7 +63,7 @@ export default function DishCreateScreen() {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
         comments: data.comments?.trim() || '',
-        price: typeof data.price === 'string' ? parseFloat(data.price.replace(',', '.')) : data.price,
+        price: typeof data.price === 'string' ? parseFloat(String(data.price).replace(',', '.')) : data.price ?? undefined,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),
       };
