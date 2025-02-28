@@ -9,6 +9,7 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Alert,
 } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
@@ -49,6 +50,7 @@ interface CreateTagModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (tag: { name: string; color: string }) => void;
+  onDelete?: (tagId: string) => void;
   editTag?: { id: string; name: string; color: string } | null;
   isEditing?: boolean;
 }
@@ -57,6 +59,7 @@ export default function CreateTagModal({
   visible,
   onClose,
   onAdd,
+  onDelete,
   editTag,
   isEditing = false,
 }: CreateTagModalProps) {
@@ -104,6 +107,26 @@ export default function CreateTagModal({
         color: selectedColor,
         ...(isEditing && editTag ? { id: editTag.id } : {})
       });
+    }
+  };
+
+  const handleDeletePress = () => {
+    if (editTag && onDelete) {
+      Alert.alert(
+        "Confirmar eliminación",
+        "¿Estás seguro de que deseas eliminar esta etiqueta?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel"
+          },
+          { 
+            text: "Eliminar", 
+            onPress: () => onDelete(editTag.id),
+            style: "destructive"
+          }
+        ]
+      );
     }
   };
 
@@ -173,21 +196,32 @@ export default function CreateTagModal({
             ))}
           </View>
 
-          <View className="flex-row justify-end mt-2">
-            <TouchableOpacity
-              onPress={onClose}
-              className="px-4 py-2 rounded-md bg-gray-300 mr-2"
-            >
-              <Text className="text-gray-800 font-semibold">Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleSubmit(onSubmit)}
-              className="px-4 py-2 rounded-md bg-primary"
-            >
-              <Text className="text-white font-semibold">
-                {isEditing ? 'Guardar' : 'Añadir'}
-              </Text>
-            </TouchableOpacity>
+          <View className="flex-row justify-between mt-2">
+            {isEditing && (
+              <TouchableOpacity
+                onPress={handleDeletePress}
+                className="px-4 py-2 rounded-md bg-red-500"
+              >
+                <Text className="text-white font-semibold">Eliminar</Text>
+              </TouchableOpacity>
+            )}
+            
+            <View className="flex-row ml-auto">
+              <TouchableOpacity
+                onPress={onClose}
+                className="px-4 py-2 rounded-md bg-gray-300 mr-2"
+              >
+                <Text className="text-gray-800 font-semibold">Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSubmit(onSubmit)}
+                className="px-4 py-2 rounded-md bg-primary"
+              >
+                <Text className="text-white font-semibold">
+                  {isEditing ? 'Guardar' : 'Añadir'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>

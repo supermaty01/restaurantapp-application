@@ -14,6 +14,9 @@ import TagsScreen from './tags';
 import NewRestaurantScreen from './restaurants/new';
 import RestaurantDetailScreen from './restaurants/[id]/view';
 import RestaurantEditScreen from './restaurants/[id]/edit';
+import NewDishScreen from './dishes/new';
+import DishDetailScreen from './dishes/[id]/view';
+import DishEditScreen from './dishes/[id]/edit';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -171,6 +174,23 @@ export default function MainLayout() {
         <Stack.Screen
           name="restaurants/[id]/edit"
           component={RestaurantEditScreen}
+          options={{ presentation: 'modal' }}
+        />
+
+        {/* Pantalla para añadir Plato u otras: se mostrará la flecha */}
+        <Stack.Screen
+          name="dishes/new"
+          component={NewDishScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="dishes/[id]/view"
+          component={DishDetailScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="dishes/[id]/edit"
+          component={DishEditScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

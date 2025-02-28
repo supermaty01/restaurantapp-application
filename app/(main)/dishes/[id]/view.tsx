@@ -1,0 +1,193 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
+  Dimensions,
+} from 'react-native';
+import { useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import api from '@/services/api';
+import Tag from '@/components/tags/Tag';
+import RatingStars from '@/components/RatingStars';
+import { DishDTO } from '@/types/dish-dto';
+
+export default function DishDetailScreen() {
+  const router = useRouter();
+  const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
+  const [dish, setDish] = useState<DishDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const screenWidth = Dimensions.get('window').width;
+
+  useEffect(() => {
+    fetchDish();
+  }, []);
+
+  async function fetchDish() {
+    try {
+      setIsLoading(true);
+      console.log('Fetching dish:', id);
+      const response = await api.get(`/dishes/${id}`);
+      setDish(response.data.data);
+    } catch (error) {
+      console.log('Error fetching dish:', error);
+      Alert.alert('Error', 'No se pudo cargar la información del plato');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleEdit() {
+    router.push({
+      pathname: '/dishes/[id]/edit',
+      params: { id },
+    })
+  }
+
+  function handleDelete() {
+    Alert.alert(
+      'Eliminar Plato',
+      '¿Estás seguro de que deseas eliminar este plato?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/dishes/${id}`);
+              Alert.alert('Eliminado', 'Plato eliminado correctamente');
+              router.back(); // O redirigir a otra pantalla
+            } catch (error) {
+              console.log('Error deleting Dish:', error);
+              Alert.alert('Error', 'No se pudo eliminar el plato');
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#e5eae0]">
+        <ActivityIndicator size="large" color="#905c36" />
+      </View>
+    );
+  }
+
+  if (!dish) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#e5eae0] p-4">
+        <Text className="text-base text-gray-800">No se encontró el Plato</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView className="flex-1 bg-[#e5eae0]">
+      {/* Carrusel de imágenes */}
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+      >
+        {dish.images.length > 0 ? (
+          dish.images.map((img) => (
+            <Image
+              key={img.id}
+              source={{ uri: img.url }}
+              style={{ width: screenWidth, height: 200 }}
+              resizeMode="cover"
+            />
+          ))
+        ) : (
+          <View style={{ width: screenWidth, height: 200, backgroundColor: '#ccc' }}>
+            <Text className="text-center text-white mt-20">Sin imágenes</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Nombre y botones Editar/Eliminar */}
+      <View className="flex-row items-center justify-between px-4 mt-4">
+        <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
+          {dish.name}
+        </Text>
+        <View className="flex-row">
+          {/* Botón Editar */}
+          <TouchableOpacity
+            className="bg-primary p-2 rounded-full mr-2"
+            onPress={handleEdit}
+          >
+            <Ionicons name="create-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+          {/* Botón Eliminar */}
+          <TouchableOpacity
+            className="bg-destructive p-2 rounded-full"
+            onPress={handleDelete}
+          >
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Tabs (por ahora solo "Detalles") */}
+      <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
+        <View className="flex-row mb-4">
+          {/* Tab Detalles (seleccionado) */}
+          <View className="flex-1 items-center">
+            <Text className="text-base font-bold text-primary">Detalles</Text>
+            <View className="w-3 h-1 bg-primary mt-1" />
+          </View>
+          {/* Tab Visitas */}
+          <View className="flex-1 items-center">
+            <Text className="text-base text-gray-500">Visitas</Text>
+          </View>
+          {/* Tab Platos */}
+          <View className="flex-1 items-center">
+            <Text className="text-base text-gray-500">Platos</Text>
+          </View>
+        </View>
+
+        {/* Sección de Detalles */}
+        {/* Descripción */}
+        {dish.comments ? (
+          <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
+        ) : (
+          <Text className="text-base italic text-gray-500 mb-4">
+            Sin descripción
+          </Text>
+        )}
+
+        {/* Etiquetas */}
+        {dish.tags?.length > 0 ? (
+          <View className="flex-row flex-wrap mb-4">
+            {dish.tags.map((tag) => (
+              <Tag key={tag.id} color={tag.color} name={tag.name} />
+            ))}
+          </View>
+        ) : (
+          <Text className="text-sm italic text-gray-500 mb-4">
+            Sin etiquetas
+          </Text>
+        )}
+
+        {/* Calificación (estrellas) */}
+        <View className="flex-row">
+          <RatingStars
+            value={dish.rating}
+            readOnly
+          />
+        </View>
+
+
+      </View>
+    </ScrollView>
+  );
+}
