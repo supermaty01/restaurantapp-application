@@ -25,6 +25,7 @@ export default function RestaurantCreateScreen() {
       name: '',
       comments: '',
       rating: undefined,
+      location: undefined,
     },
   });
 
