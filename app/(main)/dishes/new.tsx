@@ -15,6 +15,7 @@ import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/schemas/dish';
+import { router } from 'expo-router';
 
 export default function DishCreateScreen() {
   const {
@@ -76,6 +77,10 @@ export default function DishCreateScreen() {
       }
 
       Alert.alert('Éxito', 'Plato creado correctamente.');
+      router.replace({
+        pathname: '/dishes/[id]/view',
+        params: { id: dishId },
+      });
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el plato');
       console.log(error);

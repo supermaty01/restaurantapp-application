@@ -6,15 +6,7 @@ import { RestaurantDTO } from '@/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
 import { ImageDTO } from '@/types/image-dto';
 import { TagDTO } from '@/types/tag-dto';
-
-interface DishDTO {
-  id: number;
-  name: string;
-  description: string;
-  rating: number;
-  tags: TagDTO[];
-  images: ImageDTO[];
-}
+import { DishDTO } from '@/types/dish-dto';
 
 interface RestaurantDishesProps {
   restaurant: RestaurantDTO;
@@ -78,7 +70,7 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
               )}
               <View className="flex-1">
                 <Text className="text-base font-bold text-gray-800">{item.name}</Text>
-                <Text className="text-sm text-gray-500">{item.description}</Text>
+                <Text className="text-sm text-gray-500">{item.comments}</Text>
               </View>
               <Ionicons name="chevron-forward-outline" size={20} color="#999" />
             </TouchableOpacity>
