@@ -38,7 +38,7 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
       allowsEditing: false,
       quality: 0.5,
       allowsMultipleSelection: true,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
     });
     if (!result.canceled && result.assets?.length) {
       if (isEdit) {

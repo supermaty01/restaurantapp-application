@@ -4,21 +4,16 @@ import { useRouter } from 'expo-router';
 import api from '@/services/api';
 import { RestaurantDTO } from '@/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
+import { ImageDTO } from '@/types/image-dto';
+import { TagDTO } from '@/types/tag-dto';
 
 interface DishDTO {
   id: number;
   name: string;
   description: string;
   rating: number;
-  tags: Array<{
-    id: number;
-    name: string;
-    color: string;
-  }>;
-  images: Array<{
-    id: number;
-    url: string;
-  }>;
+  tags: TagDTO[];
+  images: ImageDTO[];
 }
 
 interface RestaurantDishesProps {
