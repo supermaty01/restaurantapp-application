@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { TouchableOpacity, Image, View } from 'react-native';
+import { TouchableOpacity, Image, View, Alert } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '@/context/AuthContext';
-
 import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
@@ -85,6 +84,25 @@ type CustomHeaderProps = {
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
+  function handleLogOut() {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que deseas cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/login');
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
   return (
     <View className="w-full flex-row items-center justify-between p-4 bg-[#e3e6d6]">
       <View className="w-20">
@@ -100,10 +118,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
       />
       <View className="w-20 items-end">
         <TouchableOpacity
-          onPress={async () => {
-            await logout();
-            router.replace('/login');
-          }}
+          onPress={async () => handleLogOut()}
         >
           <Ionicons name="log-out-outline" size={32} color="#905c36" />
         </TouchableOpacity>
@@ -129,7 +144,7 @@ export default function MainLayout() {
   if (loading || !userToken) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#e5eae0]">
+    <SafeAreaView className="flex-1 bg-muted">
       <StatusBar style="dark" backgroundColor="#e3e6d6" />
       <Stack.Navigator
         screenOptions={{

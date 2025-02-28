@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader from '@/components/ImagesUploader'; // Ajustado para solo seleccionar imágenes
+import ImagesUploader from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { router } from 'expo-router';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -25,15 +25,18 @@ export default function RestaurantCreateScreen() {
       name: '',
       comments: '',
       rating: undefined,
+      location: undefined,
     },
   });
 
-  const [location, setLocation] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
+    setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
@@ -51,14 +54,20 @@ export default function RestaurantCreateScreen() {
       }
 
       Alert.alert('Éxito', 'Restaurante creado correctamente.');
+      router.replace({
+        pathname: '/restaurants/[id]/view',
+        params: { id: restaurantId },
+      });
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el restaurante');
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
+    <ScrollView className="flex-1 bg-muted p-4">
       <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
@@ -83,18 +92,12 @@ export default function RestaurantCreateScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/* 
-          Si lo deseas, puedes reactivar tu componente LocationPicker
-          <LocationPicker location={location} onLocationChange={setLocation} />
-        */}
+          <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
-          <RatingStars
-            control={control}
-            name="rating"
-          />
+          <RatingStars control={control} name="rating" />
         </View>
 
         {/* Tags */}
@@ -133,8 +136,13 @@ export default function RestaurantCreateScreen() {
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
+          disabled={loading}
         >
-          <Text className="text-white font-bold">Guardar</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text className="text-white font-bold">Guardar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
