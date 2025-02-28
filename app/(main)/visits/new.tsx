@@ -14,7 +14,7 @@ import { RestaurantDTO } from '@/types/restaurant-dto';
 import Tag from '@/components/tags/Tag';
 import { DishDTO } from '@/types/dish-dto';
 
-export default function VisitCreateScreen() {
+export default function NewVisitScreen() {
   const {
     control,
     handleSubmit,
