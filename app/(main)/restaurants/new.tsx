@@ -96,10 +96,7 @@ export default function RestaurantCreateScreen() {
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
-          <RatingStars
-            control={control}
-            name="rating"
-          />
+          <RatingStars control={control} name="rating" />
         </View>
 
         {/* Tags */}

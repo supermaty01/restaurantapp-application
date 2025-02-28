@@ -8,11 +8,12 @@ import {
   Image,
   Dimensions,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import ImageViewing from 'react-native-image-viewing';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import { RestaurantDTO } from '@/types/restaurant-dto';
 import RestaurantDetails from '@/components/restaurants/RestaurantDetails';
 import RestaurantVisits from '@/components/restaurants/RestaurantVisits';
@@ -50,7 +51,7 @@ export default function RestaurantDetailScreen() {
   }
 
   function handleEdit() {
-    router.push({
+    router.replace({
       pathname: '/restaurants/[id]/edit',
       params: { id: id?.toString() },
     });
@@ -154,13 +155,18 @@ export default function RestaurantDetailScreen() {
         </View>
       </View>
 
-      {/* Visualizador de imágenes expandido */}
-      <ImageViewing
-        images={restaurant.images.map((img) => ({ uri: img.url }))}
-        imageIndex={currentImageIndex}
-        visible={isImageViewerVisible}
-        onRequestClose={() => setIsImageViewerVisible(false)}
-      />
+      {/* Visualizador de imágenes expandido con react-native-image-zoom-viewer */}
+      <Modal visible={isImageViewerVisible} transparent={true}>
+        <ImageViewer
+          imageUrls={restaurant.images.map((img) => ({ url: img.url }))}
+          index={currentImageIndex}
+          onCancel={() => setIsImageViewerVisible(false)}
+          enableSwipeDown={true}
+          onSwipeDown={() => setIsImageViewerVisible(false)}
+          saveToLocalByLongPress={false}
+          backgroundColor='rgba(0, 0, 0, 0.9)'
+        />
+      </Modal>
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
