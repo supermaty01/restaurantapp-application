@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader from '@/components/ImagesUploader'; // Ajustado para solo seleccionar imágenes
+import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { router, useGlobalSearchParams } from 'expo-router';
 
 export default function RestaurantEditScreen() {
-  const {
-    control,
-    handleSubmit,
-  } = useForm<RestaurantFormData>({
+  const { id } = useGlobalSearchParams<{ id: string }>();
+
+  const { control, handleSubmit, reset } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
       name: '',
@@ -28,10 +28,38 @@ export default function RestaurantEditScreen() {
 
   const [location, setLocation] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
+  const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      api
+        .get(`/restaurants/${id}`)
+        .then((response) => {
+          const restaurant = response.data.data;
+          reset({
+            name: restaurant.name,
+            comments: restaurant.comments,
+            rating: restaurant.rating,
+          });
+          setSelectedTags(restaurant.tags);
+          setSelectedImages(
+            restaurant.images.map((img: any) => ({ id: img.id, uri: img.url }))
+          );
+        })
+        .catch((error) => {
+          Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
+          console.log(error);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, reset]);
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
+    setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
@@ -41,26 +69,42 @@ export default function RestaurantEditScreen() {
         tags: selectedTags.map((tag) => tag.id),
       };
 
-      const response = await api.post('/restaurants', payload);
-      const restaurantId = response.data.data.id;
+      await api.put(`/restaurants/${id}`, payload);
 
-      if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "RESTAURANT", restaurantId);
+      const newImages = selectedImages.filter((image) => !image.id);
+      if (newImages.length > 0) {
+        await uploadImages(newImages.map((img) => img.uri), "RESTAURANT", Number(id));
       }
 
-      Alert.alert('Éxito', 'Restaurante creado correctamente.');
+      if (removedImages.length > 0) {
+        await Promise.all(
+          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+        );
+      }
+
+      Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
+      router.replace({ pathname: '/restaurants/[id]/view', params: { id } });
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo crear el restaurante');
+      Alert.alert('Error', 'No se pudo actualizar el restaurante');
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
+    <ScrollView className="flex-1 bg-muted p-4">
+      <Text className="text-2xl font-bold mb-4">Editar restaurante</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
-        {/* Nombre */}
         <FormInput
           control={control}
           name="name"
@@ -68,7 +112,6 @@ export default function RestaurantEditScreen() {
           placeholder="Ingresa el nombre"
         />
 
-        {/* Comentarios (opcional) */}
         <FormInput
           control={control}
           name="comments"
@@ -79,23 +122,12 @@ export default function RestaurantEditScreen() {
           numberOfLines={4}
         />
 
-        {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/* 
-          Si lo deseas, puedes reactivar tu componente LocationPicker
-          <LocationPicker location={location} onLocationChange={setLocation} />
-        */}
-
-        {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
-          <RatingStars
-            control={control}
-            name="rating"
-          />
+          <RatingStars control={control} name="rating" />
         </View>
 
-        {/* Tags */}
         <View className="flex-row items-center justify-between mt-4">
           <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
           <TouchableOpacity
@@ -121,18 +153,25 @@ export default function RestaurantEditScreen() {
           onChangeSelected={setSelectedTags}
         />
 
-        {/* Imágenes (solo se seleccionan, no se suben aún) */}
         <ImagesUploader
+          isEdit
           images={selectedImages}
           onChangeImages={setSelectedImages}
+          onRemoveExistingImage={(imageId) =>
+            setRemovedImages((prev) => [...prev, imageId])
+          }
         />
 
-        {/* Botón para crear restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
+          disabled={loading}
         >
-          <Text className="text-white font-bold">Guardar</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text className="text-white font-bold">Guardar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
