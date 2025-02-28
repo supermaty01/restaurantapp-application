@@ -68,7 +68,10 @@ export default function VisitsScreen() {
             date={item.date}
             title={item.place}
             description={item.description}
-            onPress={() => router.push(`/visits/${item.id}/view`)} // Navegación corregida
+            onPress={() => router.push({
+              pathname: '/visits/[id]/view',
+              params: { id: item.id },
+            })}
           />
         )}
         showsVerticalScrollIndicator={false}
@@ -76,7 +79,10 @@ export default function VisitsScreen() {
 
       {/* Botón para agregar una nueva visita */}
       <TouchableOpacity
-        onPress={() => router.push('/visits/new')}
+        onPress={() => {router.push('/visits/new')
+          console.log('Navegar a la pantalla de nueva visita')
+        }
+      }
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />

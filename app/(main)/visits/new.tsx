@@ -12,8 +12,9 @@ import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
 import { RestaurantDTO } from '@/types/restaurant-dto';
 import Tag from '@/components/tags/Tag';
+import { DishDTO } from '@/types/dish-dto';
 
-export default function NewVisitScreen() {
+export default function VisitCreateScreen() {
   const {
     control,
     handleSubmit,
@@ -22,7 +23,7 @@ export default function NewVisitScreen() {
     defaultValues: {
       visited_at: new Date().toISOString().split('T')[0], // Fecha actual por defecto
       comments: '',
-      restaurant_id: null,
+      restaurant_id: undefined,
     },
   });
 
@@ -116,7 +117,6 @@ export default function NewVisitScreen() {
             <Text className="text-white font-bold">Crear nuevo plato</Text>
           </TouchableOpacity>
         </View>
-
 
         {/* Subida de imágenes */}
         <Text className="text-xl font-semibold text-gray-800 mt-6">Fotos</Text>
