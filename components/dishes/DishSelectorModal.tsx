@@ -1,85 +1,87 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import api from '@/services/api';
-import clsx from 'clsx';
-import { Ionicons } from '@expo/vector-icons';
-import { DishDTO } from '@/types/dish-dto';
+import React, { useState } from 'react';
+import { View, Text, Modal, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+
+interface Dish {
+    id: number;
+    name: string;
+}
 
 interface DishSelectorModalProps {
-  visible: boolean;
-  onClose: () => void;
-  selectedDishes: DishDTO[];
-  onChangeSelected: (newDishes: DishDTO[]) => void;
+    visible: boolean;
+    dishes: Dish[];
+    onSelect: (dish: Dish) => void;
+    onClose: () => void;
 }
 
-export default function DishSelectorModal({
-  visible,
-  onClose,
-  selectedDishes,
-  onChangeSelected,
-}: DishSelectorModalProps) {
-  const [dishes, setDishes] = useState<DishDTO[]>([]);
+const DishSelectorModal: React.FC<DishSelectorModalProps> = ({ visible, dishes, onSelect, onClose }) => {
+    const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
 
-  useEffect(() => {
-    if (visible) {
-      fetchDishes();
-    }
-  }, [visible]);
+    const handleSelect = (dish: Dish) => {
+        setSelectedDish(dish);
+        onSelect(dish);
+        onClose();
+    };
 
-  const fetchDishes = async () => {
-    try {
-      const response = await api.get('/dishes'); // Asegúrate de que esta es la ruta correcta en la API
-      setDishes(response.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    return (
+        <Modal visible={visible} transparent={true} animationType="slide">
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.title}>Select a Dish</Text>
+                    <FlatList
+                        data={dishes}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity style={styles.dishItem} onPress={() => handleSelect(item)}>
+                                <Text style={styles.dishName}>{item.name}</Text>
+                            </TouchableOpacity>
+                        )}
+                    />
+                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                        <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+};
 
-  const handleToggle = (selectedDish: DishDTO) => {
-    if (selectedDishes.find((dish) => dish.id === selectedDish.id)) {
-      // Deseleccionar plato
-      onChangeSelected(selectedDishes.filter((dish) => dish.id !== selectedDish.id));
-    } else {
-      // Seleccionar plato
-      onChangeSelected([...selectedDishes, selectedDish]);
-    }
-  };
+const styles = StyleSheet.create({
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    dishItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    dishName: {
+        fontSize: 16,
+    },
+    closeButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#007BFF',
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+});
 
-  return (
-    <Modal visible={visible} transparent onRequestClose={onClose}>
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white w-10/12 rounded-md p-4 max-h-[60%]">
-          <Text className="text-lg font-bold mb-2">Seleccionar Platos</Text>
-          <FlatList
-            data={dishes}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => {
-              const isSelected = selectedDishes.some((dish) => dish.id === item.id);
-              return (
-                <TouchableOpacity
-                  className="flex-row items-center mb-2"
-                  onPress={() => handleToggle(item)}
-                >
-                  <View
-                    className={clsx("size-6 mr-2 rounded-md", isSelected ? 'bg-primary' : 'bg-gray-300')}
-                  >
-                    {isSelected && <Ionicons name="checkmark" size={20} />}
-                  </View>
-                  <Text className="text-gray-800">{item.name}</Text>
-                </TouchableOpacity>
-              );
-            }}
-          />
-          <View className="flex-row justify-end mt-4">
-            <TouchableOpacity
-              onPress={onClose}
-              className="px-4 py-2 bg-gray-300 rounded-md"
-            >
-              <Text className="text-gray-800">Cerrar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
+export default DishSelectorModal;
