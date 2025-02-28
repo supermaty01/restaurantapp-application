@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { TouchableOpacity, Image, View } from 'react-native';
+import { TouchableOpacity, Image, View, Alert } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '@/context/AuthContext';
-
 import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
@@ -15,6 +14,9 @@ import TagsScreen from './tags';
 import NewRestaurantScreen from './restaurants/new';
 import RestaurantDetailScreen from './restaurants/[id]/view';
 import RestaurantEditScreen from './restaurants/[id]/edit';
+import NewDishScreen from './dishes/new';
+import DishDetailScreen from './dishes/[id]/view';
+import DishEditScreen from './dishes/[id]/edit';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -82,6 +84,25 @@ type CustomHeaderProps = {
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
+  function handleLogOut() {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que deseas cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/login');
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
   return (
     <View className="w-full flex-row items-center justify-between p-4 bg-[#e3e6d6]">
       <View className="w-20">
@@ -97,10 +118,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
       />
       <View className="w-20 items-end">
         <TouchableOpacity
-          onPress={async () => {
-            await logout();
-            router.replace('/login');
-          }}
+          onPress={async () => handleLogOut()}
         >
           <Ionicons name="log-out-outline" size={32} color="#905c36" />
         </TouchableOpacity>
@@ -126,7 +144,7 @@ export default function MainLayout() {
   if (loading || !userToken) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-[#e5eae0]">
+    <SafeAreaView className="flex-1 bg-muted">
       <StatusBar style="dark" backgroundColor="#e3e6d6" />
       <Stack.Navigator
         screenOptions={{
@@ -156,6 +174,23 @@ export default function MainLayout() {
         <Stack.Screen
           name="restaurants/[id]/edit"
           component={RestaurantEditScreen}
+          options={{ presentation: 'modal' }}
+        />
+
+        {/* Pantalla para añadir Plato u otras: se mostrará la flecha */}
+        <Stack.Screen
+          name="dishes/new"
+          component={NewDishScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="dishes/[id]/view"
+          component={DishDetailScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="dishes/[id]/edit"
+          component={DishEditScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>
