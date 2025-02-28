@@ -1,26 +1,37 @@
 import React, { useEffect, useState } from 'react';
+import { format, parse } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
   ActivityIndicator,
-  Image,
+  Alert,
   Dimensions,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import { VisitDTO } from '@/types/visit-dto';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { VisitDTO } from '@/types/visit-dto'
+import VisitDetails from '@/components/visits/VisitDetails'
+import VisitDishes from '@/components/visits/VisitDishes'
+
+const Tab = createMaterialTopTabNavigator();
+const screenWidth = Dimensions.get('window').width;
 
 export default function VisitDetailScreen() {
   const router = useRouter();
-  const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
+  const { id } = useGlobalSearchParams();
   const [visit, setVisit] = useState<VisitDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const screenWidth = Dimensions.get('window').width;
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchVisit();
@@ -29,7 +40,6 @@ export default function VisitDetailScreen() {
   async function fetchVisit() {
     try {
       setIsLoading(true);
-      console.log('Fetching visit:', id);
       const response = await api.get(`/visits/${id}`);
       setVisit(response.data.data);
     } catch (error) {
@@ -41,7 +51,10 @@ export default function VisitDetailScreen() {
   }
 
   function handleEdit() {
-    router.push(`/visits/${id}/edit`);
+    router.replace({
+      pathname: '/visits/[id]/edit',
+      params: { id: id?.toString() },
+    });
   }
 
   function handleDelete() {
@@ -56,8 +69,8 @@ export default function VisitDetailScreen() {
           onPress: async () => {
             try {
               await api.delete(`/visits/${id}`);
-              Alert.alert('Eliminado', 'Visita eliminada correctamente');
-              router.back(); // O redirigir a otra pantalla
+              Alert.alert('Eliminada', 'Visita eliminada correctamente');
+              router.back();
             } catch (error) {
               console.log('Error deleting visit:', error);
               Alert.alert('Error', 'No se pudo eliminar la visita');
@@ -65,69 +78,129 @@ export default function VisitDetailScreen() {
           },
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   }
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0]">
-        <ActivityIndicator size="large" color="#905c36" />
+      <View className="flex-1 justify-center items-center bg-muted">
+        <ActivityIndicator size="large" color="#905c36"/>
       </View>
     );
   }
 
   if (!visit) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0] p-4">
-        <Text className="text-base text-gray-800">No se encontró la visita</Text>
+      <View className="flex-1 justify-center items-center bg-muted p-4">
+        <Text className="text-base text-gray-800">
+          No se encontró la visita
+        </Text>
       </View>
     );
   }
 
+  const parsedDate = parse(visit.visited_at, 'yyyy/MM/dd', new Date());
+  const formattedDate = format(parsedDate, "dd 'de' MMMM, yyyy", { locale: es });
+
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0]">
-      {/* Título y botones Editar/Eliminar */}
+    <View className="flex-1 bg-muted">
+      <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const offsetX = e.nativeEvent.contentOffset.x;
+            const index = Math.round(offsetX / screenWidth);
+            setCurrentImageIndex(index);
+          }}
+          scrollEventThrottle={16}
+        >
+          {visit.images.length > 0 ? (
+            visit.images.map((img, index) => (
+              <TouchableOpacity
+                key={img.id}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setCurrentImageIndex(index);
+                  setIsImageViewerVisible(true);
+                }}
+              >
+                <Image
+                  source={{ uri: img.url }}
+                  className="h-48"
+                  style={{ width: screenWidth }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View
+              className="bg-gray-400 justify-center items-center"
+              style={{ width: screenWidth, height: 200 }}
+            >
+              <Text className="text-white mt-20">Sin imágenes</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Puntos de paginación del carrusel */}
+        <View className="flex-row justify-center items-center my-2">
+          {visit.images.map((_, index) => (
+            <View
+              key={index}
+              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
+              }`}
+            />
+          ))}
+        </View>
+      </View>
+
+      <Modal visible={isImageViewerVisible} transparent={true}>
+        <ImageViewer
+          imageUrls={visit.images.map((img) => ({ url: img.url }))}
+          index={currentImageIndex}
+          onCancel={() => setIsImageViewerVisible(false)}
+          enableSwipeDown={true}
+          onSwipeDown={() => setIsImageViewerVisible(false)}
+          saveToLocalByLongPress={false}
+          backgroundColor="rgba(0, 0, 0, 0.9)"
+        />
+      </Modal>
+
       <View className="flex-row items-center justify-between px-4 mt-4">
         <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          Visita a {visit.place}
+          {formattedDate}
         </Text>
         <View className="flex-row">
-          {/* Botón Editar */}
-          <TouchableOpacity
-            className="bg-primary p-2 rounded-full mr-2"
-            onPress={handleEdit}
-          >
-            <Ionicons name="create-outline" size={20} color="#fff" />
+          <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
+            <Ionicons name="create-outline" size={20} color="#fff"/>
           </TouchableOpacity>
-          {/* Botón Eliminar */}
-          <TouchableOpacity
-            className="bg-destructive p-2 rounded-full"
-            onPress={handleDelete}
-          >
-            <Ionicons name="trash-outline" size={20} color="#fff" />
+          <TouchableOpacity className="bg-destructive p-2 rounded-full" onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={20} color="#fff"/>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Sección de Detalles */}
-      <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
-        <Text className="text-lg font-bold mb-2">Detalles de la visita</Text>
-
-        {/* Fecha */}
-        <Text className="text-base text-gray-600 mb-2">
-          <Ionicons name="calendar-outline" size={16} /> {visit.date}
-        </Text>
-
-        {/* Comentarios */}
-        {visit.description ? (
-          <Text className="text-base text-gray-800 mb-4">{visit.description}</Text>
-        ) : (
-          <Text className="text-base italic text-gray-500 mb-4">
-            Sin comentarios
-          </Text>
-        )}
+      <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
+        <Tab.Navigator
+          screenOptions={{
+            tabBarActiveTintColor: '#93AE72',
+            tabBarInactiveTintColor: '#6b7280',
+            tabBarIndicatorStyle: { backgroundColor: '#93AE72', height: 3 },
+            tabBarLabelStyle: { fontSize: 16, fontWeight: 'bold' },
+            tabBarStyle: { backgroundColor: 'white' },
+          }}
+        >
+          <Tab.Screen name="Details" options={{ tabBarLabel: 'Detalles' }}>
+            {() => <VisitDetails visit={visit}/>}
+          </Tab.Screen>
+          <Tab.Screen name="Dishes" options={{ tabBarLabel: 'Platos' }}>
+            {() => <VisitDishes visit={visit}/>}
+          </Tab.Screen>
+        </Tab.Navigator>
       </View>
-    </ScrollView>
+    </View>
   );
 }
