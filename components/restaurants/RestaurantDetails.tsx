@@ -3,12 +3,14 @@ import { View, Text } from 'react-native';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
 import { RestaurantDTO } from '@/types/restaurant-dto';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 interface RestaurantDetailsProps {
   restaurant: RestaurantDTO;
 }
 
 export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps) {
+
   return (
     <View className="p-4 h-full bg-white">
       {restaurant.comments ? (
@@ -33,7 +35,11 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
         </Text>
       )}
 
-      <View className="flex-row">
+      {restaurant.location && (
+        <MapLocationPicker location={restaurant.location} editable={false} />
+      )}
+
+      <View className="flex items-center">
         <RatingStars value={restaurant.rating} readOnly />
       </View>
     </View>

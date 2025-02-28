@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
 import { router, useGlobalSearchParams } from 'expo-router';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 export default function RestaurantEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
@@ -23,10 +24,11 @@ export default function RestaurantEditScreen() {
       name: '',
       comments: '',
       rating: undefined,
+      location: undefined,
     },
   });
 
-  const [location, setLocation] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
   const [removedImages, setRemovedImages] = useState<number[]>([]);
@@ -44,11 +46,13 @@ export default function RestaurantEditScreen() {
             name: restaurant.name,
             comments: restaurant.comments,
             rating: restaurant.rating,
+            location: restaurant.location,
           });
           setSelectedTags(restaurant.tags);
           setSelectedImages(
             restaurant.images.map((img: any) => ({ id: img.id, uri: img.url }))
           );
+          setLocation(restaurant.location);
         })
         .catch((error) => {
           Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
@@ -123,6 +127,8 @@ export default function RestaurantEditScreen() {
         />
 
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
+          <MapLocationPicker location={location} onLocationChange={setLocation} />
+
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
