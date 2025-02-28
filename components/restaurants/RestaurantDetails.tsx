@@ -10,10 +10,6 @@ interface RestaurantDetailsProps {
 }
 
 export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps) {
-  restaurant.location = {
-    latitude: 6.246403280038343,
-    longitude: -75.5852796882391
-  };
 
   return (
     <View className="p-4 h-full bg-white">
