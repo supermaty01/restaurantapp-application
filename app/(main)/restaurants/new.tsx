@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
 import { router } from 'expo-router';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -24,10 +25,11 @@ export default function RestaurantCreateScreen() {
       name: '',
       comments: '',
       rating: undefined,
+      location: undefined,
     },
   });
 
-  const [location, setLocation] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
@@ -90,10 +92,7 @@ export default function RestaurantCreateScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-        {/*
-          Si lo deseas, puedes reactivar tu componente LocationPicker
-          <LocationPicker location={location} onLocationChange={setLocation} />
-        */}
+          <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
