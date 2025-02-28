@@ -180,14 +180,7 @@ export default function DishDetailScreen() {
             <Text className="text-base font-bold text-primary">Detalles</Text>
             <View className="w-3 h-1 bg-primary mt-1" />
           </View>
-          {/* Tab Visitas */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Visitas</Text>
-          </View>
-          {/* Tab Platos */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Platos</Text>
-          </View>
+
         </View>
 
         {/* Sección de Detalles */}
