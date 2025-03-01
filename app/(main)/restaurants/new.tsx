@@ -143,7 +143,7 @@ export default function RestaurantCreateScreen() {
         {/* Botón para crear restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary py-3 rounded-md items-center disabled:bg-primary/30"
           disabled={loading}
         >
           {loading ? (
