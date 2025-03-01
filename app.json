@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/burger-logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.supermaty01.restaurantapp"
+      "package": "com.supermaty01.restaurantapp",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
