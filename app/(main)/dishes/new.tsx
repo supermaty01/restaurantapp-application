@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Picker } from '@react-native-picker/picker';
@@ -15,6 +15,9 @@ import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/schemas/dish';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useNewRestaurant } from '@/context/NewRestaurantContext';
+import { useNewDish } from '@/context/NewDishContext';
 
 export default function DishCreateScreen() {
   const {
@@ -38,6 +41,10 @@ export default function DishCreateScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
   const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
+  const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
+  const { useBackRedirect } = useGlobalSearchParams();
+  const { setNewDishId } = useNewDish();
+  const [loading, setLoading] = useState(false);
 
   // Fetch restaurants for dropdown
   useEffect(() => {
@@ -55,15 +62,24 @@ export default function DishCreateScreen() {
     };
 
     fetchRestaurants();
-  }, []);
+
+    if (newRestaurantId) {
+      setValue('restaurant_id', newRestaurantId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setNewRestaurantId(null);
+    }
+  }, [newRestaurantId]);
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
+    setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
         comments: data.comments?.trim() || '',
-        price: typeof data.price === 'string' ? parseFloat(String(data.price).replace(',', '.')) : data.price ?? undefined,
+        price: data.price,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),
       };
@@ -76,9 +92,20 @@ export default function DishCreateScreen() {
       }
 
       Alert.alert('Éxito', 'Plato creado correctamente.');
+      if (useBackRedirect && useBackRedirect === 'true') {
+        setNewDishId(dishId);
+        router.back();
+      } else {
+        router.replace({
+          pathname: '/dishes/[id]/view',
+          params: { id: dishId },
+        });
+      }
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el plato');
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,7 +145,7 @@ export default function DishCreateScreen() {
               control={control}
               name="restaurant_id"
               render={({ field: { onChange, value } }) => (
-                <View className="border border-gray-300 rounded-md overflow-hidden">
+                <View className="border border-gray-200 rounded-md overflow-hidden">
                   <Picker
                     selectedValue={value}
                     onValueChange={(itemValue) => onChange(Number(itemValue))}
@@ -140,34 +167,23 @@ export default function DishCreateScreen() {
           {errors.restaurant_id && (
             <Text className="text-red-500 mt-1">{errors.restaurant_id.message}</Text>
           )}
+          <TouchableOpacity className="mt-4" onPress={() => router.push({
+            pathname: '/restaurants/new',
+            params: { useBackRedirect: "true" },
+          })}>
+            <Text className="text-primary mb-6">¿No lo encuentras? Añade uno nuevo</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Precio */}
         <View className="mb-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-2">Precio</Text>
-          <Controller
+          <FormInput
             control={control}
             name="price"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <FormInput
-                  control={control}
-                  name="price"
-                  placeholder="Ingresa el precio"
-                  keyboardType="numeric"
-                  onChangeText={(text) => {
-                    // Allow only numbers and one decimal point
-                    const cleanedText = text.replace(/[^0-9.,]/g, '');
-                    onChange(cleanedText);
-                  }}
-                  value={value?.toString()}
-                />
-              </View>
-            )}
+            label="Precio"
+            placeholder="Ingresa el precio"
+            keyboardType="numeric"
           />
-          {errors.price && (
-            <Text className="text-red-500 mt-1">{errors.price.message}</Text>
-          )}
         </View>
 
         {/* Rating (opcional) */}
@@ -214,9 +230,14 @@ export default function DishCreateScreen() {
         {/* Botón para crear plato */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary py-3 rounded-md items-center disabled:bg-primary/30"
+          disabled={loading}
         >
-          <Text className="text-white font-bold">Guardar</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text className="text-white font-bold">Guardar</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
