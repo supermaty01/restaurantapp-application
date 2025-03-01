@@ -4,6 +4,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import FormInput from '@/components/FormInput';
+import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +20,7 @@ export default function NewVisitScreen() {
   } = useForm<VisitFormData>({
     resolver: zodResolver(visitSchema),
     defaultValues: {
-      visited_at: new Date().toISOString().split('T')[0], // Fecha actual por defecto
+      visited_at: new Date().toISOString().split('T')[0],
       comments: '',
       restaurant_id: undefined,
     },
@@ -58,15 +59,8 @@ export default function NewVisitScreen() {
       <Text className="text-2xl font-bold mb-4">Añadir visita</Text>
 
       <View className="bg-white p-4 rounded-md mb-8">
-        {/* Fecha */}
-        <FormInput
-          control={control}
-          name="visited_at"
-          label="Fecha"
-          placeholder="Selecciona la fecha"
-        />
+        <FormDatePicker control={control} name="visited_at" label="Fecha" />
 
-        {/* Comentarios */}
         <FormInput
           control={control}
           name="comments"
@@ -77,7 +71,6 @@ export default function NewVisitScreen() {
           numberOfLines={4}
         />
 
-        {/* Restaurante */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Restaurante</Text>
         <TouchableOpacity
           className="mt-2"
@@ -86,7 +79,6 @@ export default function NewVisitScreen() {
           <Text className="text-green-700 underline">¿No lo encuentras? Crea uno nuevo</Text>
         </TouchableOpacity>
 
-        {/* Platos */}
         <Text className="text-xl font-semibold text-gray-800 mt-4">Platos</Text>
         {selectedDishes.length > 0 && (
           <View className="flex-row flex-wrap mt-2">
@@ -116,13 +108,11 @@ export default function NewVisitScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Subida de imágenes */}
         <ImagesUploader
           images={selectedImages}
           onChangeImages={setSelectedImages}
         />
 
-        {/* Botones de acción */}
         <View className="flex-row justify-between mt-4">
           <TouchableOpacity
             className="border border-gray-600 py-2 px-4 rounded-md"
