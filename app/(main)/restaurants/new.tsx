@@ -12,8 +12,9 @@ import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
-import { router } from 'expo-router';
+import { router, useGlobalSearchParams } from 'expo-router';
 import MapLocationPicker from '@/components/MapLocationPicker';
+import { useNewRestaurant } from '@/context/NewRestaurantContext';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -34,6 +35,8 @@ export default function RestaurantCreateScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { useBackRedirect } = useGlobalSearchParams();
+  const { setNewRestaurantId } = useNewRestaurant();
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -54,10 +57,15 @@ export default function RestaurantCreateScreen() {
       }
 
       Alert.alert('Éxito', 'Restaurante creado correctamente.');
-      router.replace({
-        pathname: '/restaurants/[id]/view',
-        params: { id: restaurantId },
-      });
+      if (useBackRedirect && useBackRedirect === 'true') {
+        setNewRestaurantId(restaurantId);
+        router.back();
+      } else {
+        router.replace({
+          pathname: '/restaurants/[id]/view',
+          params: { id: restaurantId },
+        });
+      }
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el restaurante');
       console.log(error);
@@ -92,7 +100,7 @@ export default function RestaurantCreateScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-          <MapLocationPicker location={location} onLocationChange={setLocation} />
+        <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
@@ -135,7 +143,7 @@ export default function RestaurantCreateScreen() {
         {/* Botón para crear restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary py-3 rounded-md items-center disabled:bg-primary/30"
           disabled={loading}
         >
           {loading ? (

@@ -127,7 +127,7 @@ export default function RestaurantDetailScreen() {
               >
                 <Image
                   source={{ uri: img.url }}
-                  className="h-48"
+                  className="h-56"
                   style={{ width: screenWidth }}
                   resizeMode="cover"
                 />
@@ -135,8 +135,8 @@ export default function RestaurantDetailScreen() {
             ))
           ) : (
             <View
-              className="bg-gray-400 justify-center items-center"
-              style={{ width: screenWidth, height: 200 }}
+              className="bg-gray-400 justify-center items-center h-56"
+              style={{ width: screenWidth }}
             >
               <Text className="text-white mt-20">Sin imágenes</Text>
             </View>
