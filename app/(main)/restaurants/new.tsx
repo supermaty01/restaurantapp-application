@@ -92,7 +92,7 @@ export default function RestaurantCreateScreen() {
 
         {/* Ubicación (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-          <MapLocationPicker location={location} onLocationChange={setLocation} />
+        <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>

@@ -15,6 +15,7 @@ import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/schemas/dish';
+import { router } from 'expo-router';
 
 export default function DishCreateScreen() {
   const {
@@ -63,7 +64,7 @@ export default function DishCreateScreen() {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
         comments: data.comments?.trim() || '',
-        price: typeof data.price === 'string' ? parseFloat(String(data.price).replace(',', '.')) : data.price ?? undefined,
+        price: data.price,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),
       };
@@ -137,6 +138,11 @@ export default function DishCreateScreen() {
               )}
             />
           )}
+          <TouchableOpacity className="mt-4" onPress={() => router.push({
+            pathname: '/restaurants/new',
+          })}>
+            <Text className="text-primary mb-6">¿No lo encuentras? Añade uno nuevo</Text>
+          </TouchableOpacity>
           {errors.restaurant_id && (
             <Text className="text-red-500 mt-1">{errors.restaurant_id.message}</Text>
           )}
@@ -144,30 +150,13 @@ export default function DishCreateScreen() {
 
         {/* Precio */}
         <View className="mb-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-2">Precio</Text>
-          <Controller
+          <FormInput
             control={control}
             name="price"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View>
-                <FormInput
-                  control={control}
-                  name="price"
-                  placeholder="Ingresa el precio"
-                  keyboardType="numeric"
-                  onChangeText={(text) => {
-                    // Allow only numbers and one decimal point
-                    const cleanedText = text.replace(/[^0-9.,]/g, '');
-                    onChange(cleanedText);
-                  }}
-                  value={value?.toString()}
-                />
-              </View>
-            )}
+            label="Precio"
+            placeholder="Ingresa el precio"
+            keyboardType="numeric"
           />
-          {errors.price && (
-            <Text className="text-red-500 mt-1">{errors.price.message}</Text>
-          )}
         </View>
 
         {/* Rating (opcional) */}

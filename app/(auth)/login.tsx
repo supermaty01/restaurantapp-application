@@ -56,10 +56,10 @@ const LoginScreen: FC = () => {
           secureTextEntry
         />
 
-        <View className="flex-row justify-between items-center mb-4">
-          <TouchableOpacity>
+        <View className="flex-row justify-end items-center mb-4">
+          {/* <TouchableOpacity>
             <Text className="text-primary mb-6">¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity onPress={() => router.push('/register')}>
             <Text className="text-primary mb-6">Registrarme</Text>
           </TouchableOpacity>
