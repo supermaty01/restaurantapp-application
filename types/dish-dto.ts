@@ -5,7 +5,9 @@ export interface DishDTO {
   id: string;
   name: string;
   comments: string;
-  rating: number;
-  tags: TagDTO[];
-  images: ImageDTO[];
-}
+  price?: number;
+  rating?: number;
+  tags?: TagDTO[];
+  images?: ImageDTO[];
+} 
+   
