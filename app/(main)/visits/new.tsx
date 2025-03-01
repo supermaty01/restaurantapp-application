@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import FormInput from '@/components/FormInput';
@@ -11,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
 import { RestaurantDTO } from '@/types/restaurant-dto';
-import Tag from '@/components/tags/Tag';
 import { DishDTO } from '@/types/dish-dto';
 
 export default function NewVisitScreen() {
@@ -105,13 +103,13 @@ export default function NewVisitScreen() {
 
         <View className="flex-row justify-between mt-2">
           <TouchableOpacity
-            className="bg-green-500 py-2 px-4 rounded-md"
+            className="bg-primary py-2 px-4 rounded-md"
             onPress={() => setDishModalVisible(true)}
           >
             <Text className="text-white font-bold">Añadir existente</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="bg-green-700 py-2 px-4 rounded-md"
+            className="bg-primary py-2 px-4 rounded-md"
             onPress={() => Alert.alert('Crear plato', 'Aquí puedes implementar la lógica para crear un nuevo plato')}
           >
             <Text className="text-white font-bold">Crear nuevo plato</Text>
@@ -119,7 +117,6 @@ export default function NewVisitScreen() {
         </View>
 
         {/* Subida de imágenes */}
-        <Text className="text-xl font-semibold text-gray-800 mt-6">Fotos</Text>
         <ImagesUploader
           images={selectedImages}
           onChangeImages={setSelectedImages}
@@ -128,14 +125,14 @@ export default function NewVisitScreen() {
         {/* Botones de acción */}
         <View className="flex-row justify-between mt-4">
           <TouchableOpacity
-            className="border border-gray-600 py-3 px-6 rounded-md"
+            className="border border-gray-600 py-2 px-4 rounded-md"
             onPress={() => Alert.alert('Cancelar', '¿Seguro que quieres cancelar?')}
           >
             <Text className="text-gray-800 font-bold">Cancelar</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
-            className="bg-green-700 py-3 px-6 rounded-md"
+            className="bg-primary py-2 px-4 rounded-md"
           >
             <Text className="text-white font-bold">Guardar</Text>
           </TouchableOpacity>
