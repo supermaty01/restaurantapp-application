@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/schemas/dish';
 import { router } from 'expo-router';
+import { useNewRestaurant } from '@/context/NewRestaurantContext';
 
 export default function DishCreateScreen() {
   const {
@@ -39,6 +40,7 @@ export default function DishCreateScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
   const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
+  const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
 
   // Fetch restaurants for dropdown
   useEffect(() => {
@@ -56,7 +58,15 @@ export default function DishCreateScreen() {
     };
 
     fetchRestaurants();
-  }, []);
+
+    if (newRestaurantId) {
+      setValue('restaurant_id', newRestaurantId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setNewRestaurantId(null);
+    }
+  }, [newRestaurantId]);
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     try {
@@ -119,7 +129,7 @@ export default function DishCreateScreen() {
               control={control}
               name="restaurant_id"
               render={({ field: { onChange, value } }) => (
-                <View className="border border-gray-300 rounded-md overflow-hidden">
+                <View className="border border-gray-200 rounded-md overflow-hidden">
                   <Picker
                     selectedValue={value}
                     onValueChange={(itemValue) => onChange(Number(itemValue))}
@@ -138,14 +148,15 @@ export default function DishCreateScreen() {
               )}
             />
           )}
-          <TouchableOpacity className="mt-4" onPress={() => router.push({
-            pathname: '/restaurants/new',
-          })}>
-            <Text className="text-primary mb-6">¿No lo encuentras? Añade uno nuevo</Text>
-          </TouchableOpacity>
           {errors.restaurant_id && (
             <Text className="text-red-500 mt-1">{errors.restaurant_id.message}</Text>
           )}
+          <TouchableOpacity className="mt-4" onPress={() => router.push({
+            pathname: '/restaurants/new',
+            params: { useBackRedirect: "true" },
+          })}>
+            <Text className="text-primary mb-6">¿No lo encuentras? Añade uno nuevo</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Precio */}

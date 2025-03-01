@@ -12,8 +12,9 @@ import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
-import { router } from 'expo-router';
+import { router, useGlobalSearchParams } from 'expo-router';
 import MapLocationPicker from '@/components/MapLocationPicker';
+import { useNewRestaurant } from '@/context/NewRestaurantContext';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -34,6 +35,8 @@ export default function RestaurantCreateScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { useBackRedirect } = useGlobalSearchParams();
+  const { setNewRestaurantId } = useNewRestaurant();
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -54,10 +57,15 @@ export default function RestaurantCreateScreen() {
       }
 
       Alert.alert('Éxito', 'Restaurante creado correctamente.');
-      router.replace({
-        pathname: '/restaurants/[id]/view',
-        params: { id: restaurantId },
-      });
+      if (useBackRedirect && useBackRedirect === 'true') {
+        setNewRestaurantId(restaurantId);
+        router.back();
+      } else {
+        router.replace({
+          pathname: '/restaurants/[id]/view',
+          params: { id: restaurantId },
+        });
+      }
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el restaurante');
       console.log(error);
