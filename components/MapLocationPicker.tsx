@@ -29,11 +29,19 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
     }
   }, [location]);
 
-  // Obtener dirección legible a partir de coordenadas
   const fetchAddress = async (latitude: number, longitude: number) => {
     setLoadingAddress(true);
+
     try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso Denegado', 'Debes permitir el acceso a la ubicación en la configuración del dispositivo.');
+        setLoadingAddress(false);
+        return;
+      }
+
       const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+
       if (geocode.length > 0) {
         const addressInfo = geocode[0];
         const formattedAddress = `${addressInfo.street || 'Ubicación desconocida'}, ${addressInfo.city || ''}, ${addressInfo.region || ''}`;
@@ -45,8 +53,10 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
       console.error('Error obteniendo la dirección:', error);
       setAddress('Error al obtener la dirección');
     }
+
     setLoadingAddress(false);
   };
+
 
   // Manejar selección en el mapa (Solo si `editable` es true)
   const handleMapPress = (event: MapPressEvent) => {
