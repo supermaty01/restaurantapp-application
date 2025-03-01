@@ -47,7 +47,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
   }, [newRestaurantId]);
 
   return (
-    <View className="mb-4">
+    <View>
       {label && <Text className="text-base text-gray-800 mb-2">{label}</Text>}
 
       {isLoading ? (
@@ -86,7 +86,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
       {errors?.[name] && <Text className="text-red-500 mt-1">{errors[name].message}</Text>}
 
       <TouchableOpacity
-        className="mt-4"
+        className="mt-2"
         onPress={() =>
           router.push({
             pathname: '/restaurants/new',
@@ -94,7 +94,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
           })
         }
       >
-        <Text className="text-primary mb-6">¿No lo encuentras? Añade uno nuevo</Text>
+        <Text className="text-primary">¿No lo encuentras? Añade uno nuevo</Text>
       </TouchableOpacity>
     </View>
   );

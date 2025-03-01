@@ -103,15 +103,6 @@ export default function DishCreateScreen() {
           numberOfLines={4}
         />
 
-        {/* Restaurante (usando RestaurantPicker) ✅ */}
-        <RestaurantPicker 
-          control={control} 
-          setValue={setValue} 
-          name="restaurant_id" 
-          label="Restaurante" 
-          errors={errors} 
-        />
-
         {/* Precio */}
         <FormInput
           control={control}
@@ -121,8 +112,17 @@ export default function DishCreateScreen() {
           keyboardType="numeric"
         />
 
+        {/* Restaurante (usando RestaurantPicker) ✅ */}
+        <RestaurantPicker 
+          control={control} 
+          setValue={setValue} 
+          name="restaurant_id" 
+          label="Restaurante" 
+          errors={errors} 
+        />
+
         {/* Rating (opcional) */}
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars
             control={control}

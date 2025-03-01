@@ -6,6 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/components/ImagesUploader';
+import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
+
 import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
@@ -17,6 +19,8 @@ export default function NewVisitScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
+    formState: { errors },
   } = useForm<VisitFormData>({
     resolver: zodResolver(visitSchema),
     defaultValues: {
@@ -71,15 +75,15 @@ export default function NewVisitScreen() {
           numberOfLines={4}
         />
 
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Restaurante</Text>
-        <TouchableOpacity
-          className="mt-2"
-          onPress={() => Alert.alert('Crear restaurante', 'Aquí puedes implementar la lógica para crear uno nuevo')}
-        >
-          <Text className="text-green-700 underline">¿No lo encuentras? Crea uno nuevo</Text>
-        </TouchableOpacity>
+        <RestaurantPicker 
+          control={control} 
+          setValue={setValue} 
+          name="restaurant_id" 
+          label="Restaurante" 
+          errors={errors} 
+        />
 
-        <Text className="text-xl font-semibold text-gray-800 mt-4">Platos</Text>
+        <Text className="text-xl font-semibold text-gray-800 mt-2">Platos</Text>
         {selectedDishes.length > 0 && (
           <View className="flex-row flex-wrap mt-2">
             {selectedDishes.map((dish) => (
