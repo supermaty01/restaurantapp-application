@@ -54,9 +54,9 @@ export default function DishesScreen() {
         renderItem={({ item }) => (
           <DishItem
             name={item.name}
-            comments={item.comments || ""}
-            rating={item.rating || 0}
-            tags={item.tags || []}
+            comments={item.comments}
+            rating={item.rating}
+            tags={item.tags}
             images={item.images}
             onPress={() => router.push({
               pathname: '/dishes/[id]/view',

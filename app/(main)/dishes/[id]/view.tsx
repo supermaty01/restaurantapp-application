@@ -107,7 +107,7 @@ export default function DishDetailScreen() {
         </View>
       </View>
 
-      <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
+      <View className="bg-white my-4 mx-4 p-4 rounded-xl">
         <View className="flex-row mb-4">
           {/* Tab Detalles (seleccionado) */}
           <View className="flex-1 items-center">

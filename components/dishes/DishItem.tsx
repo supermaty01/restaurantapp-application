@@ -4,13 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { TagDTO } from '@/types/tag-dto';
 import { ImageDTO } from '@/types/image-dto';
 import Tag from '../tags/Tag';
+import RatingStars from '../RatingStars';
 
 interface DishItemProps {
   name: string;
-  comments: string;
+  comments: string | null;
   tags: TagDTO[];
-  rating: number; // Número de estrellas (0-5)
-  images?: ImageDTO[];
+  rating: number | null;
+  images: ImageDTO[];
   onPress?: () => void;
 }
 
@@ -22,11 +23,7 @@ const DishItem: React.FC<DishItemProps> = ({
   images,
   onPress,
 }) => {
-  // Generar un arreglo de 5 estrellas, marcando las activas según rating
-  const stars = Array.from({ length: 5 }, (_, i) => i < rating);
-
-  // Get first image URL if available
-  const imageUrl = images && images.length > 0 ? images[0].url : null;
+  const imageUrl = images.length > 0 ? images[0].url : null;
 
   return (
     <TouchableOpacity
@@ -54,9 +51,15 @@ const DishItem: React.FC<DishItemProps> = ({
             </Text>
             <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />
           </View>
-          <Text className="text-sm text-gray-600 mt-1 mb-2">
-            {comments}
-          </Text>
+          {comments ? (
+            <Text className="text-sm text-gray-600 mb-4">
+              {comments}
+            </Text>
+          ) : (
+            <Text className="text-sm italic text-gray-600 mb-4">
+              Sin comentarios
+            </Text>
+          )}
           <View className="flex-row flex-wrap mb-1">
             {tags.map((tag) => (
               <Tag key={tag.id} color={tag.color} name={tag.name} />
@@ -67,14 +70,7 @@ const DishItem: React.FC<DishItemProps> = ({
 
       {/* Rating stars in bottom right */}
       <View className="flex-row justify-end">
-        {stars.map((active, index) => (
-          <Ionicons
-            key={index}
-            name={active ? 'star' : 'star-outline'}
-            size={20}
-            color="#f4c430"
-          />
-        ))}
+        <RatingStars value={rating} size={18} gap={2} readOnly />
       </View>
     </TouchableOpacity>
   );

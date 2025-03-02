@@ -39,11 +39,11 @@ export default function RatingStars({
   };
 
   return value === null && !control ? (
-    <Text className="text-base italic text-gray-500 mb-4">
+    <Text className="text-base italic text-gray-500">
       Sin calificación
     </Text>
   ) : (
-    <View className="flex flex-row mb-4" style={{ gap }}>
+    <View className="flex flex-row" style={{ gap }}>
       {[1, 2, 3, 4, 5].map((star) => (
         <TouchableOpacity
           key={star}
