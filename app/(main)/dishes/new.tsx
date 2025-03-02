@@ -41,6 +41,8 @@ export default function DishCreateScreen() {
   const { useBackRedirect } = useGlobalSearchParams();
   const { setNewDishId } = useNewDish();
   const [loading, setLoading] = useState(false);
+  const [formattedPrice, setFormattedPrice] = useState("");
+  
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
