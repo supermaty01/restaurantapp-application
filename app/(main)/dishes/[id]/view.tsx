@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  Image,
-  Dimensions,
-} from 'react-native';
+import {View,Text,ScrollView,TouchableOpacity,Alert,ActivityIndicator,Image,Dimensions,} from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
@@ -178,13 +169,26 @@ export default function DishDetailScreen() {
           {/* Tab Detalles (seleccionado) */}
           <View className="flex-1 items-center">
             <Text className="text-base font-bold text-primary">Detalles</Text>
-            <View className="w-3 h-1 bg-primary mt-1" />
+            <View className="w-full h-1 bg-primary mt-1 "/>
           </View>
-
         </View>
 
         {/* Sección de Detalles */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Restaurante visitado</Text>
+        <TouchableOpacity
+          className="flex-row items-center py-3 border-b border-gray-200 mb-8"
+          onPress={() =>
+            router.push({ pathname: '/restaurants/[id]/view', params: { id: dish.restaurant.id } })
+          }
+        >
+          <View className="flex-1">
+            <Text className="text-base font-bold text-gray-800">{dish.restaurant.name}</Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={20} color="#999"/>
+        </TouchableOpacity> 
+
         {/* Descripción */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Comentarios</Text>
         {dish.comments ? (
           <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
         ) : (
@@ -194,6 +198,7 @@ export default function DishDetailScreen() {
         )}
 
         {/* Etiquetas */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Etiquetas</Text>
         {dish.tags?.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
             {dish.tags.map((tag) => (
@@ -207,6 +212,7 @@ export default function DishDetailScreen() {
         )}
 
         {/* Calificación (estrellas) */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Clasificación</Text>
         <View className="flex-row">
           <RatingStars
             value={dish.rating}

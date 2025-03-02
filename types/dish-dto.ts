@@ -5,7 +5,10 @@ export interface DishDTO {
   id: string;
   name: string;
   comments: string;
-  id_restaurant: number;
+  restaurant: {
+    id: number;
+    name: string;
+  };
   price: number;
   rating: number;
   tags: TagDTO[];
