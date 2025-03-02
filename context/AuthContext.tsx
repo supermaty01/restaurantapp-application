@@ -53,10 +53,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       setUserToken(token);
       return { success: true };
     } catch (error: any) {
-      console.error('Error en login', error);
+      const message = error.response ? error.response.data.message : error.message;
+      console.log('Error en login', message);
       return {
         success: false,
-        error: error.response ? error.response.data : error.message,
+        error: message,
       };
     }
   };
@@ -66,10 +67,11 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
       const response = await api.post('/auth/register', { ...body });
       return { success: true, data: response.data };
     } catch (error: any) {
-      console.error('Error en registro', error);
+      const message = error.response ? error.response.data.message : error.message;
+      console.log('Error en registro', message);
       return {
         success: false,
-        error: error.response ? error.response.data : error.message,
+        error: message,
       };
     }
   };
