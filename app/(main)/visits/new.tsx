@@ -7,9 +7,9 @@ import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/components/ImagesUploader';
 import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
+import DishPicker from '@/components/dishes/DishPicker';
 
 import api from '@/services/api';
-import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
 import { RestaurantDTO } from '@/types/restaurant-dto';
@@ -20,6 +20,7 @@ export default function NewVisitScreen() {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<VisitFormData>({
     resolver: zodResolver(visitSchema),
@@ -27,13 +28,13 @@ export default function NewVisitScreen() {
       visited_at: new Date().toISOString().split('T')[0],
       comments: '',
       restaurant_id: undefined,
+      dishes: [],
     },
   });
 
   const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantDTO | null>(null);
   const [selectedDishes, setSelectedDishes] = useState<DishDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [isDishModalVisible, setDishModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit: SubmitHandler<VisitFormData> = async (data) => {
@@ -87,34 +88,14 @@ export default function NewVisitScreen() {
           errors={errors} 
         />
 
-        <Text className="text-xl font-semibold text-gray-800 mt-2">Platos</Text>
-        {selectedDishes.length > 0 && (
-          <View className="flex-row flex-wrap mt-2">
-            {selectedDishes.map((dish) => (
-              <View key={dish.id} className="flex-row items-center bg-gray-200 p-2 rounded-md m-1">
-                <Text className="text-gray-800 mr-2">{dish.name}</Text>
-                <TouchableOpacity onPress={() => setSelectedDishes(selectedDishes.filter(d => d.id !== dish.id))}>
-                  <Ionicons name="close-circle" size={20} color="red" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <View className="flex-row justify-between mt-2">
-          <TouchableOpacity
-            className="bg-primary py-2 px-4 rounded-md"
-            onPress={() => setDishModalVisible(true)}
-          >
-            <Text className="text-white font-bold">Añadir existente</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-primary py-2 px-4 rounded-md"
-            onPress={() => Alert.alert('Crear plato', 'Aquí puedes implementar la lógica para crear un nuevo plato')}
-          >
-            <Text className="text-white font-bold">Crear nuevo plato</Text>
-          </TouchableOpacity>
-        </View>
+        <DishPicker 
+          control={control} 
+          name="dishes" 
+          restaurantId={watch('restaurant_id')}
+          errors={errors} 
+          selectedDishes={selectedDishes} 
+          setSelectedDishes={setSelectedDishes} 
+        />
 
         <ImagesUploader
           images={selectedImages}

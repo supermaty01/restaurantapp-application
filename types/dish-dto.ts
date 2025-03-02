@@ -2,7 +2,7 @@ import { ImageDTO } from "./image-dto";
 import { TagDTO } from "./tag-dto";
 
 export interface DishDTO {
-  id: string;
+  id: number;
   name: string;
   comments: string;
   restaurant: {
