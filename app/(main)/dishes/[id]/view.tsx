@@ -228,7 +228,7 @@ export default function DishDetailScreen() {
         )}
 
         {/* Calificación (estrellas) */}
-        <Text className="text-base font-bold text-gray-400 mb-2">Clasificación</Text>
+        <Text className="text-base font-bold text-gray-400 mb-2">Calificación</Text>
         <View className="flex-row">
           <RatingStars
             value={dish.rating}
