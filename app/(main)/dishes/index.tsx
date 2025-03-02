@@ -41,13 +41,10 @@ export default function DishesScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#e5eae0] p-4 relative">
+    <View className="flex-1 bg-[#e5eae0] px-4 pt-2 relative">
       {/* Encabezado con título y botón de filtro */}
-      <View className="flex-row items-center justify-between mb-4">
+      <View className="flex-row items-center justify-start mb-4">
         <Text className="text-2xl font-bold text-gray-800">Platos</Text>
-      {/*<TouchableOpacity>
-          <Ionicons name="filter-outline" size={24} color="#905c36" />
-        </TouchableOpacity>*/}
       </View>
 
       {/* Lista scrolleable de Platos */}
