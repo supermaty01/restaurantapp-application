@@ -67,6 +67,11 @@ export default function RestaurantsScreen() {
           />
         )}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View className="flex-1 justify-center items-center mt-10">
+            <Text className="text-base text-gray-800">No se encontraron restaurantes.</Text>
+          </View>
+        }
       />
       <TouchableOpacity
         onPress={() => router.push('/restaurants/new')}

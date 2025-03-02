@@ -34,7 +34,7 @@ export default function VisitsScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36"/>
+        <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }
@@ -61,12 +61,17 @@ export default function VisitsScreen() {
           />
         )}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View className="flex-1 justify-center items-center mt-10">
+            <Text className="text-base text-gray-800">No se encontraron visitas.</Text>
+          </View>
+        }
       />
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
       >
-        <Ionicons name="add" size={24} color="#fff"/>
+        <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
   );

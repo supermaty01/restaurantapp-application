@@ -34,14 +34,14 @@ export default function DishesScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-[#e5eae0] px-4 pt-2 relative">
+    <View className="flex-1 bg-muted px-4 pt-2 relative">
       {/* Encabezado con título y botón de filtro */}
       <View className="flex-row items-center justify-start mb-4">
         <Text className="text-2xl font-bold text-gray-800">Platos</Text>
@@ -50,13 +50,13 @@ export default function DishesScreen() {
       {/* Lista scrolleable de Platos */}
       <FlatList
         data={dishes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <DishItem
             name={item.name}
             comments={item.comments}
-            rating={item.rating}
-            tags={item.tags}
+            rating={item.rating || 0}
+            tags={item.tags || []}
             images={item.images}
             onPress={() => router.push({
               pathname: '/dishes/[id]/view',
@@ -65,6 +65,11 @@ export default function DishesScreen() {
           />
         )}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View className="flex-1 justify-center items-center mt-10">
+            <Text className="text-base text-gray-800">No se encontraron platos.</Text>
+          </View>
+        }
       />
       <TouchableOpacity
         onPress={() => router.push('/dishes/new')}
