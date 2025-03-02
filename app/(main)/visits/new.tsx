@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -34,8 +34,10 @@ export default function NewVisitScreen() {
   const [selectedDishes, setSelectedDishes] = useState<DishDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isDishModalVisible, setDishModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit: SubmitHandler<VisitFormData> = async (data) => {
+    setIsSubmitting(true);
     try {
       const payload = {
         visited_at: data.visited_at,
@@ -55,6 +57,8 @@ export default function NewVisitScreen() {
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear la visita');
       console.log(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -117,20 +121,17 @@ export default function NewVisitScreen() {
           onChangeImages={setSelectedImages}
         />
 
-        <View className="flex-row justify-between mt-4">
-          <TouchableOpacity
-            className="border border-gray-600 py-2 px-4 rounded-md"
-            onPress={() => Alert.alert('Cancelar', '¿Seguro que quieres cancelar?')}
-          >
-            <Text className="text-gray-800 font-bold">Cancelar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSubmit(onSubmit)}
-            className="bg-primary py-2 px-4 rounded-md"
-          >
+        <TouchableOpacity
+          onPress={handleSubmit(onSubmit)}
+          className={`mt-4 bg-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
             <Text className="text-white font-bold">Guardar</Text>
-          </TouchableOpacity>
-        </View>
+          )}
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
