@@ -7,16 +7,16 @@ import DishItem from '@/components/dishes/DishItem';
 import api from '@/services/api';
 import { DishDTO } from '@/types/dish-dto';
 
-export default function DishsScreen() {
+export default function DishesScreen() {
   const router = useRouter();
-  const [Dishs, setDishs] = useState<DishDTO[]>([]);
+  const [dishes, setDishes] = useState<DishDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const getDishs = async () => {
+  const getDishes = async () => {
     try {
       setIsLoading(true);
       const response = await api.get('/dishes');
-      setDishs(response.data.data);
+      setDishes(response.data.data);
     } catch (error: any) {
       console.error('Error fetching platos:', error);
       Alert.alert('Error', 'No se pudieron cargar los platos');
@@ -28,13 +28,13 @@ export default function DishsScreen() {
   // Se llama cada vez que la pantalla obtiene foco
   useFocusEffect(
     useCallback(() => {
-      getDishs();
+      getDishes();
     }, [])
   );
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-[#e5eae0] justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
@@ -49,7 +49,7 @@ export default function DishsScreen() {
 
       {/* Lista scrolleable de Platos */}
       <FlatList
-        data={Dishs}
+        data={dishes}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <DishItem
@@ -57,6 +57,7 @@ export default function DishsScreen() {
             comments={item.comments}
             rating={item.rating}
             tags={item.tags}
+            images={item.images}
             onPress={() => router.push({
               pathname: '/dishes/[id]/view',
               params: { id: item.id },

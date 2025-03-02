@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  Image,
-  Dimensions,
-} from 'react-native';
-import { useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
+import {View,Text,ScrollView,TouchableOpacity,Alert,ActivityIndicator,Image,Dimensions,} from 'react-native';
+import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
@@ -17,11 +8,15 @@ import RatingStars from '@/components/RatingStars';
 import { DishDTO } from '@/types/dish-dto';
 
 export default function DishDetailScreen() {
+
   const router = useRouter();
   const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
   const [dish, setDish] = useState<DishDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  
   const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
@@ -45,7 +40,7 @@ export default function DishDetailScreen() {
   function handleEdit() {
     router.push({
       pathname: '/dishes/[id]/edit',
-      params: { id },
+      params: { id: id?.toString() },
     })
   }
 
@@ -93,26 +88,57 @@ export default function DishDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-[#e5eae0]">
       {/* Carrusel de imágenes */}
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-      >
-        {dish.images.length > 0 ? (
-          dish.images.map((img) => (
-            <Image
-              key={img.id}
-              source={{ uri: img.url }}
+     <View>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={(e) => {
+            const offsetX = e.nativeEvent.contentOffset.x;
+            const index = Math.round(offsetX / screenWidth);
+            setCurrentImageIndex(index);
+          }}
+          scrollEventThrottle={16}
+        >
+          {dish.images.length > 0 ? (
+            dish.images.map((img, index) => (
+              <TouchableOpacity
+                key={img.id}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setCurrentImageIndex(index);
+                  setIsImageViewerVisible(true);
+                }}
+              >
+                <Image
+                  source={{ uri: img.url }}
+                  className="h-48"
+                  style={{ width: screenWidth }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View
+              className="bg-gray-400 justify-center items-center"
               style={{ width: screenWidth, height: 200 }}
-              resizeMode="cover"
+            >
+              <Text className="text-white mt-20">Sin imágenes</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Puntos de paginación del carrusel */}
+        <View className="flex-row justify-center items-center my-2">
+          {dish.images.map((_, index) => (
+            <View
+              key={index}
+              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
+                }`}
             />
-          ))
-        ) : (
-          <View style={{ width: screenWidth, height: 200, backgroundColor: '#ccc' }}>
-            <Text className="text-center text-white mt-20">Sin imágenes</Text>
-          </View>
-        )}
-      </ScrollView>
+          ))}
+        </View>
+      </View>
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
@@ -137,26 +163,42 @@ export default function DishDetailScreen() {
         </View>
       </View>
 
-      {/* Tabs (por ahora solo "Detalles") */}
       <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
         <View className="flex-row mb-4">
           {/* Tab Detalles (seleccionado) */}
           <View className="flex-1 items-center">
             <Text className="text-base font-bold text-primary">Detalles</Text>
-            <View className="w-3 h-1 bg-primary mt-1" />
-          </View>
-          {/* Tab Visitas */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Visitas</Text>
-          </View>
-          {/* Tab Platos */}
-          <View className="flex-1 items-center">
-            <Text className="text-base text-gray-500">Platos</Text>
+            <View className="w-full h-1 bg-primary mt-1 "/>
           </View>
         </View>
 
         {/* Sección de Detalles */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Restaurante visitado</Text>
+        <TouchableOpacity
+          className="flex-row items-center py-3 border-b border-gray-200 mb-8"
+          onPress={() =>
+            router.push({ pathname: '/restaurants/[id]/view', params: { id: dish.restaurant.id } })
+          }
+        >
+          <View className="flex-1">
+            <Text className="text-base font-bold text-gray-800">{dish.restaurant.name}</Text>
+          </View>
+          <Ionicons name="chevron-forward-outline" size={20} color="#999"/>
+        </TouchableOpacity> 
+
+        {/* Precio */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Precio</Text>
+        <Text className="text-xl font-bold text-primary mb-4">
+          {new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+          }).format(dish.price || 0)}
+        </Text>
+
+
         {/* Descripción */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Comentarios</Text>
         {dish.comments ? (
           <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
         ) : (
@@ -166,6 +208,7 @@ export default function DishDetailScreen() {
         )}
 
         {/* Etiquetas */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Etiquetas</Text>
         {dish.tags?.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
             {dish.tags.map((tag) => (
@@ -179,6 +222,7 @@ export default function DishDetailScreen() {
         )}
 
         {/* Calificación (estrellas) */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Clasificación</Text>
         <View className="flex-row">
           <RatingStars
             value={dish.rating}
