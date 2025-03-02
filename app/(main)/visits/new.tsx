@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,8 +12,8 @@ import DishPicker from '@/components/dishes/DishPicker';
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
-import { RestaurantDTO } from '@/types/restaurant-dto';
 import { DishDTO } from '@/types/dish-dto';
+import { router } from 'expo-router';
 
 export default function NewVisitScreen() {
   const {
@@ -32,10 +32,15 @@ export default function NewVisitScreen() {
     },
   });
 
-  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantDTO | null>(null);
   const [selectedDishes, setSelectedDishes] = useState<DishDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const restaurantId = watch('restaurant_id');
+
+  useEffect(() => {
+    setSelectedDishes([]);
+  }, [restaurantId]);
 
   const onSubmit: SubmitHandler<VisitFormData> = async (data) => {
     setIsSubmitting(true);
@@ -43,7 +48,7 @@ export default function NewVisitScreen() {
       const payload = {
         visited_at: data.visited_at,
         comments: data.comments?.trim() || '',
-        restaurant_id: selectedRestaurant?.id || null,
+        restaurant_id: data.restaurant_id,
         dishes: selectedDishes.map((dish) => dish.id),
       };
 
@@ -55,6 +60,8 @@ export default function NewVisitScreen() {
       }
 
       Alert.alert('Éxito', 'Visita creada correctamente.');
+
+      router.back();
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear la visita');
       console.log(error);
@@ -80,21 +87,22 @@ export default function NewVisitScreen() {
           numberOfLines={4}
         />
 
-        <RestaurantPicker 
-          control={control} 
-          setValue={setValue} 
-          name="restaurant_id" 
-          label="Restaurante" 
-          errors={errors} 
+        <RestaurantPicker
+          control={control}
+          setValue={setValue}
+          name="restaurant_id"
+          label="Restaurante"
+          errors={errors}
         />
 
-        <DishPicker 
-          control={control} 
-          name="dishes" 
-          restaurantId={watch('restaurant_id')}
-          errors={errors} 
-          selectedDishes={selectedDishes} 
-          setSelectedDishes={setSelectedDishes} 
+        <DishPicker
+          control={control}
+          name="dishes"
+          setValue={setValue}
+          restaurantId={restaurantId}
+          errors={errors}
+          selectedDishes={selectedDishes}
+          setSelectedDishes={setSelectedDishes}
         />
 
         <ImagesUploader
