@@ -1,26 +1,40 @@
 {
   "expo": {
-    "name": "restaurantapp",
+    "name": "RestaurantApp",
     "slug": "restaurantapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/burger-logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.supermaty01.restaurantapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/burger-logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.supermaty01.restaurantapp",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "MANAGE_DOCUMENTS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/burger-logo.png"
     },
     "plugins": [
       "expo-router",
@@ -37,8 +51,13 @@
     "experiments": {
       "typedRoutes": true
     },
-    "permissions": [
-      "ACCESS_FINE_LOCATION"
-    ]
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "acb4a328-034e-4fa5-8381-226436faaf98"
+      }
+    }
   }
 }
