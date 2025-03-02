@@ -98,7 +98,7 @@ export default function RestaurantEditScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#000" />
       </View>
     );
@@ -127,7 +127,7 @@ export default function RestaurantEditScreen() {
         />
 
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
-          <MapLocationPicker location={location} onLocationChange={setLocation} />
+        <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
@@ -169,7 +169,7 @@ export default function RestaurantEditScreen() {
         />
 
         <TouchableOpacity
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(onSubmit, console.log)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
           disabled={loading}
         >

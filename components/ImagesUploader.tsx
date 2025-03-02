@@ -85,7 +85,7 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
   return (
     <View className="mt-4">
       <Text className="text-xl font-bold mb-2">Fotos</Text>
-      <View className="flex-row gap-2">
+      <View className="flex-row gap-2 mb-4">
         <TouchableOpacity
           className="bg-gray-300 px-3 py-2 rounded-md"
           onPress={pickFromGallery}
