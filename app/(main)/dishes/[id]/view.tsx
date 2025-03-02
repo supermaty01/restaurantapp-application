@@ -163,7 +163,6 @@ export default function DishDetailScreen() {
         </View>
       </View>
 
-      {/* Tabs (por ahora solo "Detalles") */}
       <View className="bg-white mt-4 mx-4 p-4 rounded-xl">
         <View className="flex-row mb-4">
           {/* Tab Detalles (seleccionado) */}
@@ -186,6 +185,17 @@ export default function DishDetailScreen() {
           </View>
           <Ionicons name="chevron-forward-outline" size={20} color="#999"/>
         </TouchableOpacity> 
+
+        {/* Precio */}
+        <Text className="text-base font-bold text-gray-400 mb-2">Precio</Text>
+        <Text className="text-xl font-bold text-primary mb-4">
+          {new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+          }).format(dish.price || 0)}
+        </Text>
+
 
         {/* Descripción */}
         <Text className="text-base font-bold text-gray-400 mb-2">Comentarios</Text>

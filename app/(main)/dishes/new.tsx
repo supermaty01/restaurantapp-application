@@ -45,6 +45,8 @@ export default function DishCreateScreen() {
   const { useBackRedirect } = useGlobalSearchParams();
   const { setNewDishId } = useNewDish();
   const [loading, setLoading] = useState(false);
+  const [formattedPrice, setFormattedPrice] = useState("");
+  
 
   // Fetch restaurants for dropdown
   useEffect(() => {
@@ -177,15 +179,46 @@ export default function DishCreateScreen() {
 
         {/* Precio */}
         <View className="mb-4">
-          <FormInput
+          <Controller
             control={control}
             name="price"
-            label="Precio"
-            placeholder="Ingresa el precio"
-            keyboardType="numeric"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <View>
+                <FormInput
+                  control={control}
+                  name="price"
+                  placeholder="Ingresa el precio"
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    // Allow only numbers and a single decimal point
+                    const cleanedText = text.replace(/[^0-9]/g, '');
+                    
+                    // Convert to number and format as currency
+                    const formattedValue = new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      minimumFractionDigits: 0,
+                    }).format(cleanedText ? parseInt(cleanedText, 10) : 0);
+              
+                    onChange(cleanedText ? parseInt(cleanedText, 10) : 0); // Save as number
+                    setFormattedPrice(formattedValue); // Save formatted text for display
+                  }}
+                  onBlur={() => {
+                    // Ensure formatted price is displayed when the input loses focus
+                    setFormattedPrice(
+                      new Intl.NumberFormat("es-CO", {
+                        style: "currency",
+                        currency: "COP",
+                        minimumFractionDigits: 0,
+                      }).format(value || 0)
+                    );
+                  }}
+                  value={formattedPrice} // Display formatted price
+                />
+              </View>
+            )}
           />
         </View>
-
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
         <View className="flex justify-center items-center">
