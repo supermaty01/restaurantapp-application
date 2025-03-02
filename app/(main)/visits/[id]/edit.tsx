@@ -14,6 +14,7 @@ import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
 import { DishDTO } from '@/types/dish-dto';
+import { parse, format } from 'date-fns';
 
 export default function EditVisitScreen() {
   const { id } = useGlobalSearchParams();
@@ -42,25 +43,27 @@ export default function EditVisitScreen() {
       try {
         const response = await api.get(`/visits/${id}`);
         const visitData = response.data.data;
-        console.log(visitData);
-
+    
+        const parsedDate = parse(visitData.visited_at, "yyyy/MM/dd", new Date());
+        const formattedDate = format(parsedDate, "yyyy-MM-dd");
+    
         reset({
-          visited_at: visitData.visited_at,
+          visited_at: formattedDate,
           comments: visitData.comments,
           restaurant_id: visitData.restaurant.id.toString(),
           dishes: [],
         });
-
+    
         setSelectedImages(
           visitData.images.map((img: any) => ({ id: img.id, uri: img.url }))
         );
-
+    
         const dishesResponse = await api.get(`/visits/${id}/dishes`);
         const visitDishes = dishesResponse.data.data;
-
+    
         setSelectedDishes(visitDishes);
         setValue("dishes", visitDishes.map((dish: DishDTO) => dish.id.toString()), { shouldValidate: true });
-
+    
       } catch (error) {
         Alert.alert('Error', 'No se pudo cargar la visita.');
         console.error(error);
