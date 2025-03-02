@@ -5,7 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
 
 import api from '@/services/api';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantListDTO } from '@/types/restaurant-dto';
 import { useNewRestaurant } from '@/context/NewRestaurantContext';
 
 interface RestaurantPickerProps {
@@ -17,7 +17,7 @@ interface RestaurantPickerProps {
 }
 
 const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, name, label, errors }) => {
-  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
 

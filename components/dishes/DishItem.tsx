@@ -24,7 +24,7 @@ const DishItem: React.FC<DishItemProps> = ({
 }) => {
   // Generar un arreglo de 5 estrellas, marcando las activas según rating
   const stars = Array.from({ length: 5 }, (_, i) => i < rating);
-  
+
   // Get first image URL if available
   const imageUrl = images && images.length > 0 ? images[0].url : null;
 
@@ -45,7 +45,7 @@ const DishItem: React.FC<DishItemProps> = ({
         ) : (
           <View className="w-20 h-20 rounded-lg bg-gray-200 mr-3" />
         )}
-        
+
         {/* Content container */}
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
@@ -64,7 +64,7 @@ const DishItem: React.FC<DishItemProps> = ({
           </View>
         </View>
       </View>
-      
+
       {/* Rating stars in bottom right */}
       <View className="flex-row justify-end">
         {stars.map((active, index) => (

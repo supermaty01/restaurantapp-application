@@ -14,7 +14,7 @@ import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
 import RestaurantDetails from '@/components/restaurants/RestaurantDetails';
 import RestaurantVisits from '@/components/restaurants/RestaurantVisits';
 import RestaurantDishes from '@/components/restaurants/RestaurantDishes';
@@ -26,7 +26,7 @@ const screenWidth = Dimensions.get('window').width;
 export default function RestaurantDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
-  const [restaurant, setRestaurant] = useState<RestaurantDTO | null>(null);
+  const [restaurant, setRestaurant] = useState<RestaurantDetailsDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Estados para el carrusel y visualizador de imágenes

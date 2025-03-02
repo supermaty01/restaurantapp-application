@@ -15,7 +15,7 @@ import { VisitFormData, visitSchema } from '@/schemas/visit';
 import { DishDTO } from '@/types/dish-dto';
 import { router } from 'expo-router';
 
-export default function NewVisitScreen() {
+export default function VisitCreateScreen() {
   const {
     control,
     handleSubmit,

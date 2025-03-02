@@ -41,8 +41,6 @@ export default function DishCreateScreen() {
   const { useBackRedirect } = useGlobalSearchParams();
   const { setNewDishId } = useNewDish();
   const [loading, setLoading] = useState(false);
-  const [formattedPrice, setFormattedPrice] = useState("");
-  
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
@@ -115,12 +113,12 @@ export default function DishCreateScreen() {
         />
 
         {/* Restaurante (usando RestaurantPicker) ✅ */}
-        <RestaurantPicker 
-          control={control} 
-          setValue={setValue} 
-          name="restaurant_id" 
-          label="Restaurante" 
-          errors={errors} 
+        <RestaurantPicker
+          control={control}
+          setValue={setValue}
+          name="restaurant_id"
+          label="Restaurante"
+          errors={errors}
         />
 
         {/* Rating (opcional) */}

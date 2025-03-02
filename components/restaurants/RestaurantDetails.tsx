@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
 import MapLocationPicker from '@/components/MapLocationPicker';
 
 interface RestaurantDetailsProps {
-  restaurant: RestaurantDTO;
+  restaurant: RestaurantDetailsDTO;
 }
 
 export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps) {
@@ -40,7 +40,7 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
       )}
 
       <View className="flex items-center">
-        <RatingStars value={restaurant.rating} readOnly />
+        <RatingStars value={restaurant.rating || 0} readOnly />
       </View>
     </View>
   );

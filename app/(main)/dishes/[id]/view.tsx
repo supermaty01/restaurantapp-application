@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {View,Text,ScrollView,TouchableOpacity,Alert,ActivityIndicator,Image,Dimensions,} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Dimensions } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
@@ -13,10 +13,10 @@ export default function DishDetailScreen() {
   const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
   const [dish, setDish] = useState<DishDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
-  
+
   const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function DishDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-[#e5eae0]">
       {/* Carrusel de imágenes */}
-     <View>
+      <View>
         <ScrollView
           horizontal
           pagingEnabled
@@ -168,7 +168,7 @@ export default function DishDetailScreen() {
           {/* Tab Detalles (seleccionado) */}
           <View className="flex-1 items-center">
             <Text className="text-base font-bold text-primary">Detalles</Text>
-            <View className="w-full h-1 bg-primary mt-1 "/>
+            <View className="w-full h-1 bg-primary mt-1 " />
           </View>
         </View>
 
@@ -183,8 +183,8 @@ export default function DishDetailScreen() {
           <View className="flex-1">
             <Text className="text-base font-bold text-gray-800">{dish.restaurant.name}</Text>
           </View>
-          <Ionicons name="chevron-forward-outline" size={20} color="#999"/>
-        </TouchableOpacity> 
+          <Ionicons name="chevron-forward-outline" size={20} color="#999" />
+        </TouchableOpacity>
 
         {/* Precio */}
         <Text className="text-base font-bold text-gray-400 mb-2">Precio</Text>

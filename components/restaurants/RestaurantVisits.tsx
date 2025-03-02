@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '@/services/api';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
 import { ImageDTO } from '@/types/image-dto';
 
@@ -14,7 +14,7 @@ interface DishDTO {
 }
 
 interface RestaurantVisitsProps {
-  restaurant: RestaurantDTO;
+  restaurant: RestaurantDetailsDTO;
 }
 
 export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) {

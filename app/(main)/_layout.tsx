@@ -11,16 +11,15 @@ import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
 import TagsScreen from './tags';
-import NewRestaurantScreen from './restaurants/new';
+import RestaurantCreateScreen from './restaurants/new';
 import RestaurantDetailScreen from './restaurants/[id]/view';
 import RestaurantEditScreen from './restaurants/[id]/edit';
-import NewDishScreen from './dishes/new';
+import DishCreateScreen from './dishes/new';
 import DishDetailScreen from './dishes/[id]/view';
 import DishEditScreen from './dishes/[id]/edit';
-import NewVisitScreen from './visits/new';
+import VisitCreateScreen from './visits/new';
 import VisitDetailScreen from './visits/[id]/view';
 import VisitEditScreen from './visits/[id]/edit';
-import EditVisitScreen from './visits/[id]/edit';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -167,7 +166,7 @@ export default function MainLayout() {
         {/* Pantalla para añadir restaurante u otras: se mostrará la flecha */}
         <Stack.Screen
           name="restaurants/new"
-          component={NewRestaurantScreen}
+          component={RestaurantCreateScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen
@@ -182,7 +181,7 @@ export default function MainLayout() {
         />
         <Stack.Screen
           name="dishes/new"
-          component={NewDishScreen}
+          component={DishCreateScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen
@@ -197,7 +196,7 @@ export default function MainLayout() {
         />
         <Stack.Screen
           name="visits/new"
-          component={NewVisitScreen}
+          component={VisitCreateScreen}
           options={{ presentation: 'modal' }}
         />
         <Stack.Screen
@@ -207,7 +206,7 @@ export default function MainLayout() {
         />
         <Stack.Screen
           name="visits/[id]/edit"
-          component={EditVisitScreen}
+          component={VisitEditScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

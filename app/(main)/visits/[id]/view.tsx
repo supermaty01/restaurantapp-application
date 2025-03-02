@@ -85,7 +85,7 @@ export default function VisitDetailScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-muted">
-        <ActivityIndicator size="large" color="#905c36"/>
+        <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }
@@ -151,7 +151,7 @@ export default function VisitDetailScreen() {
             <View
               key={index}
               className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
-              }`}
+                }`}
             />
           ))}
         </View>
@@ -175,10 +175,10 @@ export default function VisitDetailScreen() {
         </Text>
         <View className="flex-row">
           <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
-            <Ionicons name="create-outline" size={20} color="#fff"/>
+            <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity className="bg-destructive p-2 rounded-full" onPress={handleDelete}>
-            <Ionicons name="trash-outline" size={20} color="#fff"/>
+            <Ionicons name="trash-outline" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -194,10 +194,10 @@ export default function VisitDetailScreen() {
           }}
         >
           <Tab.Screen name="Details" options={{ tabBarLabel: 'Detalles' }}>
-            {() => <VisitDetails visit={visit}/>}
+            {() => <VisitDetails visit={visit} />}
           </Tab.Screen>
           <Tab.Screen name="Dishes" options={{ tabBarLabel: 'Platos' }}>
-            {() => <VisitDishes visit={visit}/>}
+            {() => <VisitDishes visit={visit} />}
           </Tab.Screen>
         </Tab.Navigator>
       </View>

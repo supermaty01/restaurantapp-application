@@ -9,7 +9,7 @@ import TagSelectorModal from '@/components/tags/TagSelectorModal';
 import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantListDTO } from '@/types/restaurant-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
@@ -44,16 +44,16 @@ export default function DishEditScreen() {
   const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
   const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
   const [formattedPrice, setFormattedPrice] = useState("");
 
   // Format price for display
   const formatPrice = (price: number | string | undefined) => {
     if (price === undefined || price === '') return '';
-    
+
     const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
-    
+
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: "COP",
@@ -66,34 +66,34 @@ export default function DishEditScreen() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // First fetch the dish details to know which restaurant to preselect
         const dishResponse = await api.get(`/dishes/${id}`);
         const dishData = dishResponse.data.data;
-        
+
         // Then fetch restaurants for dropdown
         const restaurantsResponse = await api.get('/restaurants');
         setRestaurants(restaurantsResponse.data.data);
         setIsLoadingRestaurants(false);
-        
+
         // Set form values including restaurant_id
         setValue('name', dishData.name);
         setValue('restaurant_id', dishData.restaurant.id);
         setValue('comments', dishData.comments || '');
-        
+
         // Set price and formatted price
         if (dishData.price !== undefined && dishData.price !== null) {
           setValue('price', dishData.price);
           setFormattedPrice(formatPrice(dishData.price));
         }
-        
+
         setValue('rating', dishData.rating);
-        
+
         // Set tags and images
         if (dishData.tags && dishData.tags.length > 0) {
           setSelectedTags(dishData.tags);
         }
-        
+
         if (dishData.images && dishData.images.length > 0) {
           setSelectedImages(dishData.images.map((img: any) => ({
             id: img.id,
@@ -161,7 +161,7 @@ export default function DishEditScreen() {
   const handlePriceChange = (text: string) => {
     // Remove all non-numeric characters
     const numericValue = text.replace(/[^0-9]/g, '');
-    
+
     if (numericValue === '') {
       setValue('price', undefined);
       setFormattedPrice('');

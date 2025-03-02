@@ -5,11 +5,11 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import RestaurantItem from '@/components/restaurants/RestaurantItem';
 import api from '@/services/api';
-import { RestaurantDTO } from '@/types/restaurant-dto';
+import { RestaurantListDTO } from '@/types/restaurant-dto';
 
 export default function RestaurantsScreen() {
   const router = useRouter();
-  const [restaurants, setRestaurants] = useState<RestaurantDTO[]>([]);
+  const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getRestaurants = async () => {
@@ -53,12 +53,12 @@ export default function RestaurantsScreen() {
       {/* Lista scrolleable de restaurantes */}
       <FlatList
         data={restaurants}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <RestaurantItem
             name={item.name}
-            comments={item.comments}
-            rating={item.rating}
+            comments={item.comments || ""}
+            rating={item.rating || 0}
             tags={item.tags}
             onPress={() => router.push({
               pathname: '/restaurants/[id]/view',
