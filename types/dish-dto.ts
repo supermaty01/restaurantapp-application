@@ -5,6 +5,8 @@ export interface DishDTO {
   id: string;
   name: string;
   comments: string;
+  id_restaurant: number;
+  price: number;
   rating: number;
   tags: TagDTO[];
   images: ImageDTO[];
