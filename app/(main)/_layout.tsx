@@ -20,6 +20,7 @@ import DishEditScreen from './dishes/[id]/edit';
 import NewVisitScreen from './visits/new';
 import VisitDetailScreen from './visits/[id]/view';
 import VisitEditScreen from './visits/[id]/edit';
+import EditVisitScreen from './visits/[id]/edit';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -206,7 +207,7 @@ export default function MainLayout() {
         />
         <Stack.Screen
           name="visits/[id]/edit"
-          component={VisitEditScreen}
+          component={EditVisitScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

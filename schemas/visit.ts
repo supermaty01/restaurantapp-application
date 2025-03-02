@@ -6,7 +6,9 @@ export const visitSchema = z.object({
   restaurant_id: z.string({required_error: 'Debes seleccionar un restaurante'}),
   dishes: z.array(z.number({
     required_error: 'Debes seleccionar al menos un plato',
-  })).min(1, 'Debes seleccionar al menos un plato'),
+  })).min(1, 'Debes seleccionar al menos un plato').or(z.array(z.string({
+    required_error: 'Debes seleccionar al menos un plato',
+  })).min(1, 'Debes seleccionar al menos un plato')),
 });
 
 export type VisitFormData = z.infer<typeof visitSchema>;
