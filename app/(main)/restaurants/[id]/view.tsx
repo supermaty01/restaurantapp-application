@@ -5,33 +5,24 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Image,
-  Dimensions,
-  ScrollView,
-  Modal,
 } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
 import RestaurantDetails from '@/components/restaurants/RestaurantDetails';
 import RestaurantVisits from '@/components/restaurants/RestaurantVisits';
 import RestaurantDishes from '@/components/restaurants/RestaurantDishes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { ImageDisplay } from '@/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();
-const screenWidth = Dimensions.get('window').width;
 
 export default function RestaurantDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
   const [restaurant, setRestaurant] = useState<RestaurantDetailsDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Estados para el carrusel y visualizador de imágenes
-  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchRestaurant();
@@ -102,71 +93,7 @@ export default function RestaurantDetailScreen() {
 
   return (
     <View className="flex-1 bg-muted">
-      {/* Carrusel de imágenes */}
-      <View>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={(e) => {
-            const offsetX = e.nativeEvent.contentOffset.x;
-            const index = Math.round(offsetX / screenWidth);
-            setCurrentImageIndex(index);
-          }}
-          scrollEventThrottle={16}
-        >
-          {restaurant.images.length > 0 ? (
-            restaurant.images.map((img, index) => (
-              <TouchableOpacity
-                key={img.id}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setCurrentImageIndex(index);
-                  setIsImageViewerVisible(true);
-                }}
-              >
-                <Image
-                  source={{ uri: img.url }}
-                  className="h-56"
-                  style={{ width: screenWidth }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View
-              className="bg-gray-400 justify-center items-center h-56"
-              style={{ width: screenWidth }}
-            >
-              <Text className="text-white mt-20">Sin imágenes</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Puntos de paginación del carrusel */}
-        <View className="flex-row justify-center items-center my-2">
-          {restaurant.images.map((_, index) => (
-            <View
-              key={index}
-              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
-                }`}
-            />
-          ))}
-        </View>
-      </View>
-
-      {/* Visualizador de imágenes expandido con react-native-image-zoom-viewer */}
-      <Modal visible={isImageViewerVisible} transparent={true}>
-        <ImageViewer
-          imageUrls={restaurant.images.map((img) => ({ url: img.url }))}
-          index={currentImageIndex}
-          onCancel={() => setIsImageViewerVisible(false)}
-          enableSwipeDown={true}
-          onSwipeDown={() => setIsImageViewerVisible(false)}
-          saveToLocalByLongPress={false}
-          backgroundColor='rgba(0, 0, 0, 0.9)'
-        />
-      </Modal>
+      <ImageDisplay images={restaurant.images} />
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">

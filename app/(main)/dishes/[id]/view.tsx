@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
 import { DishDetailsDTO } from '@/types/dish-dto';
+import { ImageDisplay } from '@/components/ImageDisplay';
 
 export default function DishDetailScreen() {
 
@@ -14,11 +15,6 @@ export default function DishDetailScreen() {
   const [dish, setDish] = useState<DishDetailsDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const screenWidth = Dimensions.get('window').width;
-
   useEffect(() => {
     fetchDish();
   }, []);
@@ -26,7 +22,6 @@ export default function DishDetailScreen() {
   async function fetchDish() {
     try {
       setIsLoading(true);
-      console.log('Fetching dish:', id);
       const response = await api.get(`/dishes/${id}`);
       setDish(response.data.data);
     } catch (error) {
@@ -38,7 +33,7 @@ export default function DishDetailScreen() {
   }
 
   function handleEdit() {
-    router.push({
+    router.replace({
       pathname: '/dishes/[id]/edit',
       params: { id: id?.toString() },
     })
@@ -87,58 +82,7 @@ export default function DishDetailScreen() {
 
   return (
     <ScrollView className="flex-1 bg-muted">
-      {/* Carrusel de imágenes */}
-      <View>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={(e) => {
-            const offsetX = e.nativeEvent.contentOffset.x;
-            const index = Math.round(offsetX / screenWidth);
-            setCurrentImageIndex(index);
-          }}
-          scrollEventThrottle={16}
-        >
-          {dish.images.length > 0 ? (
-            dish.images.map((img, index) => (
-              <TouchableOpacity
-                key={img.id}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setCurrentImageIndex(index);
-                  setIsImageViewerVisible(true);
-                }}
-              >
-                <Image
-                  source={{ uri: img.url }}
-                  className="h-48"
-                  style={{ width: screenWidth }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View
-              className="bg-gray-400 justify-center items-center"
-              style={{ width: screenWidth, height: 200 }}
-            >
-              <Text className="text-white mt-20">Sin imágenes</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Puntos de paginación del carrusel */}
-        <View className="flex-row justify-center items-center my-2">
-          {dish.images.map((_, index) => (
-            <View
-              key={index}
-              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
-                }`}
-            />
-          ))}
-        </View>
-      </View>
+      <ImageDisplay images={dish.images} />
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
