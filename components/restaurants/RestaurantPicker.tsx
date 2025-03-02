@@ -62,18 +62,18 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
             <View className="border border-gray-200 rounded-md">
               <Picker
                 selectedValue={value}
-                onValueChange={(itemValue) => onChange(String(itemValue))}
+                onValueChange={(itemValue) => onChange(itemValue)}
               >
                 <Picker.Item
                   label="Selecciona un restaurante"
-                  value={undefined}
+                  value={-1}
                   style={{ color: '#6b7280;', fontSize: 15 }}
                 />
                 {restaurants.map((restaurant) => (
                   <Picker.Item
                     key={restaurant.id}
                     label={restaurant.name}
-                    value={String(restaurant.id)}
+                    value={restaurant.id}
                     style={{ color: '#6b7280;', fontSize: 15 }}
                   />
                 ))}

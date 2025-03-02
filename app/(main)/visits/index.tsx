@@ -53,7 +53,7 @@ export default function VisitsScreen() {
             imageUrl={item.images && item.images.length > 0 ? item.images[0].url : null}
             date={item.visited_at}
             title={item.restaurant.name}
-            description={item.comments}
+            comments={item.comments}
             onPress={() => router.push({
               pathname: '/visits/[id]/view',
               params: { id: item.id },

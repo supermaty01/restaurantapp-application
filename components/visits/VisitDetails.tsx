@@ -22,7 +22,7 @@ export default function VisitDetails({ visit }: VisitDetailsProps) {
         <View className="flex-1">
           <Text className="text-base font-bold text-gray-800">{visit.restaurant.name}</Text>
         </View>
-        <Ionicons name="chevron-forward-outline" size={20} color="#999"/>
+        <Ionicons name="chevron-forward-outline" size={20} color="#999" />
       </TouchableOpacity>
 
 
@@ -33,7 +33,7 @@ export default function VisitDetails({ visit }: VisitDetailsProps) {
         </Text>
       ) : (
         <Text className="text-base italic text-[#999] mb-4 py-3">
-          Sin descripción
+          Sin comentarios
         </Text>
       )}
     </View>

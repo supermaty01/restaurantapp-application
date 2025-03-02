@@ -5,17 +5,17 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
-import { DishDTO } from '@/types/dish-dto';
+import { DishDetailsDTO } from '@/types/dish-dto';
 
 export default function DishDetailScreen() {
 
   const router = useRouter();
   const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
-  const [dish, setDish] = useState<DishDTO | null>(null);
+  const [dish, setDish] = useState<DishDetailsDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -71,7 +71,7 @@ export default function DishDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0]">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
@@ -79,14 +79,14 @@ export default function DishDetailScreen() {
 
   if (!dish) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#e5eae0] p-4">
+      <View className="flex-1 justify-center items-center bg-muted p-4">
         <Text className="text-base text-gray-800">No se encontró el Plato</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0]">
+    <ScrollView className="flex-1 bg-muted">
       {/* Carrusel de imágenes */}
       <View>
         <ScrollView
@@ -188,22 +188,28 @@ export default function DishDetailScreen() {
 
         {/* Precio */}
         <Text className="text-base font-bold text-gray-400 mb-2">Precio</Text>
-        <Text className="text-xl font-bold text-primary mb-4">
-          {new Intl.NumberFormat("es-CO", {
-            style: "currency",
-            currency: "COP",
-            minimumFractionDigits: 0,
-          }).format(dish.price || 0)}
-        </Text>
+        {dish.price ? (
+          <Text className="text-xl font-bold text-primary mb-4">
+            {new Intl.NumberFormat("es-CO", {
+              style: "currency",
+              currency: "COP",
+              minimumFractionDigits: 0,
+            }).format(dish.price)}
+          </Text>
 
+        ) : (
+          <Text className="text-base italic text-gray-500 mb-4">
+            Sin precio
+          </Text>
+        )}
 
-        {/* Descripción */}
+        {/* Comentarios */}
         <Text className="text-base font-bold text-gray-400 mb-2">Comentarios</Text>
         {dish.comments ? (
           <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
         ) : (
           <Text className="text-base italic text-gray-500 mb-4">
-            Sin descripción
+            Sin comentarios
           </Text>
         )}
 
@@ -216,7 +222,7 @@ export default function DishDetailScreen() {
             ))}
           </View>
         ) : (
-          <Text className="text-sm italic text-gray-500 mb-4">
+          <Text className="text-base italic text-gray-500 mb-4">
             Sin etiquetas
           </Text>
         )}

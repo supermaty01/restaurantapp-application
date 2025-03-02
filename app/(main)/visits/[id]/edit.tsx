@@ -112,9 +112,8 @@ export default function VisitEditScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#000" />
-        <Text className="mt-2 text-gray-600">Cargando...</Text>
+      <View className="flex-1 bg-muted justify-center items-center">
+        <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }

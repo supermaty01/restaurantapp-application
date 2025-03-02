@@ -57,8 +57,8 @@ export default function RestaurantsScreen() {
         renderItem={({ item }) => (
           <RestaurantItem
             name={item.name}
-            comments={item.comments || ""}
-            rating={item.rating || 0}
+            comments={item.comments}
+            rating={item.rating}
             tags={item.tags}
             onPress={() => router.push({
               pathname: '/restaurants/[id]/view',

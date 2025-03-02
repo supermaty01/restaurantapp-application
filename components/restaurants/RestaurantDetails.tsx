@@ -19,7 +19,7 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
         </Text>
       ) : (
         <Text className="text-base italic text-[#999] mb-4">
-          Sin descripción
+          Sin comentarios
         </Text>
       )}
 
@@ -40,7 +40,7 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
       )}
 
       <View className="flex items-center">
-        <RatingStars value={restaurant.rating || 0} readOnly />
+        <RatingStars value={restaurant.rating} readOnly />
       </View>
     </View>
   );

@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useController, Control } from 'react-hook-form';
 
 interface RatingStarsProps {
   control?: Control<any>;
   name?: string;
-  value?: number;
+  value?: number | null;
   readOnly?: boolean;
+  size?: number;
+  gap?: number;
 }
 
 export default function RatingStars({
@@ -15,6 +17,8 @@ export default function RatingStars({
   name,
   value,
   readOnly = false,
+  size = 24,
+  gap = 4,
 }: RatingStarsProps) {
   let ratingValue = 0;
   let onChange = (val: number) => { };
@@ -34,8 +38,12 @@ export default function RatingStars({
     onChange(starIndex);
   };
 
-  return (
-    <View className="flex flex-row mb-4">
+  return value === null && !control ? (
+    <Text className="text-base italic text-gray-500 mb-4">
+      Sin calificación
+    </Text>
+  ) : (
+    <View className="flex flex-row mb-4" style={{ gap }}>
       {[1, 2, 3, 4, 5].map((star) => (
         <TouchableOpacity
           key={star}
@@ -44,9 +52,8 @@ export default function RatingStars({
         >
           <Ionicons
             name={star <= ratingValue ? 'star' : 'star-outline'}
-            size={24}
+            size={size}
             color="#f4c430"
-            style={{ marginRight: 4 }}
           />
         </TouchableOpacity>
       ))}

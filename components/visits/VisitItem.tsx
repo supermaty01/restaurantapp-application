@@ -6,7 +6,7 @@ interface VisitItemProps {
   imageUrl: string | null;
   date: string;
   title: string;
-  description: string;
+  comments: string;
   onPress?: () => void;
 }
 
@@ -14,7 +14,7 @@ const VisitItem: React.FC<VisitItemProps> = ({
   imageUrl,
   date,
   title,
-  description,
+  comments,
   onPress,
 }) => {
   return (
@@ -30,16 +30,16 @@ const VisitItem: React.FC<VisitItemProps> = ({
           resizeMode="cover"
         />
       ) : (
-        <View className="w-14 h-14 rounded bg-gray-300 mr-3"/>
+        <View className="w-14 h-14 rounded bg-gray-300 mr-3" />
       )}
       <View className="flex-1">
         <Text className="text-sm font-bold text-gray-800">
           {date} - <Text className="text-gray-900">{title}</Text>
         </Text>
-        <Text className="text-xs text-gray-600">{description}</Text>
+        <Text className="text-xs text-gray-600">{comments}</Text>
       </View>
 
-      <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b"/>
+      <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />
     </TouchableOpacity>
   );
 };

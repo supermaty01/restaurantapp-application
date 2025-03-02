@@ -38,7 +38,7 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );

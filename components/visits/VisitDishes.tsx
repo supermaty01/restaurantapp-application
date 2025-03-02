@@ -10,7 +10,7 @@ import { VisitDTO } from '@/types/visit-dto'
 interface DishDTO {
   id: number;
   name: string;
-  description: string;
+  comments: string;
   rating: number;
   tags: TagDTO[];
   images: ImageDTO[];
@@ -45,7 +45,7 @@ export default function VisitDishes({ visit }: VisitDishesProps) {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 bg-muted justify-center items-center">
         <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
@@ -76,7 +76,7 @@ export default function VisitDishes({ visit }: VisitDishesProps) {
               )}
               <View className="flex-1">
                 <Text className="text-base font-bold text-gray-800">{item.name}</Text>
-                <Text className="text-sm text-gray-500">{item.description}</Text>
+                <Text className="text-sm text-gray-500">{item.comments}</Text>
               </View>
               <Ionicons name="chevron-forward-outline" size={20} color="#999" />
             </TouchableOpacity>

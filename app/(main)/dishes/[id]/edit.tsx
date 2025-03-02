@@ -37,7 +37,6 @@ export default function DishEditScreen() {
   });
 
   const watchedPrice = watch('price');
-  const watchedRestaurantId = watch('restaurant_id');
 
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
@@ -175,7 +174,7 @@ export default function DishEditScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#000" />
+        <ActivityIndicator size="large" color="#905c36" />
       </View>
     );
   }

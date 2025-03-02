@@ -5,11 +5,11 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import DishItem from '@/components/dishes/DishItem';
 import api from '@/services/api';
-import { DishDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/types/dish-dto';
 
 export default function DishesScreen() {
   const router = useRouter();
-  const [dishes, setDishes] = useState<DishDTO[]>([]);
+  const [dishes, setDishes] = useState<DishListDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getDishes = async () => {
@@ -54,7 +54,7 @@ export default function DishesScreen() {
         renderItem={({ item }) => (
           <DishItem
             name={item.name}
-            comments={item.comments}
+            comments={item.comments || ""}
             rating={item.rating || 0}
             tags={item.tags || []}
             images={item.images}

@@ -110,7 +110,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
             <Text className="text-lg font-bold mb-3">Seleccionar Platos</Text>
 
             {isLoading ? (
-              <ActivityIndicator size="large" color="#000" />
+              <ActivityIndicator size="large" color="#905c36" />
             ) : dishes.length === 0 ? (
               <Text className="text-gray-500 text-center mt-4">No hay platos disponibles</Text>
             ) : (
