@@ -17,7 +17,7 @@ import { DishListDTO } from '@/types/dish-dto';
 import { parse, format } from 'date-fns';
 
 export default function VisitEditScreen() {
-  const { id } = useGlobalSearchParams();
+  const { id } = useGlobalSearchParams<{ id: string }>();
   const router = useRouter();
 
   const {
@@ -103,7 +103,10 @@ export default function VisitEditScreen() {
       }
 
       Alert.alert('Éxito', 'Visita actualizada correctamente.');
-      router.back();
+      router.replace({
+        pathname: '/visits/[id]/view',
+        params: { id },
+      });
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar la visita.');
       console.log(error);
