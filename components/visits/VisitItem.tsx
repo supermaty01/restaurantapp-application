@@ -36,7 +36,15 @@ const VisitItem: React.FC<VisitItemProps> = ({
         <Text className="text-sm font-bold text-gray-800">
           {date} - <Text className="text-gray-900">{title}</Text>
         </Text>
-        <Text className="text-xs text-gray-600">{comments}</Text>
+        {comments ? (
+          <Text className="text-sm text-gray-600 mb-4">
+            {comments}
+          </Text>
+        ) : (
+          <Text className="text-sm italic text-gray-600 mb-4">
+            Sin comentarios
+          </Text>
+        )}
       </View>
 
       <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />

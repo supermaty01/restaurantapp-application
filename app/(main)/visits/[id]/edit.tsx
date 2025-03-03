@@ -13,7 +13,7 @@ import DishPicker from '@/components/dishes/DishPicker';
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
-import { DishDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/types/dish-dto';
 import { parse, format } from 'date-fns';
 
 export default function VisitEditScreen() {
@@ -31,7 +31,7 @@ export default function VisitEditScreen() {
     resolver: zodResolver(visitSchema),
   });
 
-  const [selectedDishes, setSelectedDishes] = useState<DishDTO[]>([]);
+  const [selectedDishes, setSelectedDishes] = useState<DishListDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
   const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function VisitEditScreen() {
         reset({
           visited_at: formattedDate,
           comments: visitData.comments,
-          restaurant_id: visitData.restaurant.id.toString(),
+          restaurant_id: visitData.restaurant.id,
           dishes: [],
         });
 
@@ -62,7 +62,7 @@ export default function VisitEditScreen() {
         const visitDishes = dishesResponse.data.data;
 
         setSelectedDishes(visitDishes);
-        setValue("dishes", visitDishes.map((dish: DishDTO) => dish.id.toString()), { shouldValidate: true });
+        setValue("dishes", visitDishes.map((dish: DishListDTO) => dish.id.toString()), { shouldValidate: true });
 
       } catch (error) {
         Alert.alert('Error', 'No se pudo cargar la visita.');

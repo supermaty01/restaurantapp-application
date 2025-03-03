@@ -5,16 +5,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import api from '@/services/api';
-import { DishDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/types/dish-dto';
 
 interface DishPickerProps {
   control: Control<any>;
   name: string;
   setValue: UseFormSetValue<any>;
-  restaurantId: string | undefined;
+  restaurantId: number | undefined;
   errors?: any;
-  selectedDishes: DishDTO[];
-  setSelectedDishes: (dishes: DishDTO[]) => void;
+  selectedDishes: DishListDTO[];
+  setSelectedDishes: (dishes: DishListDTO[]) => void;
 }
 
 const DishPicker: React.FC<DishPickerProps> = ({
@@ -25,7 +25,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
   selectedDishes,
   setSelectedDishes,
 }) => {
-  const [dishes, setDishes] = useState<DishDTO[]>([]);
+  const [dishes, setDishes] = useState<DishListDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const router = useRouter();
@@ -48,7 +48,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
     fetchDishes();
   }, [restaurantId]);
 
-  const handleAddDish = (dish: DishDTO) => {
+  const handleAddDish = (dish: DishListDTO) => {
     if (!selectedDishes.some(d => d.id === dish.id)) {
       const newSelectedDishes = [...selectedDishes, dish];
       setSelectedDishes(newSelectedDishes);

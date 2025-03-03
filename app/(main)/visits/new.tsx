@@ -12,7 +12,7 @@ import DishPicker from '@/components/dishes/DishPicker';
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/schemas/visit';
-import { DishDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/types/dish-dto';
 import { router } from 'expo-router';
 
 export default function VisitCreateScreen() {
@@ -32,7 +32,7 @@ export default function VisitCreateScreen() {
     },
   });
 
-  const [selectedDishes, setSelectedDishes] = useState<DishDTO[]>([]);
+  const [selectedDishes, setSelectedDishes] = useState<DishListDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,7 +47,7 @@ export default function VisitCreateScreen() {
     try {
       const payload = {
         visited_at: data.visited_at,
-        comments: data.comments?.trim() || '',
+        comments: data.comments?.trim() || null,
         restaurant_id: data.restaurant_id,
         dishes: selectedDishes.map((dish) => dish.id),
       };
