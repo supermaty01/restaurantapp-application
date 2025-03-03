@@ -117,7 +117,7 @@ export default function DishCreateScreen() {
           control={control}
           setValue={setValue}
           name="restaurant_id"
-          fixedValue={true}
+          fixedValue={!!restaurantId}
           label="Restaurante"
           errors={errors}
         />
