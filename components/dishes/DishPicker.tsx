@@ -85,7 +85,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
 
               <TouchableOpacity
                 onPress={() => handleRemoveDish(dish.id)}
-                className="ml-3 p-2 bg-red-700 rounded-lg"
+                className="ml-3 p-2 bg-destructive rounded-lg"
               >
                 <Ionicons name="close" size={23} color="white" />
               </TouchableOpacity>

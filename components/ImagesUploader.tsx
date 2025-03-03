@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
 interface ImagesUploaderBaseProps {
@@ -29,17 +29,37 @@ interface ImagesUploaderEditProps extends ImagesUploaderBaseProps {
 
 type ImagesUploaderProps = ImagesUploaderCreateProps | ImagesUploaderEditProps;
 
+const openAppSettings = () => {
+  Linking.openSettings().catch(() => {
+    Alert.alert('Error', 'No se pudo abrir la configuración de la aplicación.');
+  });
+};
+
 export default function ImagesUploader(props: ImagesUploaderProps) {
   const { disabled } = props;
   const isEdit = props.isEdit === true;
 
   const pickFromGallery = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        'Permiso denegado',
+        'Se requieren permisos para acceder a la galería. ¿Deseas ir a la configuración para habilitarlos?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Abrir Configuración', onPress: openAppSettings }
+        ]
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
       quality: 0.5,
       allowsMultipleSelection: true,
       mediaTypes: ["images"],
     });
+
     if (!result.canceled && result.assets?.length) {
       if (isEdit) {
         const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
@@ -52,10 +72,24 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
   };
 
   const pickFromCamera = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        'Permiso denegado',
+        'Se requieren permisos para acceder a la cámara. ¿Deseas ir a la configuración para habilitarlos?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Abrir Configuración', onPress: openAppSettings }
+        ]
+      );
+      return;
+    }
+
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: false,
       quality: 0.5,
     });
+
     if (!result.canceled && result.assets?.length) {
       if (isEdit) {
         const newImages = result.assets.map((asset) => ({ uri: asset.uri }));

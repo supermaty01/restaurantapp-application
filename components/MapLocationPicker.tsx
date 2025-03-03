@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Linking } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,12 @@ interface MapLocationPickerProps {
   onLocationChange?: (location: { latitude: number; longitude: number } | null) => void;
   editable?: boolean;
 }
+
+const openAppSettings = () => {
+  Linking.openSettings().catch(() => {
+    Alert.alert('Error', 'No se pudo abrir la configuración de la aplicación.');
+  });
+};
 
 const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocationChange, editable = true }) => {
   const [mapRegion, setMapRegion] = useState({
@@ -71,7 +77,14 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permiso Denegado', 'Debes habilitar los permisos de ubicación en la configuración.');
+        Alert.alert(
+          'Permiso denegado',
+          'Se requieren permisos para acceder a la ubicación. ¿Deseas ir a la configuración para habilitarlos?',
+          [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Abrir Configuración', onPress: openAppSettings }
+          ]
+        );
         setGettingCurrentLocation(false);
         return;
       }
