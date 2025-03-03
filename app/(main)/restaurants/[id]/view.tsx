@@ -95,7 +95,6 @@ export default function RestaurantDetailScreen() {
     <View className="flex-1 bg-muted">
       <ImageDisplay images={restaurant.images} />
 
-      {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
         <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
           {restaurant.name}
@@ -110,7 +109,6 @@ export default function RestaurantDetailScreen() {
         </View>
       </View>
 
-      {/* Tabs */}
       <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
         <Tab.Navigator
           screenOptions={{

@@ -90,14 +90,12 @@ export default function DishDetailScreen() {
           {dish.name}
         </Text>
         <View className="flex-row">
-          {/* Botón Editar */}
           <TouchableOpacity
             className="bg-primary p-2 rounded-full mr-2"
             onPress={handleEdit}
           >
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>
-          {/* Botón Eliminar */}
           <TouchableOpacity
             className="bg-destructive p-2 rounded-full"
             onPress={handleDelete}
@@ -109,14 +107,12 @@ export default function DishDetailScreen() {
 
       <View className="bg-white my-4 mx-4 p-4 rounded-xl">
         <View className="flex-row mb-4">
-          {/* Tab Detalles (seleccionado) */}
           <View className="flex-1 items-center">
             <Text className="text-base font-bold text-primary">Detalles</Text>
             <View className="w-full h-1 bg-primary mt-1 " />
           </View>
         </View>
 
-        {/* Sección de Detalles */}
         <Text className="text-base font-bold text-gray-400 mb-2">Restaurante visitado</Text>
         <TouchableOpacity
           className="flex-row items-center py-3 border-b border-gray-200 mb-8"
@@ -130,7 +126,6 @@ export default function DishDetailScreen() {
           <Ionicons name="chevron-forward-outline" size={20} color="#999" />
         </TouchableOpacity>
 
-        {/* Precio */}
         <Text className="text-base font-bold text-gray-400 mb-2">Precio</Text>
         {dish.price ? (
           <Text className="text-xl font-bold text-primary mb-4">
@@ -147,7 +142,6 @@ export default function DishDetailScreen() {
           </Text>
         )}
 
-        {/* Comentarios */}
         <Text className="text-base font-bold text-gray-400 mb-2">Comentarios</Text>
         {dish.comments ? (
           <Text className="text-base text-gray-800 mb-4">{dish.comments}</Text>
@@ -157,7 +151,6 @@ export default function DishDetailScreen() {
           </Text>
         )}
 
-        {/* Etiquetas */}
         <Text className="text-base font-bold text-gray-400 mb-2">Etiquetas</Text>
         {dish.tags?.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
@@ -171,7 +164,6 @@ export default function DishDetailScreen() {
           </Text>
         )}
 
-        {/* Calificación (estrellas) */}
         <Text className="text-base font-bold text-gray-400 mb-2">Calificación</Text>
         <View className="flex-row">
           <RatingStars
