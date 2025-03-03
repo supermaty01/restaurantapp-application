@@ -1,5 +1,5 @@
-import React, { FC, useContext } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { FC, useContext, useState } from 'react';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { RegisterFormData, registerSchema } from '@/schemas/auth/register';
 const RegisterScreen: FC = () => {
   const { register: registerUser } = useContext(AuthContext);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const { control, handleSubmit } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -22,7 +23,10 @@ const RegisterScreen: FC = () => {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
     const result = await registerUser(data);
+    setIsLoading(false);
+
     if (result.success) {
       Alert.alert('Registro exitoso');
       router.push('/login');
@@ -67,9 +71,16 @@ const RegisterScreen: FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="w-full bg-primary py-4 rounded-lg items-center mt-6"
+          className={`w-full py-4 rounded-lg items-center mt-6 ${
+            isLoading ? 'bg-gray-400' : 'bg-primary'
+          }`}
+          disabled={isLoading}
         >
-          <Text className="text-white font-semibold text-base">Registrarme</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text className="text-white font-semibold text-base">Registrarme</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/login')} className="mt-4">

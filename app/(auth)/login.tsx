@@ -1,5 +1,5 @@
-import React, { FC, useContext } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import React, { FC, useContext, useState } from 'react';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,8 +11,10 @@ import { NativeModules } from "react-native";
 const LoginScreen: FC = () => {
   const { login } = useContext(AuthContext);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const DeviceInfo = NativeModules.DeviceInfo;
   const deviceName = DeviceInfo?.getName() || 'Unknown';
+
   const {
     control,
     handleSubmit,
@@ -24,8 +26,12 @@ const LoginScreen: FC = () => {
       device_name: deviceName,
     },
   });
+
   const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
     const result = await login(data);
+    setIsLoading(false);
+
     if (result.success) {
       Alert.alert('Inicio de sesión exitoso');
       router.push('/restaurants');
@@ -57,9 +63,6 @@ const LoginScreen: FC = () => {
         />
 
         <View className="flex-row justify-end items-center mb-4">
-          {/* <TouchableOpacity>
-            <Text className="text-primary mb-6">¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity> */}
           <TouchableOpacity onPress={() => router.push('/register')}>
             <Text className="text-primary mb-6">Registrarme</Text>
           </TouchableOpacity>
@@ -67,9 +70,16 @@ const LoginScreen: FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="w-full bg-primary py-4 rounded-lg items-center mb-6"
+          className={`w-full py-4 rounded-lg items-center mb-6 ${
+            isLoading ? 'bg-gray-400' : 'bg-primary'
+          }`}
+          disabled={isLoading}
         >
-          <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
+          )}
         </TouchableOpacity>
       </View>
     </>
