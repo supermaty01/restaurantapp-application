@@ -1,16 +1,17 @@
+import { DishListDTO } from '@/types/dish-dto';
 import React, { createContext, useContext, useState } from 'react';
 
 interface NewDishContextData {
-  newDishId: number | null;
-  setNewDishId: (id: number | null) => void;
+  newDish: DishListDTO | null;
+  setNewDish: (id: DishListDTO | null) => void;
 }
 
 const NewDishContext = createContext<NewDishContextData | undefined>(undefined);
 
 export const NewDishProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [newDishId, setNewDishId] = useState<number | null>(null);
+  const [newDish, setNewDish] = useState<DishListDTO | null>(null);
   return (
-    <NewDishContext.Provider value={{ newDishId, setNewDishId }}>
+    <NewDishContext.Provider value={{ newDish, setNewDish }}>
       {children}
     </NewDishContext.Provider>
   );

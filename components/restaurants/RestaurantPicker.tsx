@@ -13,10 +13,11 @@ interface RestaurantPickerProps {
   setValue: UseFormSetValue<any>;
   name: string;
   label?: string;
+  fixedValue?: boolean;
   errors?: any;
 }
 
-const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, name, label, errors }) => {
+const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, name, label, errors, fixedValue }) => {
   const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
@@ -63,6 +64,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
               <Picker
                 selectedValue={value}
                 onValueChange={(itemValue) => onChange(itemValue)}
+                enabled={!fixedValue}
               >
                 <Picker.Item
                   label="Selecciona un restaurante"
@@ -84,18 +86,19 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
       )}
 
       {errors?.[name] && <Text className="text-red-500 mt-1">{errors[name].message}</Text>}
-
-      <TouchableOpacity
-        className="mt-2"
-        onPress={() =>
-          router.push({
-            pathname: '/restaurants/new',
-            params: { useBackRedirect: 'true' },
-          })
-        }
-      >
-        <Text className="text-primary">¿No lo encuentras? Añade uno nuevo</Text>
-      </TouchableOpacity>
+      {!fixedValue && (
+        <TouchableOpacity
+          className="mt-2"
+          onPress={() =>
+            router.push({
+              pathname: '/restaurants/new',
+              params: { useBackRedirect: 'true' },
+            })
+          }
+        >
+          <Text className="text-primary">¿No lo encuentras? Añade uno nuevo</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

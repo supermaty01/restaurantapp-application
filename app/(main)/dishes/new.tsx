@@ -19,6 +19,7 @@ import { router, useGlobalSearchParams } from 'expo-router';
 import { useNewDish } from '@/context/NewDishContext';
 
 export default function DishCreateScreen() {
+  const { useBackRedirect, restaurantId } = useGlobalSearchParams();
   const {
     control,
     handleSubmit,
@@ -28,7 +29,7 @@ export default function DishCreateScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurant_id: undefined,
+      restaurant_id: Number(restaurantId),
       comments: '',
       price: undefined,
       rating: undefined,
@@ -38,8 +39,7 @@ export default function DishCreateScreen() {
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
-  const { useBackRedirect } = useGlobalSearchParams();
-  const { setNewDishId } = useNewDish();
+  const { setNewDish } = useNewDish();
   const [loading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
@@ -63,7 +63,7 @@ export default function DishCreateScreen() {
 
       Alert.alert('Éxito', 'Plato creado correctamente.');
       if (useBackRedirect && useBackRedirect === 'true') {
-        setNewDishId(dishId);
+        setNewDish(response.data.data);
         router.back();
       } else {
         router.replace({
@@ -117,6 +117,7 @@ export default function DishCreateScreen() {
           control={control}
           setValue={setValue}
           name="restaurant_id"
+          fixedValue={true}
           label="Restaurante"
           errors={errors}
         />

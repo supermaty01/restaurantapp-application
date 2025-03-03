@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGlobalSearchParams, useRouter } from 'expo-router';
+import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
 
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
 import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
 import DishPicker from '@/components/dishes/DishPicker';
+import { useRoute } from '@react-navigation/native';
 
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
@@ -17,7 +18,8 @@ import { DishListDTO } from '@/types/dish-dto';
 import { parse, format } from 'date-fns';
 
 export default function VisitEditScreen() {
-  const { id } = useGlobalSearchParams<{ id: string }>();
+  const { params } = useRoute();
+  const { id } = params as { id: string };
   const router = useRouter();
 
   const {

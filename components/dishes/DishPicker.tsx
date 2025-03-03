@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 
 import api from '@/services/api';
 import { DishListDTO } from '@/types/dish-dto';
+import { useNewDish } from '@/context/NewDishContext';
 
 interface DishPickerProps {
   control: Control<any>;
@@ -28,6 +29,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
   const [dishes, setDishes] = useState<DishListDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { newDish, setNewDish } = useNewDish();
   const router = useRouter();
 
   useEffect(() => {
@@ -47,6 +49,13 @@ const DishPicker: React.FC<DishPickerProps> = ({
 
     fetchDishes();
   }, [restaurantId]);
+
+  useEffect(() => {
+    if (newDish) {
+      handleAddDish(newDish);
+      setNewDish(null);
+    }
+  }, [newDish]);
 
   const handleAddDish = (dish: DishListDTO) => {
     if (!selectedDishes.some(d => d.id === dish.id)) {
@@ -95,7 +104,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
 
         <TouchableOpacity
           className={`bg-primary py-3 px-4 rounded-md ${!restaurantId ? 'opacity-50' : ''}`}
-          onPress={() => router.push({ pathname: '/dishes/new', params: { useBackRedirect: 'true' } })}
+          onPress={() => router.push({ pathname: '/dishes/new', params: { useBackRedirect: 'true', restaurantId } })}
           disabled={!restaurantId}
         >
           <Text className="text-white font-bold">Crear nuevo plato</Text>

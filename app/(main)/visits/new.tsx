@@ -47,7 +47,7 @@ export default function VisitCreateScreen() {
     try {
       const payload = {
         visited_at: data.visited_at,
-        comments: data.comments?.trim() || null,
+        comments: data.comments?.trim() || "",
         restaurant_id: data.restaurant_id,
         dishes: selectedDishes.map((dish) => dish.id),
       };
