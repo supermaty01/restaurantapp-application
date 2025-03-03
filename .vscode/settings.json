@@ -2,4 +2,5 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
+  "java.configuration.updateBuildConfiguration": "interactive",
 }

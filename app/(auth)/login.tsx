@@ -13,7 +13,7 @@ const LoginScreen: FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const DeviceInfo = NativeModules.DeviceInfo;
-  const deviceName = DeviceInfo?.getName() || 'Unknown';
+  const deviceName = DeviceInfo ? DeviceInfo.deviceName : 'Unknown';
 
   const {
     control,
@@ -23,7 +23,7 @@ const LoginScreen: FC = () => {
     defaultValues: {
       email: '',
       password: '',
-      device_name: deviceName,
+      device_name: deviceName || 'Unknown',
     },
   });
 
@@ -70,9 +70,8 @@ const LoginScreen: FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className={`w-full py-4 rounded-lg items-center mb-6 ${
-            isLoading ? 'bg-gray-400' : 'bg-primary'
-          }`}
+          className={`w-full py-4 rounded-lg items-center mb-6 ${isLoading ? 'bg-gray-400' : 'bg-primary'
+            }`}
           disabled={isLoading}
         >
           {isLoading ? (
