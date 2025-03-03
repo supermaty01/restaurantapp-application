@@ -48,7 +48,7 @@ export default function DishCreateScreen() {
       const payload = {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
-        comments: data.comments?.trim() || null,
+        comments: data.comments?.trim() || "",
         price: data.price || null,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),

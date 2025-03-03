@@ -51,7 +51,7 @@ export default function VisitEditScreen() {
 
         reset({
           visited_at: formattedDate,
-          comments: visitData.comments,
+          comments: visitData.comments || "",
           restaurant_id: visitData.restaurant.id,
           dishes: [],
         });

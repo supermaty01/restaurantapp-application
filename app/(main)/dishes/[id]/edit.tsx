@@ -53,7 +53,7 @@ export default function DishEditScreen() {
         reset({
           name: dishData.name,
           restaurant_id: dishData.restaurant.id,
-          comments: dishData.comments,
+          comments: dishData.comments || "",
           rating: dishData.rating,
           price: dishData.price.toString(),
         });

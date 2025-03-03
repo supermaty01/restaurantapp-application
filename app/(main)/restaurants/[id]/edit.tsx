@@ -44,7 +44,7 @@ export default function RestaurantEditScreen() {
           const restaurant = response.data.data;
           reset({
             name: restaurant.name,
-            comments: restaurant.comments,
+            comments: restaurant.comments || "",
             rating: restaurant.rating,
             location: restaurant.location,
           });

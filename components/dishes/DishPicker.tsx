@@ -32,28 +32,29 @@ const DishPicker: React.FC<DishPickerProps> = ({
   const { newDish, setNewDish } = useNewDish();
   const router = useRouter();
 
+  const fetchDishes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(`/restaurants/${restaurantId}/dishes`);
+      setDishes(response.data.data);
+    } catch (error) {
+      console.log('Error fetching dishes:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!restaurantId) return;
-
-    const fetchDishes = async () => {
-      setIsLoading(true);
-      try {
-        const response = await api.get(`/restaurants/${restaurantId}/dishes`);
-        setDishes(response.data.data);
-      } catch (error) {
-        console.log('Error fetching dishes:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchDishes();
   }, [restaurantId]);
 
   useEffect(() => {
     if (newDish) {
-      handleAddDish(newDish);
-      setNewDish(null);
+      fetchDishes().then(() => {
+        handleAddDish(newDish);
+        setNewDish(null);
+      });
     }
   }, [newDish]);
 
