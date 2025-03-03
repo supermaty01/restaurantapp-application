@@ -20,6 +20,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { VisitDTO } from '@/types/visit-dto'
 import VisitDetails from '@/components/visits/VisitDetails'
 import VisitDishes from '@/components/visits/VisitDishes'
+import { ImageDisplay } from '@/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();
 const screenWidth = Dimensions.get('window').width;
@@ -105,69 +106,7 @@ export default function VisitDetailScreen() {
 
   return (
     <View className="flex-1 bg-muted">
-      <View>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={(e) => {
-            const offsetX = e.nativeEvent.contentOffset.x;
-            const index = Math.round(offsetX / screenWidth);
-            setCurrentImageIndex(index);
-          }}
-          scrollEventThrottle={16}
-        >
-          {visit.images.length > 0 ? (
-            visit.images.map((img, index) => (
-              <TouchableOpacity
-                key={img.id}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setCurrentImageIndex(index);
-                  setIsImageViewerVisible(true);
-                }}
-              >
-                <Image
-                  source={{ uri: img.url }}
-                  className="h-48"
-                  style={{ width: screenWidth }}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View
-              className="bg-gray-400 justify-center items-center"
-              style={{ width: screenWidth, height: 200 }}
-            >
-              <Text className="text-white mt-20">Sin imágenes</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Puntos de paginación del carrusel */}
-        <View className="flex-row justify-center items-center my-2">
-          {visit.images.map((_, index) => (
-            <View
-              key={index}
-              className={`w-2 h-2 rounded-full mx-1 ${currentImageIndex === index ? 'bg-black' : 'bg-gray-300'
-                }`}
-            />
-          ))}
-        </View>
-      </View>
-
-      <Modal visible={isImageViewerVisible} transparent={true}>
-        <ImageViewer
-          imageUrls={visit.images.map((img) => ({ url: img.url }))}
-          index={currentImageIndex}
-          onCancel={() => setIsImageViewerVisible(false)}
-          enableSwipeDown={true}
-          onSwipeDown={() => setIsImageViewerVisible(false)}
-          saveToLocalByLongPress={false}
-          backgroundColor="rgba(0, 0, 0, 0.9)"
-        />
-      </Modal>
+      <ImageDisplay images={visit.images} />
 
       <View className="flex-row items-center justify-between px-4 mt-4">
         <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
