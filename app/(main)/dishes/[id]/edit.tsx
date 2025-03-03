@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Picker } from '@react-native-picker/picker';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
 import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
-import { RestaurantListDTO } from '@/types/restaurant-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/schemas/dish';
 import { router, useGlobalSearchParams } from 'expo-router';
+import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
 
 export default function DishEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
@@ -23,8 +22,8 @@ export default function DishEditScreen() {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
-    watch
   } = useForm<DishFormData>({
     resolver: zodResolver(dishSchema),
     defaultValues: {
@@ -36,29 +35,11 @@ export default function DishEditScreen() {
     },
   });
 
-  const watchedPrice = watch('price');
-
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
   const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
-  const [isLoadingRestaurants, setIsLoadingRestaurants] = useState(true);
-  const [formattedPrice, setFormattedPrice] = useState("");
-
-  // Format price for display
-  const formatPrice = (price: number | string | undefined) => {
-    if (price === undefined || price === '') return '';
-
-    const numericPrice = typeof price === 'string' ? parseFloat(price) : price;
-
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(numericPrice);
-  };
 
   // Fetch dish data and restaurants
   useEffect(() => {
@@ -66,39 +47,21 @@ export default function DishEditScreen() {
       try {
         setLoading(true);
 
-        // First fetch the dish details to know which restaurant to preselect
         const dishResponse = await api.get(`/dishes/${id}`);
         const dishData = dishResponse.data.data;
 
-        // Then fetch restaurants for dropdown
-        const restaurantsResponse = await api.get('/restaurants');
-        setRestaurants(restaurantsResponse.data.data);
-        setIsLoadingRestaurants(false);
+        reset({
+          name: dishData.name,
+          restaurant_id: dishData.restaurant.id,
+          comments: dishData.comments,
+          rating: dishData.rating,
+          price: dishData.price.toString(),
+        });
 
-        // Set form values including restaurant_id
-        setValue('name', dishData.name);
-        setValue('restaurant_id', dishData.restaurant.id);
-        setValue('comments', dishData.comments || '');
-
-        // Set price and formatted price
-        if (dishData.price !== undefined && dishData.price !== null) {
-          setValue('price', dishData.price);
-          setFormattedPrice(formatPrice(dishData.price));
-        }
-
-        setValue('rating', dishData.rating);
-
-        // Set tags and images
-        if (dishData.tags && dishData.tags.length > 0) {
-          setSelectedTags(dishData.tags);
-        }
-
-        if (dishData.images && dishData.images.length > 0) {
-          setSelectedImages(dishData.images.map((img: any) => ({
-            id: img.id,
-            uri: img.url
-          })));
-        }
+        setSelectedTags(dishData.tags);
+        setSelectedImages(
+          dishData.images.map((img: any) => ({ id: img.id, uri: img.url }))
+        );
       } catch (error) {
         console.error('Error fetching data:', error);
         Alert.alert('Error', 'No se pudieron cargar los datos del plato');
@@ -110,21 +73,14 @@ export default function DishEditScreen() {
     fetchData();
   }, [id, setValue]);
 
-  // Update formatted price when price value changes
-  useEffect(() => {
-    if (watchedPrice !== undefined) {
-      setFormattedPrice(formatPrice(watchedPrice));
-    }
-  }, [watchedPrice]);
-
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
-        comments: data.comments?.trim() || '',
-        price: typeof data.price === 'string' ? parseFloat(String(data.price).replace(',', '.')) : data.price ?? undefined,
+        comments: data.comments?.trim() || null,
+        price: data.price || null,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),
       };
@@ -154,20 +110,6 @@ export default function DishEditScreen() {
       console.log(error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePriceChange = (text: string) => {
-    // Remove all non-numeric characters
-    const numericValue = text.replace(/[^0-9]/g, '');
-
-    if (numericValue === '') {
-      setValue('price', undefined);
-      setFormattedPrice('');
-    } else {
-      const price = parseInt(numericValue, 10);
-      setValue('price', price);
-      setFormattedPrice(formatPrice(price));
     }
   };
 
@@ -203,63 +145,23 @@ export default function DishEditScreen() {
           numberOfLines={4}
         />
 
-        {/* Restaurante (dropdown) */}
-        <View className="mb-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-2">Restaurante</Text>
-          {isLoadingRestaurants ? (
-            <View className="h-12 bg-gray-100 rounded-md justify-center items-center">
-              <Text>Cargando restaurantes...</Text>
-            </View>
-          ) : (
-            <Controller
-              control={control}
-              name="restaurant_id"
-              render={({ field: { onChange, value } }) => (
-                <View className="border border-gray-300 rounded-md overflow-hidden">
-                  <Picker
-                    selectedValue={value}
-                    onValueChange={(itemValue) => onChange(Number(itemValue))}
-                    style={{ height: 50 }}
-                  >
-                    <Picker.Item label="Selecciona un restaurante" value={undefined} />
-                    {restaurants.map((restaurant) => (
-                      <Picker.Item
-                        key={restaurant.id}
-                        label={restaurant.name}
-                        value={restaurant.id}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              )}
-            />
-          )}
-          {errors.restaurant_id && (
-            <Text className="text-red-500 mt-1">{errors.restaurant_id.message}</Text>
-          )}
-        </View>
-
         {/* Precio */}
-        <View className="mb-4">
-          <Text className="text-xl font-semibold text-gray-800 mb-2">Precio</Text>
-          <Controller
-            control={control}
-            name="price"
-            render={({ field }) => (
-              <FormInput
-                control={control}
-                name="price"
-                placeholder="Ingresa el precio"
-                keyboardType="numeric"
-                onChangeText={handlePriceChange}
-                value={formattedPrice}
-              />
-            )}
-          />
-          {errors.price && (
-            <Text className="text-red-500 mt-1">{errors.price.message}</Text>
-          )}
-        </View>
+        <FormInput
+          control={control}
+          name="price"
+          label="Precio"
+          placeholder="Ingresa el precio"
+          keyboardType="numeric"
+        />
+
+        {/* Restaurante */}
+        <RestaurantPicker
+          control={control}
+          setValue={setValue}
+          name="restaurant_id"
+          label="Restaurante"
+          errors={errors}
+        />
 
         {/* Rating (opcional) */}
         <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>

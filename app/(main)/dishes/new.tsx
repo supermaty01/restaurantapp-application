@@ -48,8 +48,8 @@ export default function DishCreateScreen() {
       const payload = {
         name: data.name.trim(),
         restaurant_id: data.restaurant_id,
-        comments: data.comments?.trim() || '',
-        price: data.price,
+        comments: data.comments?.trim() || null,
+        price: data.price || null,
         rating: data.rating || null,
         tags: selectedTags.map((tag) => tag.id),
       };
@@ -112,7 +112,7 @@ export default function DishCreateScreen() {
           keyboardType="numeric"
         />
 
-        {/* Restaurante (usando RestaurantPicker) ✅ */}
+        {/* Restaurante */}
         <RestaurantPicker
           control={control}
           setValue={setValue}

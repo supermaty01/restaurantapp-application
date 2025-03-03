@@ -169,7 +169,7 @@ export default function RestaurantEditScreen() {
         />
 
         <TouchableOpacity
-          onPress={handleSubmit(onSubmit, console.log)}
+          onPress={handleSubmit(onSubmit)}
           className="mt-4 bg-primary py-3 rounded-md items-center"
           disabled={loading}
         >
