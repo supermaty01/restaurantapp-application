@@ -18,7 +18,7 @@ export default function RestaurantsScreen() {
       const response = await api.get('/restaurants');
       setRestaurants(response.data.data);
     } catch (error: any) {
-      console.error('Error fetching restaurants:', error);
+      console.log('Error fetching restaurants:', error);
       Alert.alert('Error', 'No se pudieron cargar los restaurantes');
     } finally {
       setIsLoading(false);

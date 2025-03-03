@@ -18,7 +18,7 @@ export default function DishesScreen() {
       const response = await api.get('/dishes');
       setDishes(response.data.data);
     } catch (error: any) {
-      console.error('Error fetching platos:', error);
+      console.log('Error fetching platos:', error);
       Alert.alert('Error', 'No se pudieron cargar los platos');
     } finally {
       setIsLoading(false);

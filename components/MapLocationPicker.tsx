@@ -42,7 +42,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
         setAddress('Dirección no disponible');
       }
     } catch (error) {
-      console.error('Error obteniendo la dirección:', error);
+      console.log('Error obteniendo la dirección:', error);
       setAddress('Error al obtener la dirección');
     }
     setLoadingAddress(false);
@@ -86,7 +86,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
       fetchAddress(coords.latitude, coords.longitude);
     } catch (error) {
       Alert.alert('Error', 'No se pudo obtener la ubicación actual.');
-      console.error(error);
+      console.log(error);
     }
     setGettingCurrentLocation(false);
   };

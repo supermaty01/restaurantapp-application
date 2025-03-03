@@ -66,7 +66,7 @@ export default function VisitEditScreen() {
 
       } catch (error) {
         Alert.alert('Error', 'No se pudo cargar la visita.');
-        console.error(error);
+        console.log(error);
       } finally {
         setIsLoading(false);
       }
@@ -106,7 +106,7 @@ export default function VisitEditScreen() {
       router.back();
     } catch (error) {
       Alert.alert('Error', 'No se pudo actualizar la visita.');
-      console.error(error);
+      console.log(error);
     }
   };
 

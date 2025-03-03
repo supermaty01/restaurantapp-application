@@ -63,7 +63,7 @@ export default function DishEditScreen() {
           dishData.images.map((img: any) => ({ id: img.id, uri: img.url }))
         );
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.log('Error fetching data:', error);
         Alert.alert('Error', 'No se pudieron cargar los datos del plato');
       } finally {
         setLoading(false);

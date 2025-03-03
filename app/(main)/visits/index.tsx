@@ -18,7 +18,7 @@ export default function VisitsScreen() {
       const response = await api.get('/visits');
       setVisits(response.data.data);
     } catch (error: any) {
-      console.error('Error fetching visits:', error);
+      console.log('Error fetching visits:', error);
       Alert.alert('Error', 'No se pudieron cargar las visitas');
     } finally {
       setIsLoading(false);

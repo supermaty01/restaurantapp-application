@@ -18,7 +18,7 @@ export default function TagsScreen() {
       const response = await api.get('/tags');
       setTags(response.data.data);
     } catch (error: any) {
-      console.error('Error fetching tags:', error);
+      console.log('Error fetching tags:', error);
       Alert.alert('Error', 'No se pudieron cargar las etiquetas');
     } finally {
       setIsLoading(false);
@@ -42,7 +42,7 @@ export default function TagsScreen() {
       handleModalClose();
       return { success: true };
     } catch (error: any) {
-      console.error('Error in tag operation:', error);
+      console.log('Error in tag operation:', error);
       return {
         success: false,
         error: error.response ? error.response.data : error.message,
@@ -57,7 +57,7 @@ export default function TagsScreen() {
       handleModalClose();
       return { success: true };
     } catch (error: any) {
-      console.error('Error deleting tag:', error);
+      console.log('Error deleting tag:', error);
       Alert.alert('Error', 'No se pudo eliminar la etiqueta');
       return {
         success: false,

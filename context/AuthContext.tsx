@@ -37,7 +37,7 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
           setUserToken(token);
         }
       } catch (error) {
-        console.error('Error al cargar el token', error);
+        console.log('Error al cargar el token', error);
       } finally {
         setLoading(false);
       }

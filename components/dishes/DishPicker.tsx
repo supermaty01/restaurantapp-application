@@ -39,7 +39,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
         const response = await api.get(`/restaurants/${restaurantId}/dishes`);
         setDishes(response.data.data);
       } catch (error) {
-        console.error('Error fetching dishes:', error);
+        console.log('Error fetching dishes:', error);
       } finally {
         setIsLoading(false);
       }
