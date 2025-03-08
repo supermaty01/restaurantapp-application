@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react';
 import { useRouter } from 'expo-router';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '@/lib/context/AuthContext';
 
 export default function Index() {
   const { userToken, loading } = useContext(AuthContext);

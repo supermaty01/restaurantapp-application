@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import TagItem from '@/components/tags/TagItem';
-import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
 import { TagDTO } from '@/features/tags/types/tag-dto';
+import CreateTagModal from '@/features/tags/components/CreateTagModal';
+import TagItem from '@/features/tags/components/TagItem';
 
 export default function TagsScreen() {
   const [tags, setTags] = useState<TagDTO[]>([]);

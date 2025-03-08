@@ -1,14 +1,14 @@
 import { Slot } from 'expo-router';
-import { AuthProvider } from '../context/AuthContext';
-import { NewRestaurantProvider } from '@/context/NewRestaurantContext';
 import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
-import { NewDishProvider } from '@/context/NewDishContext';
 import "../global.css";
 import { Suspense } from 'react';
 import { ActivityIndicator } from 'react-native';
+import { AuthProvider } from '@/lib/context/AuthContext';
+import { NewDishProvider } from '@/lib/context/NewDishContext';
+import { NewRestaurantProvider } from '@/lib/context/NewRestaurantContext';
 
 export const DATABASE_NAME = 'restaurantapp';
 

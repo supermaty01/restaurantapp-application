@@ -4,10 +4,6 @@ import { es } from 'date-fns/locale';
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
-  Image,
-  Modal,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -15,7 +11,6 @@ import {
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { VisitDTO } from '@/features/visits/types/visit-dto'
 import VisitDetails from '@/features/visits/components/VisitDetails'
@@ -23,16 +18,12 @@ import VisitDishes from '@/features/visits/components/VisitDishes'
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();
-const screenWidth = Dimensions.get('window').width;
 
 export default function VisitDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
   const [visit, setVisit] = useState<VisitDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchVisit();

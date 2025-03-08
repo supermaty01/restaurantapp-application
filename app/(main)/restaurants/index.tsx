@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import api from '@/services/api';
-import { RestaurantListDTO } from '@/types/restaurant-dto';
+import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
 
 export default function RestaurantsScreen() {
   const router = useRouter();

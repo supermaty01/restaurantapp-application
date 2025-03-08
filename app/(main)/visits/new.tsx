@@ -2,18 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 import DishPicker from '@/features/dishes/components/DishPicker';
-
 import api from '@/services/api';
-import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { router } from 'expo-router';
+import { uploadImages } from '@/lib/helpers/upload-images';
 
 export default function VisitCreateScreen() {
   const {

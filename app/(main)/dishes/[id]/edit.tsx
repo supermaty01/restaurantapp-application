@@ -4,16 +4,16 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
-import TagSelectorModal from '@/components/tags/TagSelectorModal';
 import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
 import api from '@/services/api';
 import { TagDTO } from '@/features/tags/types/tag-dto';
-import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
-import { uploadImages } from '@/helpers/upload-images';
 import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import Tag from '@/features/tags/components/Tag';
+import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { uploadImages } from '@/lib/helpers/upload-images';
 
 export default function DishEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();

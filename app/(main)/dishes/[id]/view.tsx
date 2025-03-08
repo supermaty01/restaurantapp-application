@@ -3,10 +3,10 @@ import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } fr
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
 import { DishDetailsDTO } from '@/features/dishes/types/dish-dto';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
+import Tag from '@/features/tags/components/Tag';
 
 export default function DishDetailScreen() {
 

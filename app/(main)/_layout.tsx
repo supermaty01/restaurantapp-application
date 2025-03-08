@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthContext } from '@/context/AuthContext';
 import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
@@ -20,6 +19,7 @@ import DishEditScreen from './dishes/[id]/edit';
 import VisitCreateScreen from './visits/new';
 import VisitDetailScreen from './visits/[id]/view';
 import VisitEditScreen from './visits/[id]/edit';
+import { AuthContext } from '@/lib/context/AuthContext';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();

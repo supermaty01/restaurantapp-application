@@ -9,12 +9,12 @@ import {
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
-import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
 import RestaurantDetails from '@/features/restaurants/components/RestaurantDetails';
 import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits';
 import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
+import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 
 const Tab = createMaterialTopTabNavigator();
 
