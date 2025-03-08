@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { VisitDTO } from '@/types/visit-dto'
+import { VisitDTO } from '@/features/visits/types/visit-dto'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 

@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import RestaurantItem from '@/components/restaurants/RestaurantItem';
+import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import api from '@/services/api';
 import { RestaurantListDTO } from '@/types/restaurant-dto';
 

@@ -11,7 +11,7 @@ import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
-import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
 import MapLocationPicker from '@/components/MapLocationPicker';
 

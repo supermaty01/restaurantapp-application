@@ -5,11 +5,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
-import { LoginFormData, loginSchema } from '@/schemas/auth/login';
+import { LoginFormData, loginSchema } from '@/features/auth/schemas/login';
 import { NativeModules } from "react-native";
 
 const LoginScreen: FC = () => {
-  const { login } = useContext(AuthContext);
+  const { login, continueOffline } = useContext(AuthContext);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const DeviceInfo = NativeModules.DeviceInfo;
@@ -79,6 +79,13 @@ const LoginScreen: FC = () => {
           ) : (
             <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={continueOffline}
+          className="w-full py-4 rounded-lg items-center bg-gray-600"
+        >
+          <Text className="text-white font-semibold text-base">Continuar sin cuenta</Text>
         </TouchableOpacity>
       </View>
     </>

@@ -11,9 +11,9 @@ import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
-import { DishFormData, dishSchema } from '@/schemas/dish';
+import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 
 export default function DishEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();

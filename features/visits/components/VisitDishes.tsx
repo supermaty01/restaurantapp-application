@@ -5,7 +5,7 @@ import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
 import { ImageDTO } from '@/types/image-dto';
 import { TagDTO } from '@/types/tag-dto';
-import { VisitDTO } from '@/types/visit-dto'
+import { VisitDTO } from '@/features/visits/types/visit-dto'
 
 interface DishDTO {
   id: number;

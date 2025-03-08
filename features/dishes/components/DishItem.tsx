@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TagDTO } from '@/types/tag-dto';
 import { ImageDTO } from '@/types/image-dto';
-import Tag from '../tags/Tag';
-import RatingStars from '../RatingStars';
+import Tag from '../../../components/tags/Tag';
+import RatingStars from '../../../components/RatingStars';
 
 interface DishItemProps {
   name: string;

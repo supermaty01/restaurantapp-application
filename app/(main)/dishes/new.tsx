@@ -7,14 +7,14 @@ import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import TagSelectorModal from '@/components/tags/TagSelectorModal';
 import ImagesUploader from '@/components/ImagesUploader';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 
 import api from '@/services/api';
 import { TagDTO } from '@/types/tag-dto';
 import Tag from '@/components/tags/Tag';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadImages } from '@/helpers/upload-images';
-import { DishFormData, dishSchema } from '@/schemas/dish';
+import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
 import { useNewDish } from '@/context/NewDishContext';
 

@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '@/services/api';
-import { VisitDTO } from '@/types/visit-dto'
-import VisitItem from '@/components/visits/VisitItem'
+import { VisitDTO } from '@/features/visits/types/visit-dto'
+import VisitItem from '@/features/visits/components/VisitItem'
 
 export default function VisitsScreen() {
   const router = useRouter();

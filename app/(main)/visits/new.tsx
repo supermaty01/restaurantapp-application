@@ -6,12 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/components/ImagesUploader';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
-import DishPicker from '@/components/dishes/DishPicker';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import DishPicker from '@/features/dishes/components/DishPicker';
 
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
-import { VisitFormData, visitSchema } from '@/schemas/visit';
+import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
 import { DishListDTO } from '@/types/dish-dto';
 import { router } from 'expo-router';
 

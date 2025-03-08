@@ -17,9 +17,9 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { VisitDTO } from '@/types/visit-dto'
-import VisitDetails from '@/components/visits/VisitDetails'
-import VisitDishes from '@/components/visits/VisitDishes'
+import { VisitDTO } from '@/features/visits/types/visit-dto'
+import VisitDetails from '@/features/visits/components/VisitDetails'
+import VisitDishes from '@/features/visits/components/VisitDishes'
 import { ImageDisplay } from '@/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();

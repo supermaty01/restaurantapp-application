@@ -7,13 +7,13 @@ import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-rou
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
-import DishPicker from '@/components/dishes/DishPicker';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import DishPicker from '@/features/dishes/components/DishPicker';
 import { useRoute } from '@react-navigation/native';
 
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
-import { VisitFormData, visitSchema } from '@/schemas/visit';
+import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
 import { DishListDTO } from '@/types/dish-dto';
 import { parse, format } from 'date-fns';
 

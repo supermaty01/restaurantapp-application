@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import DishItem from '@/components/dishes/DishItem';
+import DishItem from '@/features/dishes/components/DishItem';
 import api from '@/services/api';
 import { DishListDTO } from '@/types/dish-dto';
 

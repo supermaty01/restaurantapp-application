@@ -1,17 +1,36 @@
 import { Slot } from 'expo-router';
 import { AuthProvider } from '../context/AuthContext';
 import { NewRestaurantProvider } from '@/context/NewRestaurantContext';
+import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import migrations from '@/drizzle/migrations';
 import { NewDishProvider } from '@/context/NewDishContext';
 import "../global.css";
+import { Suspense } from 'react';
+import { ActivityIndicator } from 'react-native';
+
+export const DATABASE_NAME = 'restaurantapp';
 
 export default function RootLayout() {
+  const expoDb = openDatabaseSync(DATABASE_NAME);
+  const db = drizzle(expoDb);
+  useMigrations(db, migrations);
+
   return (
-    <AuthProvider>
-      <NewRestaurantProvider>
-        <NewDishProvider>
-          <Slot />
-        </NewDishProvider>
-      </NewRestaurantProvider>
-    </AuthProvider>
+    <Suspense fallback={<ActivityIndicator size="large" color="#905c36" />}>
+      <SQLiteProvider
+        databaseName={DATABASE_NAME}
+        options={{ enableChangeListener: true }}
+        useSuspense>
+        <AuthProvider>
+          <NewRestaurantProvider>
+            <NewDishProvider>
+              <Slot />
+            </NewDishProvider>
+          </NewRestaurantProvider>
+        </AuthProvider>
+      </SQLiteProvider>
+    </Suspense>
   );
 }

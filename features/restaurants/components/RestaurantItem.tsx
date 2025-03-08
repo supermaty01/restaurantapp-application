@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { TagDTO } from '@/types/tag-dto';
-import Tag from '../tags/Tag';
-import RatingStars from '../RatingStars';
+import Tag from '../../../components/tags/Tag';
+import RatingStars from '../../../components/RatingStars';
 
 interface RestaurantItemProps {
   name: string;
