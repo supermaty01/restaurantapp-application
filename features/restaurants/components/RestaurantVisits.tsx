@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '@/services/api';
-import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
+import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { ImageDTO } from '@/types/image-dto';
+import { ImageDTO } from '@/features/images/types/image-dto';
 
 interface DishDTO {
   id: number;

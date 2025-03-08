@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import api from '@/services/api';
-import { RestaurantDetailsDTO } from '@/types/restaurant-dto';
+import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { ImageDTO } from '@/types/image-dto';
-import { TagDTO } from '@/types/tag-dto';
-import { DishDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 
 interface RestaurantDishesProps {
   restaurant: RestaurantDetailsDTO;
@@ -14,7 +12,7 @@ interface RestaurantDishesProps {
 
 export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) {
   const router = useRouter();
-  const [dishes, setDishes] = useState<DishDTO[]>([]);
+  const [dishes, setDishes] = useState<DishListDTO[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Función para obtener los platos desde el endpoint /restaurants/{id}/dishes

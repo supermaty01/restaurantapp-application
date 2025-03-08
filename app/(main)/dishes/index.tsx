@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import DishItem from '@/features/dishes/components/DishItem';
 import api from '@/services/api';
-import { DishListDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 
 export default function DishesScreen() {
   const router = useRouter();

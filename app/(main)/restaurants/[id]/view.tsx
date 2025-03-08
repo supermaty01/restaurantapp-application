@@ -14,7 +14,7 @@ import RestaurantDetails from '@/features/restaurants/components/RestaurantDetai
 import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits';
 import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { ImageDisplay } from '@/components/ImageDisplay';
+import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();
 

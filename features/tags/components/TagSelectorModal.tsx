@@ -3,8 +3,8 @@ import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
 import api from '@/services/api';
 import clsx from 'clsx';
 import { Ionicons } from '@expo/vector-icons';
-import Tag from './Tag';
-import { TagDTO } from '@/types/tag-dto';
+import Tag from '@/features/tags/components/Tag';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 
 interface TagSelectorModalProps {
   visible: boolean;

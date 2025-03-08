@@ -3,10 +3,9 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList } from
 import { Control, UseFormSetValue } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-
 import api from '@/services/api';
-import { DishListDTO } from '@/types/dish-dto';
-import { useNewDish } from '@/context/NewDishContext';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
+import { useNewDish } from '@/features/dishes/hooks/useNewDish';
 
 interface DishPickerProps {
   control: Control<any>;

@@ -20,7 +20,7 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { VisitDTO } from '@/features/visits/types/visit-dto'
 import VisitDetails from '@/features/visits/components/VisitDetails'
 import VisitDishes from '@/features/visits/components/VisitDishes'
-import { ImageDisplay } from '@/components/ImageDisplay';
+import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 
 const Tab = createMaterialTopTabNavigator();
 const screenWidth = Dimensions.get('window').width;

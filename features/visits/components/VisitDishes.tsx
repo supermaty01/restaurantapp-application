@@ -3,8 +3,8 @@ import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from
 import { useRouter } from 'expo-router';
 import api from '@/services/api';
 import { Ionicons } from '@expo/vector-icons';
-import { ImageDTO } from '@/types/image-dto';
-import { TagDTO } from '@/types/tag-dto';
+import { ImageDTO } from '@/features/images/types/image-dto';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { VisitDTO } from '@/features/visits/types/visit-dto'
 
 interface DishDTO {

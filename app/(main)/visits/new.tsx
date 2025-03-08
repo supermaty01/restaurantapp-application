@@ -5,14 +5,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
-import ImagesUploader from '@/components/ImagesUploader';
+import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 import DishPicker from '@/features/dishes/components/DishPicker';
 
 import api from '@/services/api';
 import { uploadImages } from '@/helpers/upload-images';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
-import { DishListDTO } from '@/types/dish-dto';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { router } from 'expo-router';
 
 export default function VisitCreateScreen() {

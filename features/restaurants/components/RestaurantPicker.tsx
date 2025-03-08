@@ -3,10 +3,9 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { Controller, Control, UseFormSetValue } from 'react-hook-form';
 import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
-
 import api from '@/services/api';
-import { RestaurantListDTO } from '@/types/restaurant-dto';
-import { useNewRestaurant } from '@/context/NewRestaurantContext';
+import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
+import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
 
 interface RestaurantPickerProps {
   control: Control<any>;

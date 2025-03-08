@@ -3,10 +3,10 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
 import { LoginFormData, loginSchema } from '@/features/auth/schemas/login';
 import { NativeModules } from "react-native";
+import { AuthContext } from '@/lib/context/AuthContext';
 
 const LoginScreen: FC = () => {
   const { login, continueOffline } = useContext(AuthContext);

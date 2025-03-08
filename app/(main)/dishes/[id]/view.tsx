@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '@/services/api';
 import Tag from '@/components/tags/Tag';
 import RatingStars from '@/components/RatingStars';
-import { DishDetailsDTO } from '@/types/dish-dto';
-import { ImageDisplay } from '@/components/ImageDisplay';
+import { DishDetailsDTO } from '@/features/dishes/types/dish-dto';
+import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 
 export default function DishDetailScreen() {
 

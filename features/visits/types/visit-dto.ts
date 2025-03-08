@@ -1,5 +1,5 @@
-import { RestaurantDetailsDTO } from '@/types/restaurant-dto'
-import { ImageDTO } from '@/types/image-dto'
+import { ImageDTO } from '@/features/images/types/image-dto'
+import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 
 export interface VisitDTO {
   id: string;

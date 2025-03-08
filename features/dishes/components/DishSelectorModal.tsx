@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, FlatList } from 'react-native';
 
 interface Dish {
   id: number;
@@ -24,64 +24,25 @@ const DishSelectorModal: React.FC<DishSelectorModalProps> = ({ visible, dishes, 
 
   return (
     <Modal visible={visible} transparent={true} animationType="slide">
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.title}>Select a Dish</Text>
+      <View className="flex-1 justify-center items-center bg-black/50">
+        <View className="w-4/5 bg-white rounded-lg p-5 items-center">
+          <Text className="text-lg font-bold mb-5">Select a Dish</Text>
           <FlatList
             data={dishes}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.dishItem} onPress={() => handleSelect(item)}>
-                <Text style={styles.dishName}>{item.name}</Text>
+              <TouchableOpacity className="p-3 border-b border-gray-300" onPress={() => handleSelect(item)}>
+                <Text className="text-base">{item.name}</Text>
               </TouchableOpacity>
             )}
           />
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
+          <TouchableOpacity className="mt-5 p-3 bg-blue-500 rounded" onPress={onClose}>
+            <Text className="text-white text-base">Close</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  dishItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  dishName: {
-    fontSize: 16,
-  },
-  closeButton: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: '#007BFF',
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-});
 
 export default DishSelectorModal;

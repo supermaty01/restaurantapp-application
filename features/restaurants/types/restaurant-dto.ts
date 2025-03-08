@@ -1,5 +1,5 @@
-import { ImageDTO } from "./image-dto";
-import { TagDTO } from "./tag-dto";
+import { ImageDTO } from "@/features/images/types/image-dto";
+import { TagDTO } from "@/features/tags/types/tag-dto";
 
 export interface RestaurantDetailsDTO {
   id: number;

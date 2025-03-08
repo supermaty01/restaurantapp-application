@@ -1,4 +1,3 @@
-// components/CreateTagModal.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import {
   Modal,
@@ -120,8 +119,8 @@ export default function CreateTagModal({
             text: "Cancelar",
             style: "cancel"
           },
-          { 
-            text: "Eliminar", 
+          {
+            text: "Eliminar",
             onPress: () => onDelete(editTag.id),
             style: "destructive"
           }
@@ -205,7 +204,7 @@ export default function CreateTagModal({
                 <Text className="text-white font-semibold">Eliminar</Text>
               </TouchableOpacity>
             )}
-            
+
             <View className="flex-row ml-auto">
               <TouchableOpacity
                 onPress={onClose}

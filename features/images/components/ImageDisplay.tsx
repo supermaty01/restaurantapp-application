@@ -1,4 +1,4 @@
-import { ImageDTO } from "@/types/image-dto";
+import { ImageDTO } from "@/features/images/types/image-dto";
 import React, { useState } from "react";
 import { View, ScrollView, TouchableOpacity, Modal, Dimensions, Image, Text } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";

@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
 import { RegisterFormData, registerSchema } from '@/features/auth/schemas/register';
+import { AuthContext } from '@/lib/context/AuthContext';
 
 const RegisterScreen: FC = () => {
   const { register: registerUser } = useContext(AuthContext);

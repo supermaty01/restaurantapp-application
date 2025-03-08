@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import TagItem from '@/components/tags/TagItem';
 import CreateTagModal from '@/components/tags/CreateTagModal';
 import api from '@/services/api';
-import { TagDTO } from '@/types/tag-dto';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 
 export default function TagsScreen() {
   const [tags, setTags] = useState<TagDTO[]>([]);
