@@ -39,7 +39,7 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
                 }}
               >
                 <Image
-                  source={{ uri: img.url }}
+                  source={{ uri: img.uri }}
                   className="h-56"
                   style={{ width: screenWidth }}
                   resizeMode="cover"
@@ -71,7 +71,7 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
       {/* Visualizador de imágenes expandido con react-native-image-zoom-viewer */}
       <Modal visible={isImageViewerVisible} transparent={true}>
         <ImageViewer
-          imageUrls={images.map((img) => ({ url: img.url }))}
+          imageUrls={images.map((img) => ({ url: img.uri }))}
           index={currentImageIndex}
           onCancel={() => setIsImageViewerVisible(false)}
           enableSwipeDown={true}

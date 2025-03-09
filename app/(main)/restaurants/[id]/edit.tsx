@@ -14,6 +14,11 @@ import MapLocationPicker from '@/components/MapLocationPicker';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
 import { uploadImages } from '@/lib/helpers/upload-images';
+import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { and, eq } from 'drizzle-orm/sql';
 
 export default function RestaurantEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
@@ -35,32 +40,27 @@ export default function RestaurantEditScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const restaurant = useRestaurantById(Number(id));
+
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      api
-        .get(`/restaurants/${id}`)
-        .then((response) => {
-          const restaurant = response.data.data;
-          reset({
-            name: restaurant.name,
-            comments: restaurant.comments || "",
-            rating: restaurant.rating,
-            location: restaurant.location,
-          });
-          setSelectedTags(restaurant.tags);
-          setSelectedImages(
-            restaurant.images.map((img: any) => ({ id: img.id, uri: img.url }))
-          );
-          setLocation(restaurant.location);
-        })
-        .catch((error) => {
-          Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
-          console.log(error);
-        })
-        .finally(() => setLoading(false));
+    if (restaurant?.id) {
+      const l = (restaurant.latitude && restaurant.longitude) ? {
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+      } : null;
+      reset({
+        name: restaurant.name,
+        comments: restaurant.comments || "",
+        rating: restaurant.rating,
+        location: l,
+      });
+      setSelectedTags(restaurant.tags);
+      setSelectedImages(restaurant.images);
+      setLocation(l);
     }
-  }, [id, reset]);
+  }, [restaurant?.id, reset]);
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -69,20 +69,42 @@ export default function RestaurantEditScreen() {
         name: data.name.trim(),
         comments: data.comments?.trim() || '',
         rating: data.rating || null,
-        location: location || null,
-        tags: selectedTags.map((tag) => tag.id),
+        latitude: location?.latitude || null,
+        longitude: location?.longitude || null,
       };
-
-      await api.put(`/restaurants/${id}`, payload);
+      await drizzleDb.update(schema.restaurants).set(payload).where(eq(schema.restaurants.id, Number(id)));
 
       const newImages = selectedImages.filter((image) => !image.id);
       if (newImages.length > 0) {
-        await uploadImages(newImages.map((img) => img.uri), "RESTAURANT", Number(id));
+        await uploadImages(drizzleDb, newImages.map((img) => img.uri), "RESTAURANT", Number(id));
+      }
+
+      // Eliminar etiquetas
+      const currentTags = restaurant?.tags.map((tag) => tag.id) || [];
+      const removedTags = currentTags.filter((tagId) => !selectedTags.some((tag) => tag.id === tagId));
+      const addedTags = selectedTags.filter((tag) => !currentTags.includes(tag.id)).map((tag) => tag.id);
+      if (removedTags.length > 0) {
+        await Promise.all(
+          removedTags.map((tagId) => {
+            return drizzleDb.delete(schema.restaurantTags).where(and(eq(schema.restaurantTags.restaurantId, Number(id)), (eq(schema.restaurantTags.tagId, tagId))));
+          })
+        );
+      }
+
+      // Agregar etiquetas
+      if (addedTags.length > 0) {
+        await Promise.all(
+          addedTags.map((tagId) => {
+            return drizzleDb.insert(schema.restaurantTags).values({ restaurantId: Number(id), tagId });
+          })
+        );
       }
 
       if (removedImages.length > 0) {
         await Promise.all(
-          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+          removedImages.map((imageId) => {
+            return drizzleDb.delete(schema.images).where(eq(schema.images.id, imageId));
+          })
         );
       }
 

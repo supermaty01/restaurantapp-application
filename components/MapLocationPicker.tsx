@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Linking } from 
 import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { set } from 'date-fns';
 
 interface MapLocationPickerProps {
   location: { latitude: number; longitude: number } | null;
@@ -31,6 +32,12 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
 
   useEffect(() => {
     if (location) {
+      setMapRegion((prev) => ({
+        ...prev,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }));
+      setSelectedLocation(location);
       fetchAddress(location.latitude, location.longitude);
     }
   }, [location]);

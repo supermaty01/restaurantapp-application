@@ -58,7 +58,7 @@ export const useRestaurantById = (id: number) => {
     if (row.imageId && !restaurant.images.some((i) => i.id === row.imageId)) {
       restaurant.images.push({
         id: row.imageId,
-        url: row.imagePath!,
+        uri: row.imagePath!,
       });
     }
 

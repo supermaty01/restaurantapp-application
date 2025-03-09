@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ImagesUploaderBaseProps {
   disabled?: boolean;
@@ -11,6 +12,7 @@ interface ImagesUploaderCreateProps extends ImagesUploaderBaseProps {
   isEdit?: false;
   images: string[];
   onChangeImages: (newImages: string[]) => void;
+  onRemoveExistingImage?: never;
 }
 
 // Tipo para imágenes en modo edición
@@ -35,10 +37,7 @@ const openAppSettings = () => {
   });
 };
 
-export default function ImagesUploader(props: ImagesUploaderProps) {
-  const { disabled } = props;
-  const isEdit = props.isEdit === true;
-
+export default function ImagesUploader({ disabled, isEdit, images, onChangeImages, onRemoveExistingImage }: ImagesUploaderProps) {
   const pickFromGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -63,10 +62,10 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
     if (!result.canceled && result.assets?.length) {
       if (isEdit) {
         const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
-        props.onChangeImages([...props.images, ...newImages] as any);
+        onChangeImages([...images, ...newImages] as any);
       } else {
         const newImages = result.assets.map((asset) => asset.uri);
-        props.onChangeImages([...props.images, ...newImages] as any);
+        onChangeImages([...images, ...newImages] as any);
       }
     }
   };
@@ -93,26 +92,24 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
     if (!result.canceled && result.assets?.length) {
       if (isEdit) {
         const newImages = result.assets.map((asset) => ({ uri: asset.uri }));
-        props.onChangeImages([...props.images, ...newImages] as any);
+        onChangeImages([...images, ...newImages] as any);
       } else {
         const newImages = result.assets.map((asset) => asset.uri);
-        props.onChangeImages([...props.images, ...newImages] as any);
+        onChangeImages([...images, ...newImages] as any);
       }
     }
   };
 
   const removeImage = (image: any) => {
     if (isEdit) {
-      // En modo edición, image es de tipo ImageItem
-      if (image.id && (props as ImagesUploaderEditProps).onRemoveExistingImage) {
-        (props as ImagesUploaderEditProps).onRemoveExistingImage(image.id);
+      if (image.id) {
+        onRemoveExistingImage(image.id);
       }
-      const newImages = (props.images as ImageItem[]).filter((img) => img.uri !== image.uri);
-      props.onChangeImages(newImages as any);
+      const newImages = images.filter((img) => img.uri !== image.uri);
+      onChangeImages(newImages as any);
     } else {
-      // En modo creación, image es string
-      const newImages = (props.images as string[]).filter((img) => img !== image);
-      props.onChangeImages(newImages as any);
+      const newImages = images.filter((img) => img !== image);
+      onChangeImages(newImages as any);
     }
   };
 
@@ -136,7 +133,7 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
         </TouchableOpacity>
       </View>
       {isEdit ? (
-        (props.images as ImageItem[]).map((image) => (
+        images.map((image) => (
           <View key={image.uri} className="mb-2">
             <Image
               source={{ uri: image.uri }}
@@ -145,15 +142,16 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
             />
             <TouchableOpacity
               onPress={() => removeImage(image)}
-              className="bg-red-500 px-3 py-2 rounded-md w-24"
+              className="bg-destructive px-3 py-2 rounded-md w-28 flex-row justify-center"
               disabled={disabled}
             >
+              <Ionicons name="trash-outline" size={16} color="#fff" className="mr-2" />
               <Text className="text-white font-semibold">Eliminar</Text>
             </TouchableOpacity>
           </View>
         ))
       ) : (
-        (props.images as string[]).map((uri) => (
+        images.map((uri) => (
           <View key={uri} className="mb-2">
             <Image
               source={{ uri }}
@@ -162,7 +160,7 @@ export default function ImagesUploader(props: ImagesUploaderProps) {
             />
             <TouchableOpacity
               onPress={() => removeImage(uri)}
-              className="bg-red-500 px-3 py-2 rounded-md w-24"
+              className="bg-destructive px-3 py-2 rounded-md w-24 text-center"
               disabled={disabled}
             >
               <Text className="text-white font-semibold">Eliminar</Text>
