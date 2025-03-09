@@ -1,30 +1,41 @@
-import api from "@/services/api";
-import { Platform } from "react-native";
+import { images } from '@/services/db/schema';
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import * as FileSystem from 'expo-file-system';
 
 export async function uploadImages(
+  db: ReturnType<typeof drizzle>,
   selectedImages: string[],
   classType: 'RESTAURANT' | 'VISIT' | 'DISH',
   id: number,
 ) {
-  const uploadPromises = selectedImages.map(uri => {
-    const formData = new FormData();
-    formData.append('class', classType);
-    formData.append('id', id.toString());
-    formData.append('image', {
-      uri: Platform.OS === 'android' ? uri : uri.replace('file://', ''),
-      name: 'image.jpg',
-      type: 'image/jpeg',
-    } as any);
+  const savePromises = selectedImages.map(async (uri) => {
+    try {
+      const filename = uri.split('/').pop();
+      const newPath = `${FileSystem.documentDirectory}${filename}`;
 
-    return api.post('/images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      transformRequest: (data, headers) => {
-        return formData;
-      },
-    });
+      await FileSystem.copyAsync({
+        from: uri,
+        to: newPath,
+      });
+
+      const imageRecord: any = {
+        path: newPath,
+        uploadedAt: new Date().toISOString(),
+      };
+
+      if (classType === 'RESTAURANT') imageRecord.restaurantId = id;
+      if (classType === 'VISIT') imageRecord.visitId = id;
+      if (classType === 'DISH') imageRecord.dishId = id;
+
+      await db.insert(images).values(imageRecord);
+
+      return newPath;
+    } catch (error) {
+      console.error('Error al guardar la imagen localmente:', error);
+      return null;
+    }
   });
 
-  await Promise.all(uploadPromises);
+  const savedPaths = await Promise.all(savePromises);
+  return savedPaths.filter(Boolean);
 }

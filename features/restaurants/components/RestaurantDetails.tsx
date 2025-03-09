@@ -38,8 +38,11 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
         )}
 
         <Text className="text-base font-bold text-gray-400 mb-2">Ubicación</Text>
-        {restaurant.location ? (
-          <MapLocationPicker location={restaurant.location} editable={false} />
+        {(restaurant.latitude && restaurant.longitude) ? (
+          <MapLocationPicker location={{
+            latitude: restaurant.latitude,
+            longitude: restaurant.longitude
+          }} editable={false} />
         ) : (
           <Text className="text-sm italic text-[#999]">
             Sin ubicación

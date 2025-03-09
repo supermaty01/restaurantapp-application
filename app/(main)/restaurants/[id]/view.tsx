@@ -1,28 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/services/api';
 import RestaurantDetails from '@/features/restaurants/components/RestaurantDetails';
 import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits';
 import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { eq } from 'drizzle-orm/sql';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function RestaurantDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
-
-  const { data: restaurant } = useRestaurantById(Number(id));
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const restaurant = useRestaurantById(Number(id));
 
   function handleEdit() {
     router.replace({
@@ -42,7 +45,7 @@ export default function RestaurantDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/restaurants/${id}`);
+              await drizzleDb.delete(schema.restaurants).where(eq(schema.restaurants.id, Number(id)));
               Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
               router.back();
             } catch (error) {

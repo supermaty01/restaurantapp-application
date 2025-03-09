@@ -62,7 +62,7 @@ export default function RestaurantCreateScreen() {
       }
 
       if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "RESTAURANT", restaurantId);
+        await uploadImages(drizzleDb, selectedImages, "RESTAURANT", restaurantId);
       }
 
       Alert.alert('Éxito', 'Restaurante creado correctamente.');

@@ -1,7 +1,7 @@
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import * as schema from "@/services/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { RestaurantListDTO } from "../types/restaurant-dto";
 
 export const useRestaurantList = () => {

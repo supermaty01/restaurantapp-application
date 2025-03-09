@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, real, primaryKey } from 'drizzle-orm/sqlite-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 // Tabla de usuarios
 export const users = sqliteTable('users', {
@@ -44,6 +44,25 @@ export const tags = sqliteTable('tags', {
   color: text('color').notNull(),
   userId: integer('user_id').references(() => users.id),
 });
+
+export const images = sqliteTable('images', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  path: text('path').notNull(), // Ruta del archivo en el dispositivo
+  description: text('description'), // Descripción opcional
+  uploadedAt: text('uploaded_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+
+  // Relación opcional: solo una de estas columnas tendrá valor
+  restaurantId: integer('restaurant_id').references(() => restaurants.id),
+  visitId: integer('visit_id').references(() => visits.id),
+  dishId: integer('dish_id').references(() => dishes.id),
+});
+
+export const imagesRelations = relations(images, ({ one }) => ({
+  restaurant: one(restaurants, { fields: [images.restaurantId], references: [restaurants.id] }),
+  visit: one(visits, { fields: [images.visitId], references: [visits.id] }),
+  dish: one(dishes, { fields: [images.dishId], references: [dishes.id] }),
+}));
+
 
 // Relaciones de etiquetas con restaurantes (Many-to-Many)
 export const restaurantTags = sqliteTable('restaurant_tag', {
