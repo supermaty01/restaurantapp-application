@@ -15,6 +15,20 @@
       "when": 1741472372798,
       "tag": "0001_left_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1741486157767,
+      "tag": "0002_lucky_spot",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1741490301441,
+      "tag": "0003_romantic_betty_ross",
+      "breakpoints": true
     }
   ]
 }

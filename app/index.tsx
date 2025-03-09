@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router';
 import { AuthContext } from '@/lib/context/AuthContext';
 
 export default function Index() {
-  const { userToken, loading } = useContext(AuthContext);
+  const { userToken, loading, isOfflineMode } = useContext(AuthContext);
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      if (userToken) {
+      if (userToken || isOfflineMode) {
         router.replace('/restaurants');
       } else {
         router.replace('/login');

@@ -1,5 +1,5 @@
 export interface TagDTO {
-  id: string;
+  id: number;
   name: string;
   color: string;
 }

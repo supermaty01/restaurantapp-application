@@ -134,17 +134,17 @@ let logout: () => Promise<void>;
 let router: ReturnType<typeof useRouter>;
 
 export default function MainLayout() {
-  const { userToken, loading, logout: contextLogout } = useContext(AuthContext);
+  const { userToken, loading, logout: contextLogout, isOfflineMode } = useContext(AuthContext);
   router = useRouter();
   logout = contextLogout;
 
   useEffect(() => {
-    if (!loading && !userToken) {
+    if (!loading && (!userToken && !isOfflineMode)) {
       router.replace('/login');
     }
   }, [userToken, loading, router]);
 
-  if (loading || !userToken) return null;
+  if (loading || (!userToken && !isOfflineMode)) return null;
 
   return (
     <SafeAreaView className="flex-1 bg-muted">

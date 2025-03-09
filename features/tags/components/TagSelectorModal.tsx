@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { Ionicons } from '@expo/vector-icons';
 import Tag from '@/features/tags/components/Tag';
 import { TagDTO } from '@/features/tags/types/tag-dto';
+import { useTagsList } from '../hooks/useTagsList';
 
 interface TagSelectorModalProps {
   visible: boolean;
@@ -19,22 +20,7 @@ export default function TagSelectorModal({
   selectedTags,
   onChangeSelected,
 }: TagSelectorModalProps) {
-  const [tags, setTags] = useState<TagDTO[]>([]);
-
-  useEffect(() => {
-    if (visible) {
-      fetchTags();
-    }
-  }, [visible]);
-
-  const fetchTags = async () => {
-    try {
-      const response = await api.get('/tags');
-      setTags(response.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { data: tags } = useTagsList();
 
   const handleToggle = (selectedTag: TagDTO) => {
     if (selectedTags.find((tag) => tag.id === selectedTag.id)) {

@@ -40,6 +40,11 @@ const LoginScreen: FC = () => {
     }
   };
 
+  const handleContinueOffline = async () => {
+    continueOffline();
+    router.push('/restaurants');
+  }
+
   return (
     <>
       <Text className="text-2xl font-bold mb-8 text-gray-800">
@@ -82,7 +87,7 @@ const LoginScreen: FC = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={continueOffline}
+          onPress={handleContinueOffline}
           className="w-full py-4 rounded-lg items-center bg-gray-600"
         >
           <Text className="text-white font-semibold text-base">Continuar sin cuenta</Text>

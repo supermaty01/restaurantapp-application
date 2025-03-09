@@ -1,4 +1,5 @@
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, primaryKey } from 'drizzle-orm/sqlite-core';
+import { relations } from 'drizzle-orm';
 
 // Tabla de usuarios
 export const users = sqliteTable('users', {
@@ -9,10 +10,11 @@ export const users = sqliteTable('users', {
 export const restaurants = sqliteTable('restaurants', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  location: text('location'),
+  latitude: real('latitude'),
+  longitude: real('longitude'),
   comments: text('comments'),
   rating: integer('rating'),
-  userId: text('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id),
 });
 
 // Tabla de visitas
@@ -20,8 +22,8 @@ export const visits = sqliteTable('visits', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   visitedAt: text('visited_at').notNull(),
   comments: text('comments'),
-  restaurantId: text('restaurant_id').references(() => restaurants.id),
-  userId: text('user_id').references(() => users.id),
+  restaurantId: integer('restaurant_id').references(() => restaurants.id),
+  userId: integer('user_id').references(() => users.id),
 });
 
 // Tabla de platos
@@ -31,8 +33,8 @@ export const dishes = sqliteTable('dishes', {
   price: integer('price'),
   rating: integer('rating'),
   comments: text('comments'),
-  restaurantId: text('restaurant_id').references(() => restaurants.id),
-  userId: text('user_id').references(() => users.id),
+  restaurantId: integer('restaurant_id').references(() => restaurants.id),
+  userId: integer('user_id').references(() => users.id),
 });
 
 // Tabla de etiquetas
@@ -40,29 +42,63 @@ export const tags = sqliteTable('tags', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   color: text('color').notNull(),
-  userId: text('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id),
 });
 
-// Relaciones de etiquetas con restaurantes
+// Relaciones de etiquetas con restaurantes (Many-to-Many)
 export const restaurantTags = sqliteTable('restaurant_tag', {
-  restaurantId: text('restaurant_id').references(() => restaurants.id),
-  tagId: text('tag_id').references(() => tags.id),
+  restaurantId: integer('restaurant_id').references(() => restaurants.id),
+  tagId: integer('tag_id').references(() => tags.id),
 }, (table) => [
   primaryKey({ columns: [table.restaurantId, table.tagId] }),
 ]);
 
-// Relaciones de etiquetas con platos
+// Relaciones de etiquetas con platos (Many-to-Many)
 export const dishTags = sqliteTable('dish_tag', {
-  dishId: text('dish_id').references(() => dishes.id),
-  tagId: text('tag_id').references(() => tags.id),
+  dishId: integer('dish_id').references(() => dishes.id),
+  tagId: integer('tag_id').references(() => tags.id),
 }, (table) => [
   primaryKey({ columns: [table.dishId, table.tagId] }),
 ]);
 
-// Relación de visitas con platos
+// Relación de visitas con platos (Many-to-Many)
 export const dishVisits = sqliteTable('dish_visit', {
-  visitId: text('visit_id').references(() => visits.id),
-  dishId: text('dish_id').references(() => dishes.id),
+  visitId: integer('visit_id').references(() => visits.id),
+  dishId: integer('dish_id').references(() => dishes.id),
 }, (table) => [
   primaryKey({ columns: [table.visitId, table.dishId] }),
 ]);
+
+// Definición de relaciones con Drizzle
+export const usersRelations = relations(users, ({ many }) => ({
+  restaurants: many(restaurants),
+  visits: many(visits),
+  dishes: many(dishes),
+  tags: many(tags),
+}));
+
+export const restaurantsRelations = relations(restaurants, ({ one, many }) => ({
+  user: one(users, { fields: [restaurants.userId], references: [users.id] }),
+  visits: many(visits),
+  dishes: many(dishes),
+  tags: many(restaurantTags),
+}));
+
+export const visitsRelations = relations(visits, ({ one, many }) => ({
+  user: one(users, { fields: [visits.userId], references: [users.id] }),
+  restaurant: one(restaurants, { fields: [visits.restaurantId], references: [restaurants.id] }),
+  dishes: many(dishVisits),
+}));
+
+export const dishesRelations = relations(dishes, ({ one, many }) => ({
+  user: one(users, { fields: [dishes.userId], references: [users.id] }),
+  restaurant: one(restaurants, { fields: [dishes.restaurantId], references: [restaurants.id] }),
+  tags: many(dishTags),
+  visits: many(dishVisits),
+}));
+
+export const tagsRelations = relations(tags, ({ one, many }) => ({
+  user: one(users, { fields: [tags.userId], references: [users.id] }),
+  restaurantTags: many(restaurantTags),
+  dishTags: many(dishTags),
+}));

@@ -49,8 +49,8 @@ interface CreateTagModalProps {
   visible: boolean;
   onClose: () => void;
   onAdd: (tag: { name: string; color: string }) => void;
-  onDelete?: (tagId: string) => void;
-  editTag?: { id: string; name: string; color: string } | null;
+  onDelete?: (tagId: number) => void;
+  editTag?: { id: number; name: string; color: string } | null;
   isEditing?: boolean;
 }
 

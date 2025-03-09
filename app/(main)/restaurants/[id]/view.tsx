@@ -14,32 +14,15 @@ import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits
 import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
-import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
+import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function RestaurantDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
-  const [restaurant, setRestaurant] = useState<RestaurantDetailsDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchRestaurant();
-  }, []);
-
-  async function fetchRestaurant() {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/restaurants/${id}`);
-      setRestaurant(response.data.data);
-    } catch (error) {
-      console.log('Error fetching restaurant:', error);
-      Alert.alert('Error', 'No se pudo cargar la información del restaurante');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const { data: restaurant } = useRestaurantById(Number(id));
 
   function handleEdit() {
     router.replace({
@@ -70,14 +53,6 @@ export default function RestaurantDetailScreen() {
         },
       ],
       { cancelable: true }
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
     );
   }
 

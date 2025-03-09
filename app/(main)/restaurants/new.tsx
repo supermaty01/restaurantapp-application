@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
-import api from '@/services/api';
 import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
 import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
@@ -15,6 +14,9 @@ import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant'
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
 import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -37,6 +39,8 @@ export default function RestaurantCreateScreen() {
   const [loading, setLoading] = useState(false);
   const { useBackRedirect } = useGlobalSearchParams();
   const { setNewRestaurantId } = useNewRestaurant();
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -45,12 +49,17 @@ export default function RestaurantCreateScreen() {
         name: data.name.trim(),
         comments: data.comments?.trim() || '',
         rating: data.rating || null,
-        location: location || null,
-        tags: selectedTags.map((tag) => tag.id),
+        latitude: location?.latitude || null,
+        longitude: location?.longitude || null,
       };
 
-      const response = await api.post('/restaurants', payload);
-      const restaurantId = response.data.data.id;
+      const response = await drizzleDb.insert(schema.restaurants).values(payload);
+      const restaurantId = response.lastInsertRowId;
+
+      // Asociar etiquetas
+      for (const tag of selectedTags) {
+        await drizzleDb.insert(schema.restaurantTags).values({ restaurantId, tagId: tag.id });
+      }
 
       if (selectedImages.length > 0) {
         await uploadImages(selectedImages, "RESTAURANT", restaurantId);
