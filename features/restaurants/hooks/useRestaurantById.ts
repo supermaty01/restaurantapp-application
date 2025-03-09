@@ -3,12 +3,13 @@ import { useSQLiteContext } from "expo-sqlite";
 import * as schema from "@/services/db/schema";
 import { eq } from "drizzle-orm";
 import { RestaurantDetailsDTO } from "../types/restaurant-dto";
+import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
 
 export const useRestaurantById = (id: number) => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
 
-  const { data: rawData } = useLiveQuery(drizzleDb
+  const { data: rawData } = useLiveTablesQuery(drizzleDb
     .select({
       restaurantId: schema.restaurants.id,
       restaurantName: schema.restaurants.name,
@@ -23,11 +24,11 @@ export const useRestaurantById = (id: number) => {
       imagePath: schema.images.path,
     })
     .from(schema.restaurants)
+    .where(eq(schema.restaurants.id, id))
     .leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
     .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
     .leftJoin(schema.images, eq(schema.restaurants.id, schema.images.restaurantId))
-    .where(eq(schema.restaurants.id, id))
-  );
+  , ["restaurants", "restaurantTags", "tags", "images"]);
 
   const restaurant = rawData?.reduce<RestaurantDetailsDTO[]>((acc, row) => {
     let restaurant = acc.find((r) => r.id === row.restaurantId);

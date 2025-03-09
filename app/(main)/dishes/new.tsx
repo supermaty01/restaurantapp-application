@@ -15,6 +15,9 @@ import { useNewDish } from '@/features/dishes/hooks/useNewDish';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
 import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
 
 export default function DishCreateScreen() {
   const { useBackRedirect, restaurantId } = useGlobalSearchParams();
@@ -27,7 +30,7 @@ export default function DishCreateScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurant_id: Number(restaurantId),
+      restaurantId: Number(restaurantId),
       comments: '',
       price: undefined,
       rating: undefined,
@@ -39,29 +42,42 @@ export default function DishCreateScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const { setNewDish } = useNewDish();
   const [loading, setLoading] = useState(false);
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         comments: data.comments?.trim() || "",
         price: data.price || null,
         rating: data.rating || null,
-        tags: selectedTags.map((tag) => tag.id),
       };
 
-      const response = await api.post('/dishes', payload);
-      const dishId = response.data.data.id;
+      const response = await drizzleDb.insert(schema.dishes).values(payload);
+      const dishId = response.lastInsertRowId;
+
+      // Asociar etiquetas
+      for (const tag of selectedTags) {
+        await drizzleDb.insert(schema.dishTags).values({ dishId, tagId: tag.id });
+      }
 
       if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "DISH", dishId);
+        await uploadImages(drizzleDb, selectedImages, "DISH", dishId);
       }
 
       Alert.alert('Éxito', 'Plato creado correctamente.');
       if (useBackRedirect && useBackRedirect === 'true') {
-        setNewDish(response.data.data);
+        setNewDish({
+          id: dishId,
+          name: payload.name,
+          comments: payload.comments,
+          rating: payload.rating,
+          tags: [], // No se necesitan
+          images: [], // No se necesitan
+        });
         router.back();
       } else {
         router.replace({
@@ -114,7 +130,7 @@ export default function DishCreateScreen() {
         <RestaurantPicker
           control={control}
           setValue={setValue}
-          name="restaurant_id"
+          name="restaurantId"
           fixedValue={!!restaurantId}
           label="Restaurante"
           errors={errors}

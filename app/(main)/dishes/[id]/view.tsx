@@ -1,36 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/services/api';
 import RatingStars from '@/components/RatingStars';
-import { DishDetailsDTO } from '@/features/dishes/types/dish-dto';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 import Tag from '@/features/tags/components/Tag';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { eq } from 'drizzle-orm/sql';
+import { useDishById } from '@/features/dishes/hooks/useDishById';
 
 export default function DishDetailScreen() {
 
   const router = useRouter();
   const { id } = useGlobalSearchParams(); // Obtiene el id desde la ruta
-  const [dish, setDish] = useState<DishDetailsDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDish();
-  }, []);
-
-  async function fetchDish() {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/dishes/${id}`);
-      setDish(response.data.data);
-    } catch (error) {
-      console.log('Error fetching dish:', error);
-      Alert.alert('Error', 'No se pudo cargar la información del plato');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const dish = useDishById(Number(id));
 
   function handleEdit() {
     router.replace({
@@ -50,7 +37,7 @@ export default function DishDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/dishes/${id}`);
+              await drizzleDb.delete(schema.dishes).where(eq(schema.dishes.id, Number(id)));
               Alert.alert('Eliminado', 'Plato eliminado correctamente');
               router.back(); // O redirigir a otra pantalla
             } catch (error) {
@@ -64,18 +51,10 @@ export default function DishDetailScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
-
   if (!dish) {
     return (
       <View className="flex-1 justify-center items-center bg-muted p-4">
-        <Text className="text-base text-gray-800">No se encontró el Plato</Text>
+        <Text className="text-base text-gray-800">No se encontró el plato</Text>
       </View>
     );
   }

@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Controller, Control, UseFormSetValue } from 'react-hook-form';
 import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
-import api from '@/services/api';
-import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
 import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
+import { useRestaurantList } from '../hooks/useRestaurantList';
 
 interface RestaurantPickerProps {
   control: Control<any>;
@@ -17,26 +16,11 @@ interface RestaurantPickerProps {
 }
 
 const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, name, label, errors, fixedValue }) => {
-  const [restaurants, setRestaurants] = useState<RestaurantListDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
 
+  const restaurants = useRestaurantList();
+
   useEffect(() => {
-    const fetchRestaurants = async () => {
-      try {
-        setIsLoading(true);
-        const response = await api.get('/restaurants');
-        setRestaurants(response.data.data);
-      } catch (error) {
-        console.log('Error fetching restaurants:', error);
-        Alert.alert('Error', 'No se pudieron cargar los restaurantes');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRestaurants();
-
     if (newRestaurantId) {
       setValue(name, newRestaurantId, {
         shouldValidate: true,
@@ -49,40 +33,33 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
   return (
     <View>
       {label && <Text className="text-base text-gray-800 mb-2">{label}</Text>}
-
-      {isLoading ? (
-        <View className="border border-gray-200 h-16 rounded-md justify-center pl-4">
-          <ActivityIndicator size="small" color="#000" />
-        </View>
-      ) : (
-        <Controller
-          control={control}
-          name={name}
-          render={({ field: { onChange, value } }) => (
-            <View className="border border-gray-200 rounded-md">
-              <Picker
-                selectedValue={value}
-                onValueChange={(itemValue) => onChange(itemValue)}
-                enabled={!fixedValue}
-              >
+      <Controller
+        control={control}
+        name={name}
+        render={({ field: { onChange, value } }) => (
+          <View className="border border-gray-200 rounded-md">
+            <Picker
+              selectedValue={value}
+              onValueChange={(itemValue) => onChange(itemValue)}
+              enabled={!fixedValue}
+            >
+              <Picker.Item
+                label="Selecciona un restaurante"
+                value={-1}
+                style={{ color: '#6b7280;', fontSize: 15 }}
+              />
+              {restaurants.map((restaurant) => (
                 <Picker.Item
-                  label="Selecciona un restaurante"
-                  value={-1}
+                  key={restaurant.id}
+                  label={restaurant.name}
+                  value={restaurant.id}
                   style={{ color: '#6b7280;', fontSize: 15 }}
                 />
-                {restaurants.map((restaurant) => (
-                  <Picker.Item
-                    key={restaurant.id}
-                    label={restaurant.name}
-                    value={restaurant.id}
-                    style={{ color: '#6b7280;', fontSize: 15 }}
-                  />
-                ))}
-              </Picker>
-            </View>
-          )}
-        />
-      )}
+              ))}
+            </Picker>
+          </View>
+        )}
+      />
 
       {errors?.[name] && <Text className="text-red-500 mt-1">{errors[name].message}</Text>}
       {!fixedValue && (

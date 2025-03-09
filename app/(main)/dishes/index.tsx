@@ -1,44 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { FlatList, TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import DishItem from '@/features/dishes/components/DishItem';
-import api from '@/services/api';
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
+import { useDishList } from '@/features/dishes/hooks/useDishList';
 
 export default function DishesScreen() {
   const router = useRouter();
-  const [dishes, setDishes] = useState<DishListDTO[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const getDishes = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/dishes');
-      setDishes(response.data.data);
-    } catch (error: any) {
-      console.log('Error fetching platos:', error);
-      Alert.alert('Error', 'No se pudieron cargar los platos');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Se llama cada vez que la pantalla obtiene foco
-  useFocusEffect(
-    useCallback(() => {
-      getDishes();
-    }, [])
-  );
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
+  const dishes = useDishList();
 
   return (
     <View className="flex-1 bg-muted px-4 pt-2 relative">

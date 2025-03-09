@@ -23,8 +23,9 @@ const DishItem: React.FC<DishItemProps> = ({
   images,
   onPress,
 }) => {
-  const imageUrl = images.length > 0 ? images[0].url : null;
+  const imageUrl = images.length > 0 ? images[0].uri : null;
 
+  console.log(imageUrl);
   return (
     <TouchableOpacity
       onPress={onPress}

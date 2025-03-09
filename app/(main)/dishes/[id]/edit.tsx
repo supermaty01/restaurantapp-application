@@ -28,7 +28,7 @@ export default function DishEditScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurant_id: undefined,
+      restaurantId: undefined,
       comments: '',
       price: undefined,
       rating: undefined,
@@ -52,7 +52,7 @@ export default function DishEditScreen() {
 
         reset({
           name: dishData.name,
-          restaurant_id: dishData.restaurant.id,
+          restaurantId: dishData.restaurant.id,
           comments: dishData.comments || "",
           rating: dishData.rating,
           price: dishData.price.toString(),
@@ -78,7 +78,7 @@ export default function DishEditScreen() {
     try {
       const payload = {
         name: data.name.trim(),
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurant_id,
         comments: data.comments?.trim() || "",
         price: data.price || null,
         rating: data.rating || null,

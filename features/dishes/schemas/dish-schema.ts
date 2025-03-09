@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const dishSchema = z.object({
   name: z.string().nonempty('El nombre es requerido'),
-  restaurant_id: z.number({
+  restaurantId: z.number({
     required_error: 'Selecciona un restaurante',
   }).positive('Selecciona un restaurante'),
   comments: z.string().optional(),
