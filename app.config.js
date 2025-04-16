@@ -6,7 +6,7 @@ export default {
     "slug": "restaurantapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/burger-logo.png",
+    "icon": "./assets/burger-logo-fondo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
@@ -65,7 +65,8 @@ export default {
       },
       "eas": {
         "projectId": "acb4a328-034e-4fa5-8381-226436faaf98"
-      }
+      },
+      "OFFLINE_MODE": process.env.OFFLINE_MODE || "false"
     }
   }
 }
