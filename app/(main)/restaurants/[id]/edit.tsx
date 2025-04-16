@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
-import api from '@/services/api';
 import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
 import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';

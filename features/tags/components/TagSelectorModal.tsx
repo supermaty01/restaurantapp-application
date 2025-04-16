@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import api from '@/services/api';
 import clsx from 'clsx';
 import { Ionicons } from '@expo/vector-icons';
 import Tag from '@/features/tags/components/Tag';

@@ -1,16 +1,16 @@
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import * as schema from "@/services/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { DishListDTO } from "../types/dish-dto";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
 
-export const useDishesByRestaurant = (restaurantId: number | undefined) => {
+export const useDishesDetails = (dishIds: number[]) => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
 
   const { data: rawData } = useLiveTablesQuery(
-    restaurantId
+    dishIds.length > 0
       ? drizzleDb
           .select({
             dishId: schema.dishes.id,
@@ -24,13 +24,13 @@ export const useDishesByRestaurant = (restaurantId: number | undefined) => {
             imagePath: schema.images.path,
           })
           .from(schema.dishes)
-          .where(eq(schema.dishes.restaurantId, restaurantId))
+          .where(inArray(schema.dishes.id, dishIds))
           .leftJoin(schema.dishTags, eq(schema.dishes.id, schema.dishTags.dishId))
           .leftJoin(schema.tags, eq(schema.dishTags.tagId, schema.tags.id))
           .leftJoin(schema.images, eq(schema.dishes.id, schema.images.dishId))
-      : drizzleDb.select().from(schema.dishes).where(eq(schema.dishes.id, -1)), // Query vacía si no hay restaurantId
+      : drizzleDb.select().from(schema.dishes).where(eq(schema.dishes.id, -1)), // Query vacía si no hay dishIds
     ["dishes", "dishTags", "tags", "images"],
-    [restaurantId]
+    [dishIds.join(",")]
   );
 
   // @ts-ignore - Ignorar errores de tipo en el resultado de la consulta

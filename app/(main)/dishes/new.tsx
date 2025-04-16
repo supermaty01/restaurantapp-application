@@ -6,7 +6,6 @@ import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
-import api from '@/services/api';
 import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
 import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
