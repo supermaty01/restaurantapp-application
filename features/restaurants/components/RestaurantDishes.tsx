@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { View, Text, Image, FlatList, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import api from '@/services/api';
 import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
+import { useDishesByRestaurant } from '@/features/dishes/hooks/useDishesByRestaurant';
 
 interface RestaurantDishesProps {
   restaurant: RestaurantDetailsDTO;
@@ -12,35 +11,7 @@ interface RestaurantDishesProps {
 
 export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) {
   const router = useRouter();
-  const [dishes, setDishes] = useState<DishListDTO[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Función para obtener los platos desde el endpoint /restaurants/{id}/dishes
-  const fetchDishes = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/restaurants/${restaurant.id}/dishes`);
-      setDishes(response.data.data);
-    } catch (error) {
-      console.log('Error fetching dishes:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (restaurant.id) {
-      fetchDishes();
-    }
-  }, [restaurant.id]);
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
+  const dishes = useDishesByRestaurant(restaurant.id);
 
   return (
     <View className="p-4 h-full bg-white">
@@ -49,7 +20,7 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           // Toma la primera imagen del array si existe
-          const imageUrl = item.images && item.images.length > 0 ? item.images[0].url : null;
+          const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
           return (
             <TouchableOpacity
               className="flex-row items-center py-3 border-b border-gray-200"

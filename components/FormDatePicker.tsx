@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import { Controller, Control } from 'react-hook-form';
 import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { format, parse } from 'date-fns';
 
 interface FormDatePickerProps {
   control: Control<any>;
@@ -18,7 +19,7 @@ const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label })
       name={name}
       render={({ field: { onChange, value }, fieldState: { error } }) => {
         const formattedDate = value
-          ? new Date(value + "T00:00:00").toLocaleDateString()
+          ? format(parse(value, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy')
           : "Selecciona una fecha";
 
         return (
@@ -34,13 +35,14 @@ const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label })
 
             {showPicker && (
               <DateTimePicker
-                value={value ? new Date(value + "T00:00:00") : new Date()}
+                value={value ? parse(value, 'yyyy-MM-dd', new Date()) : new Date()}
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={(event, selectedDate) => {
-                  setShowPicker(false);
-                  if (selectedDate) {
-                    onChange(selectedDate.toISOString().split("T")[0]);
+                  setShowPicker(Platform.OS === "ios");
+                  if (selectedDate && event.type !== 'dismissed') {
+                    // Usar format de date-fns para evitar problemas de zona horaria
+                    onChange(format(selectedDate, 'yyyy-MM-dd'));
                   }
                 }}
               />

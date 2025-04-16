@@ -6,7 +6,7 @@ interface VisitItemProps {
   imageUrl: string | null;
   date: string;
   title: string;
-  comments: string;
+  comments: string | null;
   onPress?: () => void;
 }
 

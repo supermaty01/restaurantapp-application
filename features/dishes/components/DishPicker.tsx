@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList } from
 import { Control, UseFormSetValue } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import api from '@/services/api';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { useNewDish } from '@/features/dishes/hooks/useNewDish';
+import { useDishesByRestaurant } from '@/features/dishes/hooks/useDishesByRestaurant';
 
 interface DishPickerProps {
   control: Control<any>;
@@ -25,37 +25,22 @@ const DishPicker: React.FC<DishPickerProps> = ({
   selectedDishes,
   setSelectedDishes,
 }) => {
-  const [dishes, setDishes] = useState<DishListDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { newDish, setNewDish } = useNewDish();
   const router = useRouter();
 
-  const fetchDishes = async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.get(`/restaurants/${restaurantId}/dishes`);
-      setDishes(response.data.data);
-    } catch (error) {
-      console.log('Error fetching dishes:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!restaurantId) return;
-    fetchDishes();
-  }, [restaurantId]);
+  // Usar el hook para obtener los platos del restaurante
+  const dishes = useDishesByRestaurant(restaurantId);
+  const isLoading = false;
 
   useEffect(() => {
     if (newDish) {
-      fetchDishes().then(() => {
-        handleAddDish(newDish);
-        setNewDish(null);
-      });
+      handleAddDish(newDish);
+      setNewDish(null);
     }
-  }, [newDish]);
+  }, [newDish, dishes]);
+
+  console.log(selectedDishes)
 
   const handleAddDish = (dish: DishListDTO) => {
     if (!selectedDishes.some(d => d.id === dish.id)) {

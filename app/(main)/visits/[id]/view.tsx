@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
-  ActivityIndicator,
   Alert,
   Text,
   TouchableOpacity,
@@ -10,37 +9,24 @@ import {
 } from 'react-native';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/services/api';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { VisitDTO } from '@/features/visits/types/visit-dto'
 import VisitDetails from '@/features/visits/components/VisitDetails'
 import VisitDishes from '@/features/visits/components/VisitDishes'
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { eq } from 'drizzle-orm/sql';
+import { useVisitById } from '@/features/visits/hooks/useVisitById';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function VisitDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
-  const [visit, setVisit] = useState<VisitDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchVisit();
-  }, []);
-
-  async function fetchVisit() {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/visits/${id}`);
-      setVisit(response.data.data);
-    } catch (error) {
-      console.log('Error fetching visit:', error);
-      Alert.alert('Error', 'No se pudo cargar la información de la visita');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const visit = useVisitById(Number(id));
 
   function handleEdit() {
     router.replace({
@@ -60,7 +46,7 @@ export default function VisitDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              await api.delete(`/visits/${id}`);
+              await drizzleDb.delete(schema.visits).where(eq(schema.visits.id, Number(id)));
               Alert.alert('Eliminada', 'Visita eliminada correctamente');
               router.back();
             } catch (error) {
@@ -74,13 +60,7 @@ export default function VisitDetailScreen() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
+
 
   if (!visit) {
     return (
@@ -92,7 +72,7 @@ export default function VisitDetailScreen() {
     );
   }
 
-  const parsedDate = parse(visit.visited_at, 'yyyy/MM/dd', new Date());
+  const parsedDate = parse(visit.visited_at, 'yyyy-MM-dd', new Date());
   const formattedDate = format(parsedDate, "dd 'de' MMMM, yyyy", { locale: es });
 
   return (

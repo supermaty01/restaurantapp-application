@@ -1,43 +1,13 @@
-import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import api from '@/services/api';
-import { VisitDTO } from '@/features/visits/types/visit-dto'
 import VisitItem from '@/features/visits/components/VisitItem'
+import { useVisitList } from '@/features/visits/hooks/useVisitList';
 
 export default function VisitsScreen() {
   const router = useRouter();
-  const [visits, setVisits] = useState<VisitDTO[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const getVisits = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get('/visits');
-      setVisits(response.data.data);
-    } catch (error: any) {
-      console.log('Error fetching visits:', error);
-      Alert.alert('Error', 'No se pudieron cargar las visitas');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      getVisits();
-    }, []),
-  );
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
+  const visits = useVisitList();
 
   return (
     <View className="flex-1 bg-muted px-4 pt-2 relative">
@@ -47,10 +17,10 @@ export default function VisitsScreen() {
 
       <FlatList
         data={visits}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <VisitItem
-            imageUrl={item.images && item.images.length > 0 ? item.images[0].url : null}
+            imageUrl={item.images && item.images.length > 0 ? item.images[0].uri : null}
             date={item.visited_at}
             title={item.restaurant.name}
             comments={item.comments}

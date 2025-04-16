@@ -7,11 +7,13 @@ import FormDatePicker from '@/components/FormDatePicker';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 import DishPicker from '@/features/dishes/components/DishPicker';
-import api from '@/services/api';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { router } from 'expo-router';
 import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
 
 export default function VisitCreateScreen() {
   const {
@@ -25,7 +27,7 @@ export default function VisitCreateScreen() {
     defaultValues: {
       visited_at: new Date().toISOString().split('T')[0],
       comments: '',
-      restaurant_id: undefined,
+      restaurantId: undefined,
       dishes: [],
     },
   });
@@ -34,7 +36,10 @@ export default function VisitCreateScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const restaurantId = watch('restaurant_id');
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+
+  const restaurantId = watch('restaurantId');
 
   useEffect(() => {
     setSelectedDishes([]);
@@ -44,17 +49,30 @@ export default function VisitCreateScreen() {
     setIsSubmitting(true);
     try {
       const payload = {
-        visited_at: data.visited_at,
+        visitedAt: data.visited_at,
         comments: data.comments?.trim() || "",
-        restaurant_id: data.restaurant_id,
-        dishes: selectedDishes.map((dish) => dish.id),
+        restaurantId: data.restaurantId,
       };
 
-      const response = await api.post('/visits', payload);
-      const visitId = response.data.data.id;
+      // Insertar la visita
+      const response = await drizzleDb.insert(schema.visits).values(payload);
+      const visitId = response.lastInsertRowId;
 
+      // Asociar platos a la visita
+      if (data.dishes && data.dishes.length > 0) {
+        await Promise.all(
+          data.dishes.map((dishId) => {
+            return drizzleDb.insert(schema.dishVisits).values({
+              visitId,
+              dishId: typeof dishId === 'string' ? parseInt(dishId) : dishId,
+            });
+          })
+        );
+      }
+
+      // Subir imágenes
       if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "VISIT", visitId);
+        await uploadImages(drizzleDb, selectedImages, "VISIT", visitId);
       }
 
       Alert.alert('Éxito', 'Visita creada correctamente.');
@@ -88,7 +106,7 @@ export default function VisitCreateScreen() {
         <RestaurantPicker
           control={control}
           setValue={setValue}
-          name="restaurant_id"
+          name="restaurantId"
           label="Restaurante"
           errors={errors}
         />
