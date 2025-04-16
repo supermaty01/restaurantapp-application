@@ -28,7 +28,7 @@ export default function RestaurantDetailScreen() {
   const restaurant = useRestaurantById(Number(id));
 
   function handleEdit() {
-    router.replace({
+    router.push({
       pathname: '/restaurants/[id]/edit',
       params: { id: id?.toString() },
     });

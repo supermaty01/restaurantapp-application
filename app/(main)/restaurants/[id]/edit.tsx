@@ -151,7 +151,7 @@ export default function RestaurantEditScreen() {
         <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
         <MapLocationPicker location={location} onLocationChange={setLocation} />
 
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
         </View>

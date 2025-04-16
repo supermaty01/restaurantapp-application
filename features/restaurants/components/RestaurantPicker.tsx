@@ -5,6 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
 import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
 import { useRestaurantList } from '../hooks/useRestaurantList';
+import { clsx } from 'clsx';
 
 interface RestaurantPickerProps {
   control: Control<any>;
@@ -32,7 +33,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
 
   return (
     <View>
-      {label && <Text className="text-base text-gray-800 mb-2">{label}</Text>}
+      {label && <Text className={clsx("text-base text-gray-800 mb-2", errors?.[name] ? "text-red-600" : "")}>{label}</Text>}
       <Controller
         control={control}
         name={name}

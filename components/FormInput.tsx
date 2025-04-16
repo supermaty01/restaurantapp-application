@@ -17,6 +17,7 @@ const FormInput: FC<FormInputProps> = ({
   label,
   containerClassName,
   inputClassName,
+  keyboardType,
   ...rest
 }) => {
   return (
@@ -29,7 +30,7 @@ const FormInput: FC<FormInputProps> = ({
           <TextInput
             onBlur={onBlur}
             onChangeText={onChange}
-            value={value}
+            value={keyboardType === "numeric" ? value?.toString() : value}
             className={clsx("w-full min-h-12 px-4 border border-gray-200 rounded-lg bg-white placeholder:text-gray-500", inputClassName)}
             {...rest}
           />

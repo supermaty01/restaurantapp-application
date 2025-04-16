@@ -20,7 +20,7 @@ export default function DishDetailScreen() {
   const dish = useDishById(Number(id));
 
   function handleEdit() {
-    router.replace({
+    router.push({
       pathname: '/dishes/[id]/edit',
       params: { id: id?.toString() },
     })
@@ -143,7 +143,7 @@ export default function DishDetailScreen() {
           </Text>
         )}
 
-        <Text className="text-base font-bold text-gray-400 mb-2">Calificación</Text>
+        <Text className="text-base font-bold text-gray-400 my-2">Calificación</Text>
         <View className="flex-row">
           <RatingStars
             value={dish.rating}

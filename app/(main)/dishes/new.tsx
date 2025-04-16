@@ -30,7 +30,7 @@ export default function DishCreateScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurantId: Number(restaurantId),
+      restaurantId: restaurantId ? Number(restaurantId) : undefined,
       comments: '',
       price: undefined,
       rating: undefined,

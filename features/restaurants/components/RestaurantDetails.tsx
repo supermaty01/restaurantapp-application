@@ -49,7 +49,7 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
           </Text>
         )}
 
-        <Text className="text-base font-bold text-gray-400 mb-2">Calificación</Text>
+        <Text className="text-base font-bold text-gray-400 my-2">Calificación</Text>
         <View>
           <RatingStars value={restaurant.rating} readOnly />
         </View>
