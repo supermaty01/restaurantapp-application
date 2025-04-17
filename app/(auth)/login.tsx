@@ -49,7 +49,7 @@ const LoginScreen: FC = () => {
   };
 
   const handleContinueOffline = async () => {
-    continueOffline();
+    await continueOffline();
     router.push('/restaurants');
   }
 

@@ -19,8 +19,8 @@ export default {
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/burger-logo.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/burger-logo-fondo.png",
+        "backgroundColor": "#DFE2CF"
       },
       "package": "com.supermaty01.restaurantapp",
       "versionCode": 1,
@@ -52,7 +52,7 @@ export default {
           "image": "./assets/burger-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#DFE2CF"
         }
       ]
     ],
