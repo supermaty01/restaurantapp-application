@@ -40,8 +40,6 @@ const DishPicker: React.FC<DishPickerProps> = ({
     }
   }, [newDish, dishes]);
 
-  console.log(selectedDishes)
-
   const handleAddDish = (dish: DishListDTO) => {
     if (!selectedDishes.some(d => d.id === dish.id)) {
       const newSelectedDishes = [...selectedDishes, dish];
