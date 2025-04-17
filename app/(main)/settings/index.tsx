@@ -8,10 +8,12 @@ import InfoCard from '@/features/settings/components/InfoCard';
 import ExportCard from '@/features/settings/components/ExportCard';
 import ImportCard from '@/features/settings/components/ImportCard';
 import LogoutCard from '@/features/settings/components/LogoutCard';
+import { DBVersionContext } from '@/app/_layout';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { logout } = useContext(AuthContext);
+  const bumpDb = useContext(DBVersionContext);
   const {
     isExporting,
     setIsExporting,
@@ -92,10 +94,7 @@ export default function SettingsScreen() {
                 await backupService.importData(fileUri, (progress) => {
                   setImportProgress(progress);
                 });
-
-                // La aplicación se reiniciará automáticamente después de la importación
-                // (implementado en el servicio de backup)
-
+                bumpDb();
               } catch (error) {
                 console.error('Error durante la importación:', error);
                 Alert.alert('Error', 'No se pudo completar la importación');

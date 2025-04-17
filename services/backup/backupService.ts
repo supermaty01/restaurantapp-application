@@ -6,8 +6,6 @@ import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm';
 import { DATABASE_NAME } from '@/app/_layout';
 import JSZip from 'jszip';
-import { Platform, Alert } from 'react-native';
-import RNRestart from 'react-native-restart';
 
 // Estructura para almacenar información sobre la exportación
 export interface BackupInfo {
@@ -349,27 +347,6 @@ export class BackupService {
       await FileSystem.deleteAsync(extractDir, { idempotent: true });
 
       progressCallback(100);
-
-      // Mostrar mensaje y reiniciar la aplicación
-      Alert.alert(
-        'Importación completada',
-        'Los datos se han importado correctamente. La aplicación se reiniciará para aplicar los cambios.',
-        [
-          {
-            text: 'Aceptar',
-            onPress: () => {
-              // Reiniciar la aplicación
-              setTimeout(() => {
-                if (Platform.OS === 'web') {
-                  window.location.reload();
-                } else {
-                  RNRestart.Restart();
-                }
-              }, 500);
-            },
-          },
-        ]
-      );
 
       return {
         date: new Date(),
