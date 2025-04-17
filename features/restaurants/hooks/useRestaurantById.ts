@@ -1,15 +1,15 @@
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import * as schema from "@/services/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { RestaurantDetailsDTO } from "../types/restaurant-dto";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
 
-export const useRestaurantById = (id: number) => {
+export const useRestaurantById = (id: number, includeDeleted: boolean = true) => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
 
-  const { data: rawData } = useLiveTablesQuery(drizzleDb
+  const query = drizzleDb
     .select({
       restaurantId: schema.restaurants.id,
       restaurantName: schema.restaurants.name,
@@ -17,17 +17,27 @@ export const useRestaurantById = (id: number) => {
       restaurantRating: schema.restaurants.rating,
       restaurantLatitude: schema.restaurants.latitude,
       restaurantLongitude: schema.restaurants.longitude,
+      restaurantDeleted: schema.restaurants.deleted,
       tagId: schema.tags.id,
       tagName: schema.tags.name,
       tagColor: schema.tags.color,
       imageId: schema.images.id,
       imagePath: schema.images.path,
     })
-    .from(schema.restaurants)
-    .where(eq(schema.restaurants.id, id))
-    .leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
-    .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
-    .leftJoin(schema.images, eq(schema.restaurants.id, schema.images.restaurantId))
+    .from(schema.restaurants);
+
+  // Filtrar por ID y, opcionalmente, por estado de eliminación
+  if (includeDeleted) {
+    query.where(eq(schema.restaurants.id, id));
+  } else {
+    query.where(and(eq(schema.restaurants.id, id), eq(schema.restaurants.deleted, false)));
+  }
+
+  query.leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
+      .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
+      .leftJoin(schema.images, eq(schema.restaurants.id, schema.images.restaurantId));
+
+  const { data: rawData } = useLiveTablesQuery(query
   , ["restaurants", "restaurantTags", "tags", "images"]);
 
   const restaurant = rawData?.reduce<RestaurantDetailsDTO[]>((acc, row) => {
@@ -40,6 +50,7 @@ export const useRestaurantById = (id: number) => {
         rating: row.restaurantRating,
         latitude: row.restaurantLatitude,
         longitude: row.restaurantLongitude,
+        deleted: row.restaurantDeleted,
         tags: [],
         images: [],
       };

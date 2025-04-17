@@ -13,7 +13,8 @@ import { useTagsList } from '@/features/tags/hooks/useTagsList';
 export default function TagsScreen() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
-  const { data: tags } = useTagsList();
+  // Solo mostrar etiquetas no eliminadas en la lista principal
+  const { data: tags } = useTagsList(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagDTO | null>(null);
 
@@ -37,7 +38,10 @@ export default function TagsScreen() {
 
   const handleDeleteTag = async (tagId: number) => {
     try {
-      await drizzleDb.delete(schema.tags).where(eq(schema.tags.id, tagId));
+      // Implementar soft delete en lugar de eliminación permanente
+      await drizzleDb.update(schema.tags)
+        .set({ deleted: true })
+        .where(eq(schema.tags.id, tagId));
       handleModalClose();
       return { success: true };
     } catch (error) {
@@ -70,6 +74,7 @@ export default function TagsScreen() {
           <TagItem
             label={item.name}
             color={item.color}
+            deleted={item.deleted}
             onPress={() => handleTagPress(item)}
           />
         )}

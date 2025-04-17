@@ -4,6 +4,7 @@ import { View, Text } from 'react-native';
 export interface TagProps {
   name: string;
   color: string;
+  deleted?: boolean;
 }
 
 /**
@@ -19,13 +20,16 @@ function getContrastYIQ(hexColor: string): string {
   return yiq >= 128 ? '#000000' : '#ffffff';
 }
 
-const Tag: React.FC<TagProps> = ({ name, color }) => {
+const Tag: React.FC<TagProps> = ({ name, color, deleted }) => {
   const textColor = getContrastYIQ(color);
   return (
     <View
-      style={{ backgroundColor: color }}
-      className="px-2 py-1 rounded-full mr-2 mb-2"
+      style={{ backgroundColor: color, opacity: deleted ? 0.6 : 1 }}
+      className="px-2 py-1 rounded-full mr-2 mb-2 flex-row items-center"
     >
+      {deleted && (
+        <View className="w-2 h-2 rounded-full bg-red-500 mr-1" />
+      )}
       <Text style={{ color: textColor }} className="text-xs font-bold">
         {name}
       </Text>

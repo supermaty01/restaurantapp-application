@@ -8,7 +8,8 @@ import { useDishList } from '@/features/dishes/hooks/useDishList';
 export default function DishesScreen() {
   const router = useRouter();
 
-  const dishes = useDishList();
+  // Solo mostrar platos no eliminados en la lista principal
+  const dishes = useDishList(false);
 
   return (
     <View className="flex-1 bg-muted px-4 pt-2 relative">

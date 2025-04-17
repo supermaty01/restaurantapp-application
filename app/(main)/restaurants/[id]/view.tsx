@@ -17,6 +17,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm/sql';
+import { canDeleteRestaurantPermanently, softDeleteRestaurant } from '@/lib/helpers/soft-delete';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -34,29 +35,48 @@ export default function RestaurantDetailScreen() {
     });
   }
 
-  function handleDelete() {
-    Alert.alert(
-      'Eliminar Restaurante',
-      '¿Estás seguro de que deseas eliminar este restaurante?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await drizzleDb.delete(schema.restaurants).where(eq(schema.restaurants.id, Number(id)));
-              Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
-              router.back();
-            } catch (error) {
-              console.log('Error deleting restaurant:', error);
-              Alert.alert('Error', 'No se pudo eliminar el restaurante');
-            }
+  async function handleDelete() {
+    try {
+      // Verificar si el restaurante puede ser eliminado permanentemente
+      const canDeletePermanently = await canDeleteRestaurantPermanently(drizzleDb, Number(id));
+
+      const message = canDeletePermanently
+        ? '¿Estás seguro de que deseas eliminar este restaurante? Esta acción no se puede deshacer.'
+        : '¿Estás seguro de que deseas eliminar este restaurante? El restaurante seguirá visible en platos y visitas existentes.';
+
+      Alert.alert(
+        'Eliminar Restaurante',
+        message,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                if (canDeletePermanently) {
+                  // Eliminar permanentemente
+                  await drizzleDb.delete(schema.restaurants).where(eq(schema.restaurants.id, Number(id)));
+                } else {
+                  // Soft delete
+                  await softDeleteRestaurant(drizzleDb, Number(id));
+                }
+
+                Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
+                router.back();
+              } catch (error) {
+                console.log('Error deleting restaurant:', error);
+                Alert.alert('Error', 'No se pudo eliminar el restaurante');
+              }
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.log('Error checking restaurant references:', error);
+      Alert.alert('Error', 'No se pudo verificar las referencias del restaurante');
+    }
   }
 
   if (!restaurant) {
@@ -74,9 +94,11 @@ export default function RestaurantDetailScreen() {
       <ImageDisplay images={restaurant.images} />
 
       <View className="flex-row items-center justify-between px-4 mt-4">
-        <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          {restaurant.name}
-        </Text>
+        <View className="flex-1 mr-2">
+          <Text className="text-2xl font-bold text-gray-800">
+            {restaurant.name}
+          </Text>
+        </View>
         <View className="flex-row">
           <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
@@ -86,6 +108,12 @@ export default function RestaurantDetailScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      {restaurant.deleted && (
+        <View className="mt-3 mx-4 bg-red-100 px-2 py-2 rounded flex-row gap-2 border-red-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#dc2626" />
+          <Text className="flex text-red-600 text-sm">Este restaurante ha sido eliminado</Text>
+        </View>
+      )}
 
       <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
         <Tab.Navigator

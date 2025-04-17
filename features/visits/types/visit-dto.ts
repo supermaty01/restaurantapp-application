@@ -4,15 +4,18 @@ import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dt
 export interface DishBasicDTO {
   id: number;
   name: string;
+  deleted?: boolean;
 }
 
 export interface VisitDetailsDTO {
   id: number;
   visited_at: string;
   comments: string | null;
+  deleted?: boolean;
   restaurant: {
     id: number;
     name: string;
+    deleted?: boolean;
   };
   images: ImageDTO[];
   dishes: DishBasicDTO[];
@@ -22,9 +25,11 @@ export interface VisitListDTO {
   id: number;
   visited_at: string;
   comments: string | null;
+  deleted?: boolean;
   restaurant: {
     id: number;
     name: string;
+    deleted?: boolean;
   };
   images: ImageDTO[];
 }

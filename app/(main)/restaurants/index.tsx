@@ -8,7 +8,8 @@ import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantLis
 export default function RestaurantsScreen() {
   const router = useRouter();
 
-  const restaurants = useRestaurantList();
+  // Solo mostrar restaurantes no eliminados en la lista principal
+  const restaurants = useRestaurantList(false);
 
   return (
     <View className="flex-1 bg-muted px-4 pt-2 relative">

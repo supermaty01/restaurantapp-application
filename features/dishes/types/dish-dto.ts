@@ -11,15 +11,17 @@ export interface DishDetailsDTO {
   };
   price: number | null;
   rating: number | null;
+  deleted?: boolean;
   tags: TagDTO[];
   images: ImageDTO[];
-} 
+}
 
 export interface DishListDTO {
   id: number;
   name: string;
   comments: string | null;
   rating: number | null;
+  deleted?: boolean;
   tags: TagDTO[];
   images: ImageDTO[];
 }

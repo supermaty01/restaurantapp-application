@@ -28,7 +28,7 @@ export default function RestaurantDetails({ restaurant }: RestaurantDetailsProps
         {restaurant.tags && restaurant.tags.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
             {restaurant.tags.map((tag) => (
-              <Tag key={tag.id} color={tag.color} name={tag.name} />
+              <Tag key={tag.id} color={tag.color} name={tag.name} deleted={tag.deleted} />
             ))}
           </View>
         ) : (

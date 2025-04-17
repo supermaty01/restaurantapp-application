@@ -17,6 +17,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm/sql';
+import { canDeleteVisitPermanently, softDeleteVisit } from '@/lib/helpers/soft-delete';
 import { useVisitById } from '@/features/visits/hooks/useVisitById';
 
 const Tab = createMaterialTopTabNavigator();
@@ -35,29 +36,48 @@ export default function VisitDetailScreen() {
     });
   }
 
-  function handleDelete() {
-    Alert.alert(
-      'Eliminar Visita',
-      '¿Estás seguro de que deseas eliminar esta visita?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await drizzleDb.delete(schema.visits).where(eq(schema.visits.id, Number(id)));
-              Alert.alert('Eliminada', 'Visita eliminada correctamente');
-              router.back();
-            } catch (error) {
-              console.log('Error deleting visit:', error);
-              Alert.alert('Error', 'No se pudo eliminar la visita');
-            }
+  async function handleDelete() {
+    try {
+      // Verificar si la visita puede ser eliminada permanentemente
+      const canDeletePermanently = await canDeleteVisitPermanently(drizzleDb, Number(id));
+
+      const message = canDeletePermanently
+        ? '¿Estás seguro de que deseas eliminar esta visita? Esta acción no se puede deshacer.'
+        : '¿Estás seguro de que deseas eliminar esta visita?';
+
+      Alert.alert(
+        'Eliminar Visita',
+        message,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                if (canDeletePermanently) {
+                  // Eliminar permanentemente
+                  await drizzleDb.delete(schema.visits).where(eq(schema.visits.id, Number(id)));
+                } else {
+                  // Soft delete
+                  await softDeleteVisit(drizzleDb, Number(id));
+                }
+
+                Alert.alert('Eliminada', 'Visita eliminada correctamente');
+                router.back();
+              } catch (error) {
+                console.log('Error deleting visit:', error);
+                Alert.alert('Error', 'No se pudo eliminar la visita');
+              }
+            },
           },
-        },
-      ],
-      { cancelable: true },
-    );
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.log('Error checking visit references:', error);
+      Alert.alert('Error', 'No se pudo verificar las referencias de la visita');
+    }
   }
 
 
@@ -80,9 +100,11 @@ export default function VisitDetailScreen() {
       <ImageDisplay images={visit.images} />
 
       <View className="flex-row items-center justify-between px-4 mt-4">
-        <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          {formattedDate}
-        </Text>
+        <View className="flex-1 mr-2">
+          <Text className="text-2xl font-bold text-gray-800">
+            {formattedDate}
+          </Text>
+        </View>
         <View className="flex-row">
           <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
@@ -92,6 +114,19 @@ export default function VisitDetailScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {visit.deleted && (
+        <View className="mt-3 mx-4 bg-red-100 px-2 py-2 rounded flex-row gap-2 border-red-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#dc2626" />
+          <Text className="flex text-red-600 text-sm">Esta visita ha sido eliminada</Text>
+        </View>
+      )}
+      {visit.restaurant.deleted && (
+        <View className="mt-3 mx-4 bg-orange-100 px-2 py-2 rounded flex-row gap-2 border-orange-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#ea580c" />
+          <Text className="flex text-orange-600 text-sm">El restaurante de esta visita ha sido eliminado</Text>
+        </View>
+      )}
 
       <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
         <Tab.Navigator
@@ -111,6 +146,6 @@ export default function VisitDetailScreen() {
           </Tab.Screen>
         </Tab.Navigator>
       </View>
-    </View>
+    </View >
   );
 }

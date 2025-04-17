@@ -10,6 +10,7 @@ export interface RestaurantDetailsDTO {
   images: ImageDTO[];
   latitude: number | null;
   longitude: number | null;
+  deleted?: boolean;
 }
 
 export interface RestaurantListDTO {
@@ -17,5 +18,6 @@ export interface RestaurantListDTO {
   name: string;
   comments: string | null;
   rating: number | null;
+  deleted?: boolean;
   tags: TagDTO[];
 }

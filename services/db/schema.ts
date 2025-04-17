@@ -15,6 +15,7 @@ export const restaurants = sqliteTable('restaurants', {
   comments: text('comments'),
   rating: integer('rating'),
   userId: integer('user_id').references(() => users.id),
+  deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
 });
 
 // Tabla de visitas
@@ -24,6 +25,7 @@ export const visits = sqliteTable('visits', {
   comments: text('comments'),
   restaurantId: integer('restaurant_id').references(() => restaurants.id),
   userId: integer('user_id').references(() => users.id),
+  deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
 });
 
 // Tabla de platos
@@ -35,6 +37,7 @@ export const dishes = sqliteTable('dishes', {
   comments: text('comments'),
   restaurantId: integer('restaurant_id').references(() => restaurants.id),
   userId: integer('user_id').references(() => users.id),
+  deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
 });
 
 // Tabla de etiquetas
@@ -43,6 +46,7 @@ export const tags = sqliteTable('tags', {
   name: text('name').notNull(),
   color: text('color').notNull(),
   userId: integer('user_id').references(() => users.id),
+  deleted: integer('deleted', { mode: 'boolean' }).notNull().default(false),
 });
 
 export const images = sqliteTable('images', {

@@ -1,27 +1,36 @@
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 import * as schema from "@/services/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { RestaurantListDTO } from "../types/restaurant-dto";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
 
-export const useRestaurantList = () => {
+export const useRestaurantList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
 
-  const { data: rawData } = useLiveTablesQuery(drizzleDb
+  const query = drizzleDb
     .select({
       restaurantId: schema.restaurants.id,
       restaurantName: schema.restaurants.name,
       restaurantComments: schema.restaurants.comments,
       restaurantRating: schema.restaurants.rating,
+      restaurantDeleted: schema.restaurants.deleted,
       tagId: schema.tags.id,
       tagName: schema.tags.name,
       tagColor: schema.tags.color,
     })
-    .from(schema.restaurants)
-    .leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
-    .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
+    .from(schema.restaurants);
+
+  // Si no se incluyen los eliminados, filtrarlos
+  if (!includeDeleted) {
+    query.where(eq(schema.restaurants.deleted, false));
+  }
+
+  query.leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
+      .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id));
+
+  const { data: rawData } = useLiveTablesQuery(query
   , ["restaurants", "restaurantTags", "tags"]);
 
   const restaurants = rawData?.reduce<RestaurantListDTO[]>((acc, row) => {
@@ -32,7 +41,8 @@ export const useRestaurantList = () => {
         name: row.restaurantName,
         comments: row.restaurantComments,
         rating: row.restaurantRating,
-        tags: [] 
+        deleted: row.restaurantDeleted,
+        tags: []
       };
       acc.push(restaurant);
     }

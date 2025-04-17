@@ -11,7 +11,7 @@ interface RestaurantDishesProps {
 
 export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) {
   const router = useRouter();
-  const dishes = useDishesByRestaurant(restaurant.id);
+  const dishes = useDishesByRestaurant(restaurant.id, true);
 
   return (
     <View className="p-4 h-full bg-white">
@@ -27,6 +27,7 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
               onPress={() =>
                 router.push({ pathname: '/dishes/[id]/view', params: { id: item.id } })
               }
+              style={{ opacity: item.deleted ? 0.7 : 1 }}
             >
               {imageUrl ? (
                 <Image
@@ -38,7 +39,14 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
                 <View className="w-14 h-14 rounded bg-gray-300 mr-3" />
               )}
               <View className="flex-1">
-                <Text className="text-base font-bold text-gray-800">{item.name}</Text>
+                <View className="flex-row items-center">
+                  <Text className="text-base font-bold text-gray-800 flex-1">{item.name}</Text>
+                  {item.deleted && (
+                    <View className="bg-red-100 px-2 py-0.5 rounded mr-1">
+                      <Text className="text-red-600 text-xs">Eliminado</Text>
+                    </View>
+                  )}
+                </View>
                 <Text className="text-sm text-gray-500">{item.comments}</Text>
               </View>
               <Ionicons name="chevron-forward-outline" size={20} color="#999" />

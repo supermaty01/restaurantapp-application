@@ -9,6 +9,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm/sql';
+import { canDeleteDishPermanently, softDeleteDish } from '@/lib/helpers/soft-delete';
 import { useDishById } from '@/features/dishes/hooks/useDishById';
 
 export default function DishDetailScreen() {
@@ -26,29 +27,48 @@ export default function DishDetailScreen() {
     })
   }
 
-  function handleDelete() {
-    Alert.alert(
-      'Eliminar Plato',
-      '¿Estás seguro de que deseas eliminar este plato?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await drizzleDb.delete(schema.dishes).where(eq(schema.dishes.id, Number(id)));
-              Alert.alert('Eliminado', 'Plato eliminado correctamente');
-              router.back(); // O redirigir a otra pantalla
-            } catch (error) {
-              console.log('Error deleting Dish:', error);
-              Alert.alert('Error', 'No se pudo eliminar el plato');
-            }
+  async function handleDelete() {
+    try {
+      // Verificar si el plato puede ser eliminado permanentemente
+      const canDeletePermanently = await canDeleteDishPermanently(drizzleDb, Number(id));
+
+      const message = canDeletePermanently
+        ? '¿Estás seguro de que deseas eliminar este plato? Esta acción no se puede deshacer.'
+        : '¿Estás seguro de que deseas eliminar este plato? El plato seguirá visible en visitas existentes.';
+
+      Alert.alert(
+        'Eliminar Plato',
+        message,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                if (canDeletePermanently) {
+                  // Eliminar permanentemente
+                  await drizzleDb.delete(schema.dishes).where(eq(schema.dishes.id, Number(id)));
+                } else {
+                  // Soft delete
+                  await softDeleteDish(drizzleDb, Number(id));
+                }
+
+                Alert.alert('Eliminado', 'Plato eliminado correctamente');
+                router.back();
+              } catch (error) {
+                console.log('Error deleting dish:', error);
+                Alert.alert('Error', 'No se pudo eliminar el plato');
+              }
+            },
           },
-        },
-      ],
-      { cancelable: true }
-    );
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.log('Error checking dish references:', error);
+      Alert.alert('Error', 'No se pudo verificar las referencias del plato');
+    }
   }
 
   if (!dish) {
@@ -65,9 +85,11 @@ export default function DishDetailScreen() {
 
       {/* Nombre y botones Editar/Eliminar */}
       <View className="flex-row items-center justify-between px-4 mt-4">
-        <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          {dish.name}
-        </Text>
+        <View className="flex-1 mr-2">
+          <Text className="text-2xl font-bold text-gray-800">
+            {dish.name}
+          </Text>
+        </View>
         <View className="flex-row">
           <TouchableOpacity
             className="bg-primary p-2 rounded-full mr-2"
@@ -83,6 +105,19 @@ export default function DishDetailScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {dish.deleted && (
+        <View className="mt-3 mx-4 bg-red-100 px-2 py-2 rounded flex-row gap-2 border-red-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#dc2626" />
+          <Text className="flex text-red-600 text-sm">Este plato ha sido eliminado</Text>
+        </View>
+      )}
+      {dish.restaurant.deleted && (
+        <View className="mt-3 mx-4 bg-orange-100 px-2 py-2 rounded flex-row gap-2 border-orange-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#ea580c" />
+          <Text className="flex text-orange-600 text-sm">El restaurante de este plato ha sido eliminado</Text>
+        </View>
+      )}
 
       <View className="bg-white my-4 mx-4 p-4 rounded-xl">
         <View className="flex-row mb-4">
@@ -134,7 +169,7 @@ export default function DishDetailScreen() {
         {dish.tags?.length > 0 ? (
           <View className="flex-row flex-wrap mb-4">
             {dish.tags.map((tag) => (
-              <Tag key={tag.id} color={tag.color} name={tag.name} />
+              <Tag key={tag.id} color={tag.color} name={tag.name} deleted={tag.deleted} />
             ))}
           </View>
         ) : (
@@ -153,6 +188,6 @@ export default function DishDetailScreen() {
 
 
       </View>
-    </ScrollView>
+    </ScrollView >
   );
 }

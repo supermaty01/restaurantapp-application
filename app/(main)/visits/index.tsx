@@ -7,7 +7,8 @@ import { useVisitList } from '@/features/visits/hooks/useVisitList';
 
 export default function VisitsScreen() {
   const router = useRouter();
-  const visits = useVisitList();
+  // Solo mostrar visitas no eliminadas en la lista principal
+  const visits = useVisitList(false);
 
   return (
     <View className="flex-1 bg-muted px-4 pt-2 relative">
@@ -24,6 +25,8 @@ export default function VisitsScreen() {
             date={item.visited_at}
             title={item.restaurant.name}
             comments={item.comments}
+            deleted={item.deleted}
+            restaurantDeleted={item.restaurant.deleted}
             onPress={() => router.push({
               pathname: '/visits/[id]/view',
               params: { id: item.id },
