@@ -103,11 +103,13 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
         className="w-12 h-12"
       />
       <View className="w-20 items-end">
-        <TouchableOpacity
-          onPress={() => navigation.navigate('settings')}
-        >
-          <Ionicons name="settings-outline" size={28} color="#905c36" />
-        </TouchableOpacity>
+        {route.name !== 'settings' && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('settings')}
+          >
+            <Ionicons name="settings-outline" size={28} color="#905c36" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
