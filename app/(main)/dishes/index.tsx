@@ -12,10 +12,10 @@ export default function DishesScreen() {
   const dishes = useDishList(false);
 
   return (
-    <View className="flex-1 bg-muted px-4 pt-2 relative">
+    <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
       {/* Encabezado con título y botón de filtro */}
       <View className="flex-row items-center justify-start mb-4">
-        <Text className="text-2xl font-bold text-gray-800">Platos</Text>
+        <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Platos</Text>
       </View>
 
       {/* Lista scrolleable de Platos */}
@@ -38,13 +38,13 @@ export default function DishesScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800">No se encontraron platos.</Text>
+            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron platos.</Text>
           </View>
         }
       />
       <TouchableOpacity
         onPress={() => router.push('/dishes/new')}
-        className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
+        className="absolute bottom-5 right-5 w-12 h-12 bg-primary dark:bg-dark-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>

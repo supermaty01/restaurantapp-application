@@ -7,6 +7,7 @@ import FormInput from '@/components/FormInput';
 import { LoginFormData, loginSchema } from '@/features/auth/schemas/login';
 import { NativeModules } from "react-native";
 import { AuthContext } from '@/lib/context/AuthContext';
+import { useTheme } from '@/lib/context/ThemeContext';
 import Constants from 'expo-constants';
 
 const LoginScreen: FC = () => {
@@ -16,6 +17,7 @@ const LoginScreen: FC = () => {
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const DeviceInfo = NativeModules.DeviceInfo;
   const deviceName = DeviceInfo ? DeviceInfo.deviceName : 'Unknown';
+  const { isDarkMode } = useTheme();
 
   // Check if OFFLINE_MODE environment variable is set to "true"
   useEffect(() => {
@@ -55,17 +57,17 @@ const LoginScreen: FC = () => {
 
   return (
     <>
-      <Text className="text-2xl font-bold mb-8 text-gray-800">
+      <Text className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-200">
         {isOfflineMode ? "Modo sin conexión" : "Ingresa a tu cuenta"}
       </Text>
-      <View className="w-full bg-white p-5 rounded-lg">
+      <View className="w-full bg-card dark:bg-dark-card p-5 rounded-lg">
         {isOfflineMode ? (
           <View className="mb-6">
-            <Text className="text-gray-700 text-base mb-4">
+            <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
               Actualmente la aplicación funciona 100% local y no requiere conexión a internet.
               Todos tus datos se guardarán en tu dispositivo.
             </Text>
-            <Text className="text-gray-700 text-base mb-4">
+            <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
               En futuras versiones, se implementará un sistema de sincronización
               que te permitirá conservar tus datos si cambias de dispositivo o reinstalás la aplicación.
             </Text>
@@ -90,13 +92,13 @@ const LoginScreen: FC = () => {
 
             <View className="flex-row justify-end items-center mb-4">
               <TouchableOpacity onPress={() => router.push('/register')}>
-                <Text className="text-primary mb-6">Registrarme</Text>
+                <Text className="text-primary dark:text-dark-primary mb-6">Registrarme</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
               onPress={handleSubmit(onSubmit)}
-              className={`w-full py-4 rounded-lg items-center mb-6 ${isLoading ? 'bg-gray-400' : 'bg-primary'
+              className={`w-full py-4 rounded-lg items-center mb-6 ${isLoading ? 'bg-gray-400 dark:bg-gray-600' : 'bg-primary dark:bg-dark-primary'
                 }`}
               disabled={isLoading}
             >

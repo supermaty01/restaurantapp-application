@@ -14,7 +14,7 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
   const visits = useVisitsByRestaurant(restaurant.id);
 
   return (
-    <View className="p-4 h-full bg-white">
+    <View className="p-4 h-full bg-card dark:bg-dark-card">
       <FlatList
         data={visits}
         keyExtractor={(item) => item.id.toString()}
@@ -23,7 +23,7 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
           const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
           return (
             <TouchableOpacity
-              className="flex-row items-center py-3 border-b border-gray-200"
+              className="flex-row items-center py-3 border-b border-gray-200 dark:border-gray-700"
               onPress={() =>
                 router.push({ pathname: '/visits/[id]/view', params: { id: item.id } })
               }
@@ -35,22 +35,22 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
                   resizeMode="cover"
                 />
               ) : (
-                <View className="w-14 h-14 rounded bg-gray-300 mr-3" />
+                <View className="w-14 h-14 rounded bg-gray-300 dark:bg-gray-700 mr-3" />
               )}
               <View className="flex-1">
-                <Text className="text-base font-bold text-gray-800">{item.visited_at}</Text>
+                <Text className="text-base font-bold text-gray-800 dark:text-gray-200">{item.visited_at}</Text>
                 {item.comments && (
-                  <Text className="text-sm text-gray-500">{item.comments}</Text>
+                  <Text className="text-sm text-gray-500 dark:text-gray-400">{item.comments}</Text>
                 )}
               </View>
-              <Ionicons name="chevron-forward-outline" size={20} color="#999" />
+              <Ionicons name="chevron-forward-outline" size={20} color="#999" className="dark:text-gray-400" />
             </TouchableOpacity>
           );
         }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800">No se encontraron visitas.</Text>
+            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron visitas.</Text>
           </View>
         }
       />

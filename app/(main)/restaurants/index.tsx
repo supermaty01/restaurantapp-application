@@ -12,9 +12,9 @@ export default function RestaurantsScreen() {
   const restaurants = useRestaurantList(false);
 
   return (
-    <View className="flex-1 bg-muted px-4 pt-2 relative">
+    <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-2xl font-bold text-gray-800">Restaurantes</Text>
+        <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Restaurantes</Text>
       </View>
       <FlatList
         data={restaurants}

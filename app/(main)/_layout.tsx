@@ -21,19 +21,21 @@ import VisitCreateScreen from './visits/new';
 import VisitDetailScreen from './visits/[id]/view';
 import VisitEditScreen from './visits/[id]/edit';
 import { AuthContext } from '@/lib/context/AuthContext';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
 
 function TabsLayout() {
+  const { isDarkMode } = useTheme();
   return (
     <TopTab.Navigator
       screenOptions={{
         swipeEnabled: true,
-        tabBarIndicatorStyle: { backgroundColor: '#905c36' },
-        tabBarActiveTintColor: '#905c36',
-        tabBarInactiveTintColor: '#6b6246',
-        tabBarStyle: { backgroundColor: '#cdc8b8' },
+        tabBarIndicatorStyle: { backgroundColor: isDarkMode ? '#B27A4D' : '#905c36' },
+        tabBarActiveTintColor: isDarkMode ? '#B27A4D' : '#905c36',
+        tabBarInactiveTintColor: isDarkMode ? '#A09A8C' : '#6b6246',
+        tabBarStyle: { backgroundColor: isDarkMode ? '#2A2A2A' : '#cdc8b8' },
         tabBarLabelStyle: { fontSize: 11 },
       }}
       tabBarPosition="bottom"
@@ -88,13 +90,14 @@ type CustomHeaderProps = {
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
+  const { isDarkMode } = useTheme();
 
   return (
-    <View className="w-full flex-row items-center justify-between p-4 bg-[#e3e6d6]">
+    <View className={`w-full flex-row items-center justify-between p-4 bg-accent dark:bg-dark-accent`}>
       <View className="w-20">
         {route.name !== 'Tabs' && (
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back-outline" size={24} color="#905c36" />
+            <Ionicons name="arrow-back-outline" size={24} color={isDarkMode ? '#B27A4D' : '#905c36'} />
           </TouchableOpacity>
         )}
       </View>
@@ -107,7 +110,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate('settings')}
           >
-            <Ionicons name="settings-outline" size={28} color="#905c36" />
+            <Ionicons name="settings-outline" size={28} color={isDarkMode ? '#B27A4D' : '#905c36'} />
           </TouchableOpacity>
         )}
       </View>
@@ -120,6 +123,7 @@ let router: ReturnType<typeof useRouter>;
 
 export default function MainLayout() {
   const { userToken, loading, logout: contextLogout, isOfflineMode } = useContext(AuthContext);
+  const { isDarkMode } = useTheme();
   router = useRouter();
   logout = contextLogout;
 
@@ -132,8 +136,8 @@ export default function MainLayout() {
   if (loading || (!userToken && !isOfflineMode)) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-muted">
-      <StatusBar style="dark" backgroundColor="#e3e6d6" />
+    <SafeAreaView className="flex-1 bg-muted dark:bg-dark-muted">
+      <StatusBar style={isDarkMode ? "light" : "dark"} backgroundColor={isDarkMode ? "#111c16" : "#e3e6d6"} />
       <Stack.Navigator
         screenOptions={{
           headerShown: true,

@@ -24,10 +24,10 @@ const RestaurantItem: React.FC<RestaurantItemProps> = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className="bg-white p-4 rounded-xl mb-4 shadow-sm"
+      className="bg-card dark:bg-dark-card p-4 rounded-xl mb-4 shadow-sm"
     >
       <View className="flex-row items-center justify-between mb-1">
-        <Text className="text-base font-bold text-gray-800 max-w-[85%]">
+        <Text className="text-base font-bold text-gray-800 dark:text-gray-200 max-w-[85%]">
           {name}
         </Text>
         <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />
@@ -37,7 +37,7 @@ const RestaurantItem: React.FC<RestaurantItemProps> = ({
           {comments}
         </Text>
       ) : (
-        <Text className="text-sm italic text-gray-600 mb-4">
+        <Text className="text-sm italic text-gray-600 dark:text-gray-300 mb-4">
           Sin comentarios
         </Text>
       )}

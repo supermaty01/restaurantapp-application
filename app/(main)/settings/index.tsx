@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AuthContext } from '@/lib/context/AuthContext';
@@ -8,12 +8,17 @@ import InfoCard from '@/features/settings/components/InfoCard';
 import ExportCard from '@/features/settings/components/ExportCard';
 import ImportCard from '@/features/settings/components/ImportCard';
 import LogoutCard from '@/features/settings/components/LogoutCard';
+import ThemeCard from '@/features/settings/components/ThemeCard';
+import ThemeSelectionModal from '@/features/settings/components/ThemeSelectionModal';
 import { DBVersionContext } from '@/app/_layout';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { logout } = useContext(AuthContext);
   const bumpDb = useContext(DBVersionContext);
+  const { isDarkMode } = useTheme();
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
   const {
     isExporting,
     setIsExporting,
@@ -135,10 +140,14 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleThemePress = () => {
+    setThemeModalVisible(true);
+  };
+
   return (
-    <ScrollView className="flex-1 bg-muted">
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted">
       <View className="p-4">
-        <Text className="text-2xl font-bold text-gray-800 mb-6">Configuración</Text>
+        <Text className="text-2xl font-bold text-text dark:text-dark-text mb-6">Configuración</Text>
 
         {/* Información de la app */}
         <InfoCard
@@ -146,6 +155,9 @@ export default function SettingsScreen() {
           storageUsed={storageInfo.used}
           lastExport={lastExport}
         />
+
+        {/* Tema */}
+        <ThemeCard onPress={handleThemePress} />
 
         {/* Exportar datos */}
         <ExportCard
@@ -165,6 +177,12 @@ export default function SettingsScreen() {
 
         {/* Cerrar sesión */}
         <LogoutCard onPress={handleLogout} />
+
+        {/* Modal de selección de tema */}
+        <ThemeSelectionModal
+          visible={themeModalVisible}
+          onClose={() => setThemeModalVisible(false)}
+        />
       </View>
     </ScrollView>
   );

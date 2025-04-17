@@ -9,6 +9,7 @@ import "../global.css";
 import { AuthProvider } from '@/lib/context/AuthContext';
 import { NewDishProvider } from '@/lib/context/NewDishContext';
 import { NewRestaurantProvider } from '@/lib/context/NewRestaurantContext';
+import { ThemeProvider } from '@/lib/context/ThemeContext';
 
 export const DATABASE_NAME = 'restaurantapp';
 
@@ -34,11 +35,13 @@ export default function RootLayout() {
           useSuspense
         >
           <AuthProvider>
-            <NewRestaurantProvider>
-              <NewDishProvider>
-                <Slot />
-              </NewDishProvider>
-            </NewRestaurantProvider>
+            <ThemeProvider>
+              <NewRestaurantProvider>
+                <NewDishProvider>
+                  <Slot />
+                </NewDishProvider>
+              </NewRestaurantProvider>
+            </ThemeProvider>
           </AuthProvider>
         </SQLiteProvider>
       </Suspense>

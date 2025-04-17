@@ -29,7 +29,7 @@ const DishItem: React.FC<DishItemProps> = ({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className="bg-white p-4 rounded-xl mb-4 shadow-sm"
+      className="bg-card dark:bg-dark-card p-4 rounded-xl mb-4 shadow-sm"
     >
       <View className="flex-row mb-2">
         {/* Image container */}
@@ -40,23 +40,23 @@ const DishItem: React.FC<DishItemProps> = ({
             resizeMode="cover"
           />
         ) : (
-          <View className="w-20 h-20 rounded-lg bg-gray-200 mr-3" />
+          <View className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-gray-700 mr-3" />
         )}
 
         {/* Content container */}
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-bold text-gray-800 flex-1 pr-2">
+            <Text className="text-base font-bold text-gray-800 dark:text-gray-200 flex-1 pr-2">
               {name}
             </Text>
-            <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" />
+            <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" className="dark:text-gray-400" />
           </View>
           {comments ? (
-            <Text className="text-sm text-gray-600 mb-4">
+            <Text className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               {comments}
             </Text>
           ) : (
-            <Text className="text-sm italic text-gray-600 mb-4">
+            <Text className="text-sm italic text-gray-600 dark:text-gray-400 mb-4">
               Sin comentarios
             </Text>
           )}

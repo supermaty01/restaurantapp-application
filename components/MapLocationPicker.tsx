@@ -4,6 +4,7 @@ import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-ma
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { set } from 'date-fns';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface MapLocationPickerProps {
   location: { latitude: number; longitude: number } | null;
@@ -18,6 +19,7 @@ const openAppSettings = () => {
 };
 
 const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocationChange, editable = true }) => {
+  const { isDarkMode } = useTheme();
   const [mapRegion, setMapRegion] = useState({
     latitude: location?.latitude ?? 6.2442, // Medellín por defecto
     longitude: location?.longitude ?? -75.5812,
@@ -131,14 +133,14 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
 
       <View style={{ padding: 10, alignItems: 'center' }}>
         {loadingAddress ? (
-          <ActivityIndicator size="small" color="#000" />
+          <ActivityIndicator size="small" color={isDarkMode ? "#fff" : "#000"} />
         ) : (
-          <Text style={{ textAlign: 'center', marginVertical: 8 }}>{address ?? 'Ubicación no disponible'}</Text>
+          <Text style={{ textAlign: 'center', marginVertical: 8, color: isDarkMode ? '#E0E0E0' : '#000' }}>{address ?? 'Ubicación no disponible'}</Text>
         )}
 
         {editable && !selectedLocation && (
           <TouchableOpacity
-            className="bg-primary"
+            className="bg-primary dark:bg-dark-primary"
             style={{
               flexDirection: 'row',
               padding: 10,
@@ -163,7 +165,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
         {editable && selectedLocation && (
           <TouchableOpacity
             style={{ padding: 10, borderRadius: 5, marginTop: 10 }}
-            className="bg-destructive"
+            className="bg-destructive dark:bg-dark-destructive"
             onPress={() => {
               setSelectedLocation(null);
               onLocationChange && onLocationChange(null);

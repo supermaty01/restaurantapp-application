@@ -11,9 +11,9 @@ export default function VisitsScreen() {
   const visits = useVisitList(false);
 
   return (
-    <View className="flex-1 bg-muted px-4 pt-2 relative">
+    <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-2xl font-bold text-gray-800">Visitas</Text>
+        <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Visitas</Text>
       </View>
 
       <FlatList
@@ -36,13 +36,13 @@ export default function VisitsScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800">No se encontraron visitas.</Text>
+            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron visitas.</Text>
           </View>
         }
       />
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}
-        className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
+        className="absolute bottom-5 right-5 w-12 h-12 bg-primary dark:bg-dark-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useController, Control } from 'react-hook-form';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface RatingStarsProps {
   control?: Control<any>;
@@ -20,6 +21,7 @@ export default function RatingStars({
   size = 24,
   gap = 4,
 }: RatingStarsProps) {
+  const { isDarkMode } = useTheme();
   let ratingValue = 0;
   let onChange = (val: number) => { };
 
@@ -39,7 +41,7 @@ export default function RatingStars({
   };
 
   return value === null && !control ? (
-    <Text className="text-base italic text-gray-500">
+    <Text className="text-base italic text-gray-500 dark:text-gray-400">
       Sin calificación
     </Text>
   ) : (
@@ -53,7 +55,7 @@ export default function RatingStars({
           <Ionicons
             name={star <= ratingValue ? 'star' : 'star-outline'}
             size={size}
-            color="#f4c430"
+            color={isDarkMode ? "#f9c04a" : "#f4c430"}
           />
         </TouchableOpacity>
       ))}

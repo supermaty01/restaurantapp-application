@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface ImagesUploaderBaseProps {
   disabled?: boolean;
@@ -38,6 +39,7 @@ const openAppSettings = () => {
 };
 
 export default function ImagesUploader({ disabled, isEdit, images, onChangeImages, onRemoveExistingImage }: ImagesUploaderProps) {
+  const { isDarkMode } = useTheme();
   const pickFromGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -115,21 +117,21 @@ export default function ImagesUploader({ disabled, isEdit, images, onChangeImage
 
   return (
     <View className="mt-4">
-      <Text className="text-xl font-bold mb-2">Fotos</Text>
+      <Text className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-200">Fotos</Text>
       <View className="flex-row gap-2 mb-4">
         <TouchableOpacity
-          className="bg-gray-300 px-3 py-2 rounded-md"
+          className="bg-gray-300 dark:bg-gray-700 px-3 py-2 rounded-md"
           onPress={pickFromGallery}
           disabled={disabled}
         >
-          <Text>Seleccionar archivos</Text>
+          <Text className="text-gray-800 dark:text-gray-200">Seleccionar archivos</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="bg-gray-300 px-3 py-2 rounded-md"
+          className="bg-gray-300 dark:bg-gray-700 px-3 py-2 rounded-md"
           onPress={pickFromCamera}
           disabled={disabled}
         >
-          <Text>Abrir cámara</Text>
+          <Text className="text-gray-800 dark:text-gray-200">Abrir cámara</Text>
         </TouchableOpacity>
       </View>
       {isEdit ? (
@@ -142,7 +144,7 @@ export default function ImagesUploader({ disabled, isEdit, images, onChangeImage
             />
             <TouchableOpacity
               onPress={() => removeImage(image)}
-              className="bg-destructive px-3 py-2 rounded-md w-28 flex-row justify-center"
+              className="bg-destructive dark:bg-dark-destructive px-3 py-2 rounded-md w-28 flex-row justify-center"
               disabled={disabled}
             >
               <Ionicons name="trash-outline" size={16} color="#fff" className="mr-2" />
@@ -160,7 +162,7 @@ export default function ImagesUploader({ disabled, isEdit, images, onChangeImage
             />
             <TouchableOpacity
               onPress={() => removeImage(uri)}
-              className="bg-destructive px-3 py-2 rounded-md w-24 text-center"
+              className="bg-destructive dark:bg-dark-destructive px-3 py-2 rounded-md w-24 text-center"
               disabled={disabled}
             >
               <Text className="text-white font-semibold">Eliminar</Text>

@@ -18,6 +18,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm/sql';
 import { canDeleteRestaurantPermanently, softDeleteRestaurant } from '@/lib/helpers/soft-delete';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -27,6 +28,7 @@ export default function RestaurantDetailScreen() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
   const restaurant = useRestaurantById(Number(id));
+  const { isDarkMode } = useTheme();
 
   function handleEdit() {
     router.push({
@@ -81,8 +83,8 @@ export default function RestaurantDetailScreen() {
 
   if (!restaurant) {
     return (
-      <View className="flex-1 justify-center items-center bg-muted p-4">
-        <Text className="text-base text-gray-800">
+      <View className="flex-1 justify-center items-center bg-muted dark:bg-dark-muted p-4">
+        <Text className="text-base text-gray-800 dark:text-gray-200">
           No se encontró el restaurante
         </Text>
       </View>
@@ -90,20 +92,20 @@ export default function RestaurantDetailScreen() {
   }
 
   return (
-    <View className="flex-1 bg-muted">
+    <View className="flex-1 bg-muted dark:bg-dark-muted">
       <ImageDisplay images={restaurant.images} />
 
       <View className="flex-row items-center justify-between px-4 mt-4">
         <View className="flex-1 mr-2">
-          <Text className="text-2xl font-bold text-gray-800">
+          <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">
             {restaurant.name}
           </Text>
         </View>
         <View className="flex-row">
-          <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
+          <TouchableOpacity className="bg-primary dark:bg-dark-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity className="bg-destructive p-2 rounded-full" onPress={handleDelete}>
+          <TouchableOpacity className="bg-destructive dark:bg-dark-destructive p-2 rounded-full" onPress={handleDelete}>
             <Ionicons name="trash-outline" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -115,14 +117,14 @@ export default function RestaurantDetailScreen() {
         </View>
       )}
 
-      <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
+      <View className="bg-card dark:bg-dark-card mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
         <Tab.Navigator
           screenOptions={{
-            tabBarActiveTintColor: '#93AE72',
-            tabBarInactiveTintColor: '#6b7280',
-            tabBarIndicatorStyle: { backgroundColor: '#93AE72', height: 3 },
+            tabBarActiveTintColor: isDarkMode ? '#7A9455' : '#93AE72',
+            tabBarInactiveTintColor: isDarkMode ? '#a0a0a0' : '#6b7280',
+            tabBarIndicatorStyle: { backgroundColor: isDarkMode ? '#7A9455' : '#93AE72', height: 3 },
             tabBarLabelStyle: { fontSize: 16, fontWeight: 'bold' },
-            tabBarStyle: { backgroundColor: 'white' },
+            tabBarStyle: { backgroundColor: isDarkMode ? '#2A2A2A' : 'white' },
           }}
         >
           <Tab.Screen name="Details" options={{ tabBarLabel: 'Detalles' }}>
