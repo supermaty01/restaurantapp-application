@@ -9,7 +9,7 @@ export const useDishesByRestaurant = (restaurantId: number | undefined, includeD
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
 
-  let query = drizzleDb
+  let query: any = drizzleDb
     .select({
       dishId: schema.dishes.id,
       dishName: schema.dishes.name,
@@ -56,7 +56,7 @@ export const useDishesByRestaurant = (restaurantId: number | undefined, includeD
   const dishes = rawData?.reduce<DishListDTO[]>((acc, row: any) => {
     if (!row.dishId) return acc;
 
-    let dish = acc.find((r) => r.id === row.dishId);
+    let dish = acc.find((r: any) => r.id === row.dishId);
     if (!dish) {
       dish = {
         id: row.dishId,
@@ -70,7 +70,7 @@ export const useDishesByRestaurant = (restaurantId: number | undefined, includeD
       acc.push(dish);
     }
 
-    if (row.tagId && row.tagName && row.tagColor && !dish.tags.some((t) => t.id === row.tagId)) {
+    if (row.tagId && row.tagName && row.tagColor && !dish.tags.some((t: any) => t.id === row.tagId)) {
       dish.tags.push({
         id: row.tagId,
         name: row.tagName,
@@ -80,7 +80,7 @@ export const useDishesByRestaurant = (restaurantId: number | undefined, includeD
     }
 
     // Agregar imágenes
-    if (row.imageId && row.imagePath && !dish.images.some((i) => i.id === row.imageId)) {
+    if (row.imageId && row.imagePath && !dish.images.some((i: any) => i.id === row.imageId)) {
       dish.images.push({
         id: row.imageId,
         uri: row.imagePath,

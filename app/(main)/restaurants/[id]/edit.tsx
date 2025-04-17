@@ -108,7 +108,7 @@ export default function RestaurantEditScreen() {
       }
 
       Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
-      router.replace({ pathname: '/restaurants/[id]/view', params: { id } });
+      router.back();
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo actualizar el restaurante');
       console.log(error);

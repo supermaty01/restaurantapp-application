@@ -54,7 +54,7 @@ export const useAppSettings = () => {
       
       setStorageInfo({
         total: totalSpace,
-        used: dirInfo.size || 0,
+        used: (dirInfo as any).size || 0,
       });
     } catch (error) {
       console.error('Error al obtener información de almacenamiento:', error);

@@ -8,6 +8,7 @@ export interface DishDetailsDTO {
   restaurant: {
     id: number;
     name: string;
+    deleted?: boolean;
   };
   price: number | null;
   rating: number | null;
