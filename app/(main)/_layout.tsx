@@ -10,6 +10,7 @@ import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
 import TagsScreen from './tags';
+import SettingsScreen from './settings';
 import RestaurantCreateScreen from './restaurants/new';
 import RestaurantDetailScreen from './restaurants/[id]/view';
 import RestaurantEditScreen from './restaurants/[id]/edit';
@@ -87,24 +88,6 @@ type CustomHeaderProps = {
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
-  function handleLogOut() {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que deseas cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  }
 
   return (
     <View className="w-full flex-row items-center justify-between p-4 bg-[#e3e6d6]">
@@ -121,9 +104,9 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
       />
       <View className="w-20 items-end">
         <TouchableOpacity
-          onPress={async () => handleLogOut()}
+          onPress={() => navigation.navigate('settings')}
         >
-          <Ionicons name="log-out-outline" size={32} color="#905c36" />
+          <Ionicons name="settings-outline" size={28} color="#905c36" />
         </TouchableOpacity>
       </View>
     </View>
@@ -207,6 +190,11 @@ export default function MainLayout() {
         <Stack.Screen
           name="visits/[id]/edit"
           component={VisitEditScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="settings"
+          component={SettingsScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

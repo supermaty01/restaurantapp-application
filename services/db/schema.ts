@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, primaryKey, blob } from 'drizzle-orm/sqlite-core';
 import { relations, sql } from 'drizzle-orm';
 
 // Tabla de usuarios
@@ -125,3 +125,12 @@ export const tagsRelations = relations(tags, ({ one, many }) => ({
   restaurantTags: many(restaurantTags),
   dishTags: many(dishTags),
 }));
+
+// Tabla de configuración
+export const appSettings = sqliteTable('app_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  key: text('key').notNull().unique(),
+  value: text('value'),
+  blobValue: blob('blob_value'),
+  updatedAt: text('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+});

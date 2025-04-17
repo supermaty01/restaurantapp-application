@@ -43,6 +43,13 @@
       "when": 1744910861836,
       "tag": "0005_slow_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1744914164112,
+      "tag": "0006_boring_wrecking_crew",
+      "breakpoints": true
     }
   ]
 }
