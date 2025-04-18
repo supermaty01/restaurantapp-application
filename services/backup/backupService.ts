@@ -1,14 +1,12 @@
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { SQLiteDatabase } from 'expo-sqlite';
 import { DrizzleDatabase } from '@/services/db/types';
 import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm';
-import { DATABASE_NAME } from '@/app/_layout';
+import { IMAGES_DIR, SQLITE_DIR } from '@/lib/helpers/fs-paths';
 import JSZip from 'jszip';
-import { normalizeImagePath } from '@/lib/helpers/image-paths';
+import { DATABASE_NAME } from '@/app/_layout';
 
-// Estructura para almacenar información sobre la exportación
 export interface BackupInfo {
   date: Date;
   path: string;
@@ -16,532 +14,217 @@ export interface BackupInfo {
   version: string;
 }
 
-// Estructura para almacenar información sobre la importación
 export interface ImportInfo {
   date: Date;
   path: string;
   backupPath: string;
 }
 
-// Clase para manejar las operaciones de exportación e importación
+/**
+ * Servicio para gestionar exportación, importación y restauración de datos e imágenes.
+ */
 export class BackupService {
-  private db: SQLiteDatabase;
-  private drizzleDb: DrizzleDatabase;
-  private appVersion: string;
+  constructor(
+    private drizzleDb: DrizzleDatabase,
+    private appVersion: string
+  ) {}
 
-  constructor(db: SQLiteDatabase, drizzleDb: DrizzleDatabase, appVersion: string) {
-    this.db = db;
-    this.drizzleDb = drizzleDb;
-    this.appVersion = appVersion;
-  }
+  /**
+   * Exporta la base de datos y las imágenes, genera un ZIP y registra la info.
+   */
+  async exportData(progressCallback: (progress: number) => void): Promise<BackupInfo> {
+    progressCallback(0);
 
-  // Método para exportar la base de datos y las imágenes
-  async exportData(
-    progressCallback: (progress: number) => void
-  ): Promise<BackupInfo> {
-    try {
-      progressCallback(0);
+    const tempDir = `${FileSystem.cacheDirectory}export_temp/`;
+    await FileSystem.deleteAsync(tempDir, { idempotent: true });
+    await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
+    progressCallback(10);
 
-      // 1. Crear directorio temporal para la exportación
-      const tempDir = `${FileSystem.cacheDirectory}export_temp/`;
-      try {
-        await FileSystem.deleteAsync(tempDir, { idempotent: true });
-        await FileSystem.makeDirectoryAsync(tempDir, { intermediates: true });
-      } catch (e) {
-        console.error('Error al crear directorio temporal:', e);
-      }
+    const dbSrc = `${SQLITE_DIR}${DATABASE_NAME}`;
+    const dbTmp = `${tempDir}database.db`;
+    await FileSystem.copyAsync({ from: dbSrc, to: dbTmp });
+    progressCallback(30);
 
-      progressCallback(10);
+    const imageFiles = await FileSystem.readDirectoryAsync(IMAGES_DIR).catch(() => []);
+    await FileSystem.makeDirectoryAsync(`${tempDir}images/`, { intermediates: true });
+    for (let i = 0; i < imageFiles.length; i++) {
+      const fn = imageFiles[i];
+      await FileSystem.copyAsync({ from: `${IMAGES_DIR}${fn}`, to: `${tempDir}images/${fn}` });
+      progressCallback(30 + Math.floor((i / imageFiles.length) * 40));
+    }
+    progressCallback(70);
 
-      // 2. Exportar la base de datos
-      const dbPath = `${FileSystem.documentDirectory}SQLite/${DATABASE_NAME}`;
-      const dbExportPath = `${tempDir}database.db`;
-      await FileSystem.copyAsync({
-        from: dbPath,
-        to: dbExportPath
+    const zip = new JSZip();
+    const db64 = await FileSystem.readAsStringAsync(dbTmp, { encoding: FileSystem.EncodingType.Base64 });
+    zip.file('database.db', db64, { base64: true });
+    zip.file('metadata.json', JSON.stringify({ version: this.appVersion, exportDate: new Date().toISOString() }));
+    for (const fn of imageFiles) {
+      const img64 = await FileSystem.readAsStringAsync(`${tempDir}images/${fn}`, { encoding: FileSystem.EncodingType.Base64 });
+      zip.file(`images/${fn}`, img64, { base64: true });
+    }
+    progressCallback(80);
+
+    const zip64 = await zip.generateAsync({ type: 'base64' });
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const zipName = `restaurantapp_backup_${timestamp}.zip`;
+    const zipPath = `${FileSystem.documentDirectory}${zipName}`;
+    await FileSystem.writeAsStringAsync(zipPath, zip64, { encoding: FileSystem.EncodingType.Base64 });
+    progressCallback(90);
+
+    const info = await FileSystem.getInfoAsync(zipPath);
+    await this.drizzleDb
+      .insert(schema.appSettings)
+      .values({
+        key: 'lastExport',
+        value: JSON.stringify({ date: new Date().toISOString(), path: zipPath, size: (info as any).size || 0, version: this.appVersion }),
+        updatedAt: new Date().toISOString(),
+      })
+      .onConflictDoUpdate({
+        target: schema.appSettings.key,
+        set: {
+          value: JSON.stringify({ date: new Date().toISOString(), path: zipPath, size: (info as any).size || 0, version: this.appVersion }),
+          updatedAt: new Date().toISOString(),
+        },
       });
 
-      progressCallback(30);
+    await FileSystem.deleteAsync(tempDir, { idempotent: true });
+    progressCallback(100);
 
-      // 3. Exportar las imágenes
-      const imagesDir = `${FileSystem.documentDirectory}images/`;
-      const imagesExportDir = `${tempDir}images/`;
-
-      try {
-        await FileSystem.makeDirectoryAsync(imagesExportDir, { intermediates: true });
-
-        // Obtener lista de imágenes
-        const imageFiles = await FileSystem.readDirectoryAsync(imagesDir);
-
-        // Copiar cada imagen
-        for (let i = 0; i < imageFiles.length; i++) {
-          const fileName = imageFiles[i];
-          await FileSystem.copyAsync({
-            from: `${imagesDir}${fileName}`,
-            to: `${imagesExportDir}${fileName}`
-          });
-
-          // Actualizar progreso
-          progressCallback(30 + Math.floor((i / imageFiles.length) * 40));
-        }
-      } catch (e) {
-        console.log('Error o no hay imágenes para exportar:', e);
-      }
-
-      progressCallback(70);
-
-      // 4. Crear archivo ZIP
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const zipFileName = `restaurantapp_backup_${timestamp}.zip`;
-      const zipFilePath = `${FileSystem.documentDirectory}${zipFileName}`;
-
-      // Crear un archivo JSON con metadatos
-      const metadataPath = `${tempDir}metadata.json`;
-      const metadata = {
-        version: this.appVersion,
-        exportDate: new Date().toISOString(),
-      };
-
-      await FileSystem.writeAsStringAsync(metadataPath, JSON.stringify(metadata));
-
-      // Crear el ZIP
-      const zip = new JSZip();
-
-      // Añadir la base de datos
-      const dbContent = await FileSystem.readAsStringAsync(dbExportPath, { encoding: FileSystem.EncodingType.Base64 });
-      zip.file('database.db', dbContent, { base64: true });
-
-      // Añadir el archivo de metadatos
-      const metadataContent = await FileSystem.readAsStringAsync(metadataPath);
-      zip.file('metadata.json', metadataContent);
-
-      // Añadir las imágenes
-      try {
-        const imageFiles = await FileSystem.readDirectoryAsync(imagesExportDir);
-
-        for (const fileName of imageFiles) {
-          const imageContent = await FileSystem.readAsStringAsync(`${imagesExportDir}${fileName}`, { encoding: FileSystem.EncodingType.Base64 });
-          zip.file(`images/${fileName}`, imageContent, { base64: true });
-        }
-      } catch (e) {
-        console.log('Error o no hay imágenes para incluir en el ZIP:', e);
-      }
-
-      progressCallback(80);
-
-      // Generar el ZIP
-      const zipContent = await zip.generateAsync({ type: 'base64' });
-      await FileSystem.writeAsStringAsync(zipFilePath, zipContent, { encoding: FileSystem.EncodingType.Base64 });
-
-      progressCallback(90);
-
-      // 5. Guardar información de la exportación en la base de datos
-      const fileInfo = await FileSystem.getInfoAsync(zipFilePath);
-
-      // Guardar en la tabla de configuración
-      await this.drizzleDb
-        .insert(schema.appSettings)
-        .values({
-          key: 'lastExport',
-          value: JSON.stringify({
-            date: new Date().toISOString(),
-            path: zipFilePath,
-            size: (fileInfo as any)?.size  || 0,
-            version: this.appVersion,
-          }),
-          updatedAt: new Date().toISOString(),
-        })
-        .onConflictDoUpdate({
-          target: schema.appSettings.key,
-          set: {
-            value: JSON.stringify({
-              date: new Date().toISOString(),
-              path: zipFilePath,
-              size: (fileInfo as any)?.size || 0,
-              version: this.appVersion,
-            }),
-            updatedAt: new Date().toISOString(),
-          },
-        });
-
-      // 6. Limpiar directorio temporal
-      await FileSystem.deleteAsync(tempDir, { idempotent: true });
-
-      progressCallback(100);
-
-      return {
-        date: new Date(),
-        path: zipFilePath,
-        size: (fileInfo as any)?.size || 0,
-        version: this.appVersion,
-      };
-    } catch (error) {
-      console.error('Error durante la exportación:', error);
-      throw error;
-    }
+    return { date: new Date(), path: zipPath, size: (info as any).size || 0, version: this.appVersion };
   }
 
-  // Método para compartir un archivo
+  /**
+   * Comparte un backup ZIP si está disponible.
+   */
   async shareBackup(filePath: string): Promise<void> {
     if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(filePath, {
-        mimeType: 'application/zip',
-        dialogTitle: 'Compartir archivo de respaldo',
-        UTI: 'com.pkware.zip-archive' // Para iOS
-      });
+      await Sharing.shareAsync(filePath, { mimeType: 'application/zip', dialogTitle: 'Compartir archivo de respaldo', UTI: 'com.pkware.zip-archive' });
     } else {
-      throw new Error('El compartir no está disponible en este dispositivo');
+      throw new Error('Compartir no disponible');
     }
   }
 
-  // Método para importar datos desde un archivo
-  async importData(
-    fileUri: string,
-    progressCallback: (progress: number) => void
-  ): Promise<ImportInfo> {
-    try {
-      progressCallback(0);
+  /**
+   * Importa datos desde un ZIP: respalda estado, reemplaza DB e imágenes, y registra backup.
+   */
+  async importData(fileUri: string, progressCallback: (progress: number) => void): Promise<ImportInfo> {
+    progressCallback(0);
 
-      // 1. Crear copia de seguridad temporal
-      const backupDir = `${FileSystem.documentDirectory}backup_temp/`;
-      const dbPath = `${FileSystem.documentDirectory}SQLite/${DATABASE_NAME}`;
-      const dbBackupPath = `${backupDir}database.db`;
-      const imagesDir = `${FileSystem.documentDirectory}images/`;
-      const imagesBackupDir = `${backupDir}images/`;
+    // 1) Respaldar estado actual (DB + imágenes)
+    const backupDir = `${FileSystem.cacheDirectory}backup_temp/`;
+    await FileSystem.deleteAsync(backupDir, { idempotent: true });
+    await FileSystem.makeDirectoryAsync(backupDir, { intermediates: true });
+    const dbCurrent = `${SQLITE_DIR}${DATABASE_NAME}`;
+    await FileSystem.copyAsync({ from: dbCurrent, to: `${backupDir}database.db` });
 
-      try {
-        await FileSystem.deleteAsync(backupDir, { idempotent: true });
-        await FileSystem.makeDirectoryAsync(backupDir, { intermediates: true });
-        await FileSystem.makeDirectoryAsync(imagesBackupDir, { intermediates: true });
-      } catch (e) {
-        console.error('Error al crear directorio de respaldo:', e);
-      }
+    const existing = await FileSystem.readDirectoryAsync(IMAGES_DIR).catch(() => []);
+    await FileSystem.makeDirectoryAsync(`${backupDir}images/`, { intermediates: true });
+    for (let i = 0; i < existing.length; i++) {
+      const fn = existing[i];
+      await FileSystem.copyAsync({ from: `${IMAGES_DIR}${fn}`, to: `${backupDir}images/${fn}` });
+      progressCallback(20 + Math.floor((i / existing.length) * 30));
+    }
 
-      // Copiar base de datos actual
-      await FileSystem.copyAsync({
-        from: dbPath,
-        to: dbBackupPath
-      });
-
-      progressCallback(20);
-
-      // Copiar imágenes actuales
-      try {
-        const imageFiles = await FileSystem.readDirectoryAsync(imagesDir);
-
-        for (let i = 0; i < imageFiles.length; i++) {
-          const fileName = imageFiles[i];
-          await FileSystem.copyAsync({
-            from: `${imagesDir}${fileName}`,
-            to: `${imagesBackupDir}${fileName}`
-          });
-
-          // Actualizar progreso
-          progressCallback(20 + Math.floor((i / imageFiles.length) * 30));
-        }
-      } catch (e) {
-        console.log('Error o no hay imágenes para respaldar:', e);
-      }
-
-      // Guardar información del respaldo en la base de datos
-      await this.drizzleDb
-        .insert(schema.appSettings)
-        .values({
-          key: 'lastBackup',
-          value: JSON.stringify({
-            date: new Date().toISOString(),
-            path: backupDir,
-          }),
+    // Registrar backup en la DB
+    await this.drizzleDb
+      .insert(schema.appSettings)
+      .values({
+        key: 'lastBackup',
+        value: JSON.stringify({ date: new Date().toISOString(), path: backupDir }),
+        updatedAt: new Date().toISOString(),
+      })
+      .onConflictDoUpdate({
+        target: schema.appSettings.key,
+        set: {
+          value: JSON.stringify({ date: new Date().toISOString(), path: backupDir }),
           updatedAt: new Date().toISOString(),
-        })
-        .onConflictDoUpdate({
-          target: schema.appSettings.key,
-          set: {
-            value: JSON.stringify({
-              date: new Date().toISOString(),
-              path: backupDir,
-            }),
-            updatedAt: new Date().toISOString(),
-          },
-        });
-
-      progressCallback(50);
-
-      // 2. Extraer archivo ZIP
-      const extractDir = `${FileSystem.cacheDirectory}import_temp/`;
-      try {
-        await FileSystem.deleteAsync(extractDir, { idempotent: true });
-        await FileSystem.makeDirectoryAsync(extractDir, { intermediates: true });
-        await FileSystem.makeDirectoryAsync(`${extractDir}images/`, { intermediates: true });
-      } catch (e) {
-        console.error('Error al crear directorio de importación:', e);
-      }
-
-      // Leer el archivo ZIP
-      const zipContent = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
-
-      // Extraer el ZIP
-      const zip = new JSZip();
-      const zipData = await zip.loadAsync(zipContent, { base64: true });
-
-      // Verificar que el archivo ZIP tenga la estructura correcta
-      if (!zipData.files['database.db'] || !zipData.files['metadata.json']) {
-        throw new Error('El archivo de respaldo no tiene el formato correcto');
-      }
-
-      progressCallback(60);
-
-      // Extraer y guardar la base de datos
-      const dbContent = await zipData.files['database.db'].async('base64');
-      await FileSystem.writeAsStringAsync(`${extractDir}database.db`, dbContent, { encoding: FileSystem.EncodingType.Base64 });
-
-      // Extraer y guardar las imágenes
-      const imageFiles = Object.keys(zipData.files).filter(key => key.startsWith('images/'));
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        const filePath = imageFiles[i];
-        const fileName = filePath.replace('images/', '');
-
-        if (fileName) {
-          const imageContent = await zipData.files[filePath].async('base64');
-          await FileSystem.writeAsStringAsync(`${extractDir}images/${fileName}`, imageContent, { encoding: FileSystem.EncodingType.Base64 });
-        }
-
-        // Actualizar progreso
-        progressCallback(60 + Math.floor((i / imageFiles.length) * 20));
-      }
-
-      progressCallback(80);
-
-      // 3. Reemplazar base de datos actual
-      // Cerrar la conexión a la base de datos antes de reemplazarla
-      // (Esto es una simulación, en una app real necesitaríamos cerrar la conexión correctamente)
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Reemplazar la base de datos
-      await FileSystem.deleteAsync(dbPath);
-      await FileSystem.copyAsync({
-        from: `${extractDir}database.db`,
-        to: dbPath
+        },
       });
+    progressCallback(50);
 
-      progressCallback(90);
+    // 2) Extraer ZIP
+    const extractDir = `${FileSystem.cacheDirectory}import_temp/`;
+    await FileSystem.deleteAsync(extractDir, { idempotent: true });
+    await FileSystem.makeDirectoryAsync(extractDir, { intermediates: true });
+    await FileSystem.makeDirectoryAsync(`${extractDir}images/`, { intermediates: true });
 
-      // 4. Reemplazar imágenes
-      await FileSystem.deleteAsync(imagesDir, { idempotent: true });
-      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
-
-      try {
-        const extractedImages = await FileSystem.readDirectoryAsync(`${extractDir}images/`);
-
-        // Crear un mapa de nombres de archivo para actualizar las rutas en la base de datos
-        const fileNameMap = new Map<string, string>();
-
-        for (const fileName of extractedImages) {
-          const newPath = `${imagesDir}${fileName}`;
-          await FileSystem.copyAsync({
-            from: `${extractDir}images/${fileName}`,
-            to: newPath
-          });
-
-          // Guardar la nueva ruta para cada archivo
-          fileNameMap.set(fileName, newPath);
-        }
-
-        // 5. Actualizar las rutas de las imágenes en la base de datos
-        // Primero, obtener todas las imágenes de la base de datos
-        const imageRecords = await this.drizzleDb
-          .select()
-          .from(schema.images);
-
-        // Actualizar cada registro con la nueva ruta
-        for (const record of imageRecords) {
-          const oldPath = record.path;
-          const fileName = oldPath.split('/').pop();
-
-          if (fileName) {
-            // Usar normalizeImagePath para asegurar que la ruta sea correcta
-            const newPath = normalizeImagePath(fileName);
-
-            // Verificar si el archivo existe en el directorio de imágenes
-            if (fileNameMap.has(fileName)) {
-              console.log(`Actualizando ruta de imagen: ${oldPath} -> ${newPath} (archivo existente)`);
-            } else {
-              console.log(`Actualizando ruta de imagen: ${oldPath} -> ${newPath} (archivo no encontrado)`);
-            }
-
-            await this.drizzleDb
-              .update(schema.images)
-              .set({ path: newPath })
-              .where(eq(schema.images.id, record.id));
-          }
-        }
-      } catch (e) {
-        console.log('Error al restaurar o actualizar imágenes:', e);
-      }
-
-      // 6. Limpiar directorio temporal
-      await FileSystem.deleteAsync(extractDir, { idempotent: true });
-
-      progressCallback(100);
-
-      return {
-        date: new Date(),
-        path: fileUri,
-        backupPath: backupDir,
-      };
-    } catch (error) {
-      console.error('Error durante la importación:', error);
-      throw error;
+    const zip64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+    const zip = await JSZip.loadAsync(zip64, { base64: true });
+    if (!zip.files['database.db'] || !zip.files['metadata.json']) {
+      throw new Error('El archivo de respaldo no tiene el formato correcto');
     }
+    progressCallback(60);
+
+    // 3) Reemplazar DB
+    await FileSystem.deleteAsync(dbCurrent);
+    const newDb64 = await zip.files['database.db'].async('base64');
+    await FileSystem.writeAsStringAsync(dbCurrent, newDb64, { encoding: FileSystem.EncodingType.Base64 });
+    progressCallback(80);
+
+    // 4) Reemplazar Imágenes (evitar directorios)
+    const imgKeys = Object.keys(zip.files).filter(k => k.startsWith('images/') && !zip.files[k].dir);
+    for (let i = 0; i < imgKeys.length; i++) {
+      const key = imgKeys[i];
+      const fn = key.replace(/^images\//, '');
+      const data64 = await zip.files[key].async('base64');
+      await FileSystem.writeAsStringAsync(`${extractDir}images/${fn}`, data64, { encoding: FileSystem.EncodingType.Base64 });
+    }
+    await FileSystem.deleteAsync(IMAGES_DIR, { idempotent: true });
+    await FileSystem.makeDirectoryAsync(IMAGES_DIR, { intermediates: true });
+    const extracted = await FileSystem.readDirectoryAsync(`${extractDir}images/`);
+    for (const fn of extracted) {
+      await FileSystem.copyAsync({ from: `${extractDir}images/${fn}`, to: `${IMAGES_DIR}${fn}` });
+    }
+    progressCallback(95);
+
+    // 5) Limpieza
+    await FileSystem.deleteAsync(extractDir, { idempotent: true });
+    progressCallback(100);
+
+    return { date: new Date(), path: fileUri, backupPath: backupDir };
   }
 
-  // Método para restaurar la copia de seguridad anterior
+  /**
+   * Restaura la última copia de seguridad.
+   */
   async restoreBackup(): Promise<void> {
-    try {
-      // Obtener información de la última copia de seguridad
-      const settingsResult = await this.drizzleDb
-        .select()
-        .from(schema.appSettings)
-        .where(eq(schema.appSettings.key, 'lastBackup'));
-
-      if (!settingsResult.length) {
-        throw new Error('No hay copia de seguridad disponible');
-      }
-
-      const backupInfo = JSON.parse(settingsResult[0].value || '{}');
-      const backupDir = backupInfo.path;
-
-      if (!backupDir) {
-        throw new Error('Ruta de copia de seguridad no válida');
-      }
-
-      const dbPath = `${FileSystem.documentDirectory}SQLite/${DATABASE_NAME}`;
-      const dbBackupPath = `${backupDir}database.db`;
-      const imagesDir = `${FileSystem.documentDirectory}images/`;
-      const imagesBackupDir = `${backupDir}images/`;
-
-      // Restaurar base de datos
-      await FileSystem.deleteAsync(dbPath);
-      await FileSystem.copyAsync({
-        from: dbBackupPath,
-        to: dbPath
-      });
-
-      // Restaurar imágenes
-      await FileSystem.deleteAsync(imagesDir, { idempotent: true });
-      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
-
-      try {
-        const imageFiles = await FileSystem.readDirectoryAsync(imagesBackupDir);
-
-        // Crear un mapa de nombres de archivo para actualizar las rutas en la base de datos
-        const fileNameMap = new Map<string, string>();
-
-        for (const fileName of imageFiles) {
-          const newPath = `${imagesDir}${fileName}`;
-          await FileSystem.copyAsync({
-            from: `${imagesBackupDir}${fileName}`,
-            to: newPath
-          });
-
-          // Guardar la nueva ruta para cada archivo
-          fileNameMap.set(fileName, newPath);
-        }
-
-        // Actualizar las rutas de las imágenes en la base de datos
-        const imageRecords = await this.drizzleDb
-          .select()
-          .from(schema.images);
-
-        // Actualizar cada registro con la nueva ruta
-        for (const record of imageRecords) {
-          const oldPath = record.path;
-          const fileName = oldPath.split('/').pop();
-
-          if (fileName) {
-            // Usar normalizeImagePath para asegurar que la ruta sea correcta
-            const newPath = normalizeImagePath(fileName);
-
-            // Verificar si el archivo existe en el directorio de imágenes
-            if (fileNameMap.has(fileName)) {
-              console.log(`Restaurando ruta de imagen: ${oldPath} -> ${newPath} (archivo existente)`);
-            } else {
-              console.log(`Restaurando ruta de imagen: ${oldPath} -> ${newPath} (archivo no encontrado)`);
-            }
-
-            await this.drizzleDb
-              .update(schema.images)
-              .set({ path: newPath })
-              .where(eq(schema.images.id, record.id));
-          }
-        }
-      } catch (e) {
-        console.log('Error al restaurar o actualizar imágenes:', e);
-      }
-
-      // Eliminar la copia de seguridad después de un día
-      setTimeout(async () => {
-        try {
-          await FileSystem.deleteAsync(backupDir, { idempotent: true });
-        } catch (e) {
-          console.log('Error al eliminar la copia de seguridad:', e);
-        }
-      }, 24 * 60 * 60 * 1000); // 24 horas
-    } catch (error) {
-      console.error('Error durante la restauración:', error);
-      throw error;
+    const settings = await this.drizzleDb.select().from(schema.appSettings).where(eq(schema.appSettings.key, 'lastBackup'));
+    if (!settings.length) {
+      throw new Error('No hay copia de seguridad disponible');
     }
+    const info = JSON.parse(settings[0].value || '{}');
+    const backupDir = info.path;
+    if (!backupDir) {
+      throw new Error('Ruta de copia de seguridad no válida');
+    }
+
+    const dbCurrent = `${SQLITE_DIR}${DATABASE_NAME}`;
+    await FileSystem.deleteAsync(dbCurrent);
+    await FileSystem.copyAsync({ from: `${backupDir}database.db`, to: dbCurrent });
+
+    await FileSystem.deleteAsync(IMAGES_DIR, { idempotent: true });
+    await FileSystem.makeDirectoryAsync(IMAGES_DIR, { intermediates: true });
+    const imgs = await FileSystem.readDirectoryAsync(`${backupDir}images/`).catch(() => []);
+    for (const fn of imgs) {
+      await FileSystem.copyAsync({ from: `${backupDir}images/${fn}`, to: `${IMAGES_DIR}${fn}` });
+    }
+
+    setTimeout(() => {
+      FileSystem.deleteAsync(backupDir, { idempotent: true }).catch(() => {});
+    }, 24 * 60 * 60 * 1000);
   }
 
-  // Método para obtener información de la última exportación
   async getLastExportInfo(): Promise<BackupInfo | null> {
-    try {
-      const settingsResult = await this.drizzleDb
-        .select()
-        .from(schema.appSettings)
-        .where(eq(schema.appSettings.key, 'lastExport'));
-
-      if (!settingsResult.length) {
-        return null;
-      }
-
-      const exportInfo = JSON.parse(settingsResult[0].value || '{}');
-
-      return {
-        date: new Date(exportInfo.date),
-        path: exportInfo.path,
-        size: exportInfo.size || 0,
-        version: exportInfo.version || '',
-      };
-    } catch (error) {
-      console.error('Error al obtener información de la última exportación:', error);
-      return null;
-    }
+    const settings = await this.drizzleDb.select().from(schema.appSettings).where(eq(schema.appSettings.key, 'lastExport'));
+    if (!settings.length) return null;
+    const data = JSON.parse(settings[0].value || '{}');
+    return { date: new Date(data.date), path: data.path, size: data.size || 0, version: data.version || '' };
   }
 
-  // Método para obtener información de la última copia de seguridad
   async getLastBackupInfo(): Promise<ImportInfo | null> {
-    try {
-      const settingsResult = await this.drizzleDb
-        .select()
-        .from(schema.appSettings)
-        .where(eq(schema.appSettings.key, 'lastBackup'));
-
-      if (!settingsResult.length) {
-        return null;
-      }
-
-      const backupInfo = JSON.parse(settingsResult[0].value || '{}');
-
-      return {
-        date: new Date(backupInfo.date),
-        path: backupInfo.path,
-        backupPath: backupInfo.path,
-      };
-    } catch (error) {
-      console.error('Error al obtener información de la última copia de seguridad:', error);
-      return null;
-    }
+    const settings = await this.drizzleDb.select().from(schema.appSettings).where(eq(schema.appSettings.key, 'lastBackup'));
+    if (!settings.length) return null;
+    const data = JSON.parse(settings[0].value || '{}');
+    return { date: new Date(data.date), path: data.path, backupPath: data.path };
   }
 }

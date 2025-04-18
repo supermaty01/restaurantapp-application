@@ -27,19 +27,23 @@ export const useAppSettings = () => {
   const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
-    // Obtener versión de la app
     getAppVersion();
-    // Obtener información de almacenamiento
     getStorageInfo();
-    // Inicializar el servicio de backup
     initBackupService();
   }, []);
 
   const getAppVersion = async () => {
-    if (Platform.OS === 'ios') {
-      setAppVersion(`${Application.applicationName} v${Application.nativeApplicationVersion}`);
-    } else {
-      setAppVersion(`${Application.applicationName} v${Application.nativeApplicationVersion} (${Application.nativeBuildVersion})`);
+    try {
+      const name = Application.applicationName || '';
+      const version = Application.nativeApplicationVersion || '';
+      const build = Application.nativeBuildVersion || '';
+      if (Platform.OS === 'ios') {
+        setAppVersion(`${name} v${version}`);
+      } else {
+        setAppVersion(`${name} v${version} (${build})`);
+      }
+    } catch (error) {
+      console.error('Error al obtener versión de la app:', error);
     }
   };
 
@@ -47,11 +51,7 @@ export const useAppSettings = () => {
     try {
       const appDir = FileSystem.documentDirectory || '';
       const dirInfo = await FileSystem.getInfoAsync(appDir);
-      
-      // En algunos dispositivos, no podemos obtener el espacio total
-      // Así que usamos un valor aproximado
-      const totalSpace = 1024 * 1024 * 1024 * 4; // 4GB como aproximación
-      
+      const totalSpace = 4 * 1024 ** 3; // ~4GB
       setStorageInfo({
         total: totalSpace,
         used: (dirInfo as any).size || 0,
@@ -63,14 +63,13 @@ export const useAppSettings = () => {
 
   const initBackupService = async () => {
     try {
-      const service = new BackupService(db, drizzleDb, appVersion);
+      // Ahora BackupService solo recibe drizzleDb y appVersion
+      const service = new BackupService(drizzleDb, appVersion);
       setBackupService(service);
       
-      // Cargar información de la última exportación
       const exportInfo = await service.getLastExportInfo();
       setLastExport(exportInfo);
       
-      // Cargar información de la última copia de seguridad
       const backupInfo = await service.getLastBackupInfo();
       setLastBackup(backupInfo);
     } catch (error) {

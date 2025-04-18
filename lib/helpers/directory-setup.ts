@@ -1,17 +1,18 @@
 import * as FileSystem from 'expo-file-system';
+import { IMAGES_DIR, SQLITE_DIR } from '@/lib/helpers/fs-paths';
 
-/**
- * Asegura que los directorios necesarios para la aplicación existan
- * Esto es especialmente importante después de una desinstalación y reinstalación
- */
 export async function ensureAppDirectories(): Promise<void> {
   try {
-    // Asegurar que el directorio de imágenes exista
-    const imagesDir = `${FileSystem.documentDirectory}images/`;
-    const imagesDirInfo = await FileSystem.getInfoAsync(imagesDir);
-    
-    if (!imagesDirInfo.exists) {
-      await FileSystem.makeDirectoryAsync(imagesDir, { intermediates: true });
+    // 1. images/
+    const imgInfo = await FileSystem.getInfoAsync(IMAGES_DIR);
+    if (!imgInfo.exists) {
+      await FileSystem.makeDirectoryAsync(IMAGES_DIR, { intermediates: true });
+    }
+
+    // 2. SQLite/
+    const dbInfo = await FileSystem.getInfoAsync(SQLITE_DIR);
+    if (!dbInfo.exists) {
+      await FileSystem.makeDirectoryAsync(SQLITE_DIR, { intermediates: true });
     }
   } catch (error) {
     console.error('Error al verificar/crear directorios de la aplicación:', error);
