@@ -6,7 +6,7 @@ export default {
     "slug": "restaurantapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/burger-logo.png",
+    "icon": "./assets/burger-logo-fondo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
@@ -19,8 +19,8 @@ export default {
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/burger-logo.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/burger-logo-fondo.png",
+        "backgroundColor": "#DFE2CF"
       },
       "package": "com.supermaty01.restaurantapp",
       "versionCode": 1,
@@ -45,13 +45,14 @@ export default {
     },
     "plugins": [
       "expo-router",
+      "expo-sqlite",
       [
         "expo-splash-screen",
         {
           "image": "./assets/burger-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#DFE2CF"
         }
       ]
     ],
@@ -64,7 +65,8 @@ export default {
       },
       "eas": {
         "projectId": "acb4a328-034e-4fa5-8381-226436faaf98"
-      }
+      },
+      "OFFLINE_MODE": process.env.OFFLINE_MODE || "false"
     }
   }
 }

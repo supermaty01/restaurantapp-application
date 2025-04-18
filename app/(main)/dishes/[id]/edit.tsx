@@ -4,19 +4,25 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
-import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
-import api from '@/services/api';
-import { TagDTO } from '@/types/tag-dto';
-import Tag from '@/components/tags/Tag';
+import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { uploadImages } from '@/helpers/upload-images';
-import { DishFormData, dishSchema } from '@/schemas/dish';
+import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import Tag from '@/features/tags/components/Tag';
+import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { and, eq } from 'drizzle-orm/sql';
+import { useDishById } from '@/features/dishes/hooks/useDishById';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function DishEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
+  const { isDarkMode } = useTheme();
 
   const {
     control,
@@ -28,7 +34,7 @@ export default function DishEditScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurant_id: undefined,
+      restaurantId: undefined,
       comments: '',
       price: undefined,
       rating: undefined,
@@ -39,72 +45,84 @@ export default function DishEditScreen() {
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
   const [removedImages, setRemovedImages] = useState<number[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch dish data and restaurants
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const dish = useDishById(Number(id));
+
+  // Load dish data from local database
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        const dishResponse = await api.get(`/dishes/${id}`);
-        const dishData = dishResponse.data.data;
-
-        reset({
-          name: dishData.name,
-          restaurant_id: dishData.restaurant.id,
-          comments: dishData.comments || "",
-          rating: dishData.rating,
-          price: dishData.price.toString(),
-        });
-
-        setSelectedTags(dishData.tags);
-        setSelectedImages(
-          dishData.images.map((img: any) => ({ id: img.id, uri: img.url }))
-        );
-      } catch (error) {
-        console.log('Error fetching data:', error);
-        Alert.alert('Error', 'No se pudieron cargar los datos del plato');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id, setValue]);
+    if (dish?.id) {
+      reset({
+        name: dish.name,
+        restaurantId: dish.restaurant.id,
+        comments: dish.comments || "",
+        rating: dish.rating !== null ? dish.rating : undefined,
+        price: dish.price !== null ? dish.price : undefined,
+      });
+      setSelectedTags(dish.tags);
+      setSelectedImages(dish.images);
+    }
+  }, [dish?.id, reset]);
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         comments: data.comments?.trim() || "",
         price: data.price || null,
         rating: data.rating || null,
-        tags: selectedTags.map((tag) => tag.id),
       };
 
-      await api.put(`/dishes/${id}`, payload);
+      // Update dish record
+      await drizzleDb.update(schema.dishes).set(payload).where(eq(schema.dishes.id, Number(id)));
 
       // Handle new images upload
       const newImages = selectedImages.filter((image) => !image.id);
       if (newImages.length > 0) {
-        await uploadImages(newImages.map((img) => img.uri), "DISH", Number(id));
+        await uploadImages(drizzleDb, newImages.map((img) => img.uri), "DISH", Number(id));
       }
 
       // Handle removed images
       if (removedImages.length > 0) {
         await Promise.all(
-          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+          removedImages.map((imageId) => {
+            return drizzleDb.delete(schema.images).where(eq(schema.images.id, imageId));
+          })
+        );
+      }
+
+      // Handle tags
+      // First, get current tags
+      const currentTags = dish?.tags.map((tag) => tag.id) || [];
+      const removedTags = currentTags.filter((tagId) => !selectedTags.some((tag) => tag.id === tagId));
+      const addedTags = selectedTags.filter((tag) => !currentTags.includes(tag.id)).map((tag) => tag.id);
+
+      // Remove tags that were unselected
+      if (removedTags.length > 0) {
+        await Promise.all(
+          removedTags.map((tagId) => {
+            return drizzleDb.delete(schema.dishTags).where(
+              and(eq(schema.dishTags.dishId, Number(id)), eq(schema.dishTags.tagId, tagId))
+            );
+          })
+        );
+      }
+
+      // Add new tags
+      if (addedTags.length > 0) {
+        await Promise.all(
+          addedTags.map((tagId) => {
+            return drizzleDb.insert(schema.dishTags).values({ dishId: Number(id), tagId });
+          })
         );
       }
 
       Alert.alert('Éxito', 'Plato actualizado correctamente.');
-      router.replace({
-        pathname: '/dishes/[id]/view',
-        params: { id },
-      });
+      router.back();
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo actualizar el plato');
       console.log(error);
@@ -115,17 +133,17 @@ export default function DishEditScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
+      <View className="flex-1 bg-muted dark:bg-dark-muted justify-center items-center">
+        <ActivityIndicator size="large" color={isDarkMode ? "#B27A4D" : "#905c36"} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Editar plato</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar plato</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         {/* Nombre */}
         <FormInput
           control={control}
@@ -158,13 +176,13 @@ export default function DishEditScreen() {
         <RestaurantPicker
           control={control}
           setValue={setValue}
-          name="restaurant_id"
+          name="restaurantId"
           label="Restaurante"
           errors={errors}
         />
 
         {/* Rating (opcional) */}
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars
             control={control}
@@ -174,12 +192,12 @@ export default function DishEditScreen() {
 
         {/* Tags */}
         <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
+          <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200">Etiquetas</Text>
           <TouchableOpacity
             className="flex-row items-center"
             onPress={() => setTagModalVisible(true)}
           >
-            <View className="bg-primary rounded-full p-2">
+            <View className="bg-primary dark:bg-dark-primary rounded-full p-2">
               <Ionicons name="add" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -211,7 +229,7 @@ export default function DishEditScreen() {
         {/* Submit button */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center"
           disabled={loading}
         >
           {loading ? (

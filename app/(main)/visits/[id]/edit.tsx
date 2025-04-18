@@ -2,25 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
-
+import { useRouter, useGlobalSearchParams } from 'expo-router';
 import FormInput from '@/components/FormInput';
 import FormDatePicker from '@/components/FormDatePicker';
-import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
-import DishPicker from '@/components/dishes/DishPicker';
-import { useRoute } from '@react-navigation/native';
-
-import api from '@/services/api';
-import { uploadImages } from '@/helpers/upload-images';
-import { VisitFormData, visitSchema } from '@/schemas/visit';
-import { DishListDTO } from '@/types/dish-dto';
+import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import DishPicker from '@/features/dishes/components/DishPicker';
+import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { parse, format } from 'date-fns';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { useVisitById } from '@/features/visits/hooks/useVisitById';
+import { eq } from 'drizzle-orm/sql';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitEditScreen() {
-  const { params } = useRoute();
-  const { id } = params as { id: string };
+  const { id } = useGlobalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   const {
     control,
@@ -36,71 +38,80 @@ export default function VisitEditScreen() {
   const [selectedDishes, setSelectedDishes] = useState<DishListDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<ImageItem[]>([]);
   const [removedImages, setRemovedImages] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const restaurantId = watch('restaurant_id');
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const visit = useVisitById(Number(id));
 
-  useEffect(() => {
-    const fetchVisitData = async () => {
-      try {
-        const response = await api.get(`/visits/${id}`);
-        const visitData = response.data.data;
-
-        const parsedDate = parse(visitData.visited_at, "yyyy/MM/dd", new Date());
-        const formattedDate = format(parsedDate, "yyyy-MM-dd");
-
-        reset({
-          visited_at: formattedDate,
-          comments: visitData.comments || "",
-          restaurant_id: visitData.restaurant.id,
-          dishes: [],
-        });
-
-        setSelectedImages(
-          visitData.images.map((img: any) => ({ id: img.id, uri: img.url }))
-        );
-
-        const dishesResponse = await api.get(`/visits/${id}/dishes`);
-        const visitDishes = dishesResponse.data.data;
-
-        setSelectedDishes(visitDishes);
-        setValue("dishes", visitDishes.map((dish: DishListDTO) => dish.id.toString()), { shouldValidate: true });
-
-      } catch (error) {
-        Alert.alert('Error', 'No se pudo cargar la visita.');
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchVisitData();
-  }, [id]);
+  const restaurantId = watch('restaurantId');
 
   useEffect(() => {
-    setSelectedDishes([]);
-    setValue("dishes", []);
-  }, [restaurantId]);
+    if (visit?.id) {
+      reset({
+        visited_at: visit.visited_at,
+        comments: visit.comments || "",
+        restaurantId: visit.restaurant.id,
+        dishes: visit.dishes.map(dish => dish.id),
+      });
+
+      setSelectedImages(visit.images);
+      setSelectedDishes(visit.dishes.map(dish => ({
+        id: dish.id,
+        name: dish.name,
+        comments: null,
+        rating: null,
+        tags: [],
+        images: [],
+      })));
+    }
+  }, [visit?.id, reset]);
+
+  useEffect(() => {
+    if (restaurantId && visit && (restaurantId !== visit?.restaurant.id)) {
+      setSelectedDishes([]);
+      setValue("dishes", []);
+    }
+  }, [restaurantId, visit?.restaurant.id]);
 
   const onSubmit: SubmitHandler<VisitFormData> = async (data) => {
     try {
       const payload = {
-        visited_at: data.visited_at,
+        visitedAt: data.visited_at,
         comments: data.comments?.trim() || '',
-        restaurant_id: data.restaurant_id,
-        dishes: selectedDishes.map((dish) => dish.id),
+        restaurantId: data.restaurantId,
       };
 
-      await api.put(`/visits/${id}`, payload);
+      // Actualizar la visita
+      await drizzleDb.update(schema.visits).set(payload).where(eq(schema.visits.id, Number(id)));
 
+      // Manejar imágenes nuevas
       const newImages = selectedImages.filter((image) => !image.id);
       if (newImages.length > 0) {
-        await uploadImages(newImages.map((img) => img.uri), "VISIT", Number(id));
+        await uploadImages(drizzleDb, newImages.map((img) => img.uri), "VISIT", Number(id));
       }
 
+      // Manejar imágenes eliminadas
       if (removedImages.length > 0) {
         await Promise.all(
-          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+          removedImages.map((imageId) => {
+            return drizzleDb.delete(schema.images).where(eq(schema.images.id, imageId));
+          })
+        );
+      }
+
+      // Manejar platos
+      // Primero eliminar todas las relaciones existentes
+      await drizzleDb.delete(schema.dishVisits).where(eq(schema.dishVisits.visitId, Number(id)));
+
+      // Luego agregar las nuevas relaciones
+      if (data.dishes && data.dishes.length > 0) {
+        await Promise.all(
+          data.dishes.map((dishId) => {
+            return drizzleDb.insert(schema.dishVisits).values({
+              visitId: Number(id),
+              dishId: typeof dishId === 'string' ? parseInt(dishId) : dishId,
+            });
+          })
         );
       }
 
@@ -115,19 +126,11 @@ export default function VisitEditScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
-
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Editar visita</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar visita</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         <FormDatePicker control={control} name="visited_at" label="Fecha" />
 
         <FormInput
@@ -143,7 +146,7 @@ export default function VisitEditScreen() {
         <RestaurantPicker
           control={control}
           setValue={setValue}
-          name="restaurant_id"
+          name="restaurantId"
           label="Restaurante"
           errors={errors}
         />
@@ -169,7 +172,7 @@ export default function VisitEditScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className={`mt-4 bg-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
+          className={`mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
           disabled={isSubmitting}
         >
           {isSubmitting ? (

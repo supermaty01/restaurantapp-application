@@ -3,9 +3,9 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-na
 import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthContext } from '../../context/AuthContext';
 import FormInput from '@/components/FormInput';
-import { RegisterFormData, registerSchema } from '@/schemas/auth/register';
+import { RegisterFormData, registerSchema } from '@/features/auth/schemas/register';
+import { AuthContext } from '@/lib/context/AuthContext';
 
 const RegisterScreen: FC = () => {
   const { register: registerUser } = useContext(AuthContext);
@@ -71,9 +71,8 @@ const RegisterScreen: FC = () => {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className={`w-full py-4 rounded-lg items-center mt-6 ${
-            isLoading ? 'bg-gray-400' : 'bg-primary'
-          }`}
+          className={`w-full py-4 rounded-lg items-center mt-6 ${isLoading ? 'bg-gray-400' : 'bg-primary'
+            }`}
           disabled={isLoading}
         >
           {isLoading ? (

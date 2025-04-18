@@ -4,19 +4,25 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
-import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader, { ImageItem } from '@/components/ImagesUploader';
-import api from '@/services/api';
-import { TagDTO } from '@/types/tag-dto';
-import Tag from '@/components/tags/Tag';
+import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { uploadImages } from '@/helpers/upload-images';
-import { RestaurantFormData, restaurantSchema } from '@/schemas/restaurant';
+import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
 import MapLocationPicker from '@/components/MapLocationPicker';
+import Tag from '@/features/tags/components/Tag';
+import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { and, eq } from 'drizzle-orm/sql';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function RestaurantEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
+  const { isDarkMode } = useTheme();
 
   const { control, handleSubmit, reset } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
@@ -35,32 +41,27 @@ export default function RestaurantEditScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const restaurant = useRestaurantById(Number(id));
+
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      api
-        .get(`/restaurants/${id}`)
-        .then((response) => {
-          const restaurant = response.data.data;
-          reset({
-            name: restaurant.name,
-            comments: restaurant.comments || "",
-            rating: restaurant.rating,
-            location: restaurant.location,
-          });
-          setSelectedTags(restaurant.tags);
-          setSelectedImages(
-            restaurant.images.map((img: any) => ({ id: img.id, uri: img.url }))
-          );
-          setLocation(restaurant.location);
-        })
-        .catch((error) => {
-          Alert.alert('Error', 'No se pudo cargar los datos del restaurante');
-          console.log(error);
-        })
-        .finally(() => setLoading(false));
+    if (restaurant?.id) {
+      const l = (restaurant.latitude && restaurant.longitude) ? {
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+      } : null;
+      reset({
+        name: restaurant.name,
+        comments: restaurant.comments || "",
+        rating: restaurant.rating,
+        location: l,
+      });
+      setSelectedTags(restaurant.tags);
+      setSelectedImages(restaurant.images);
+      setLocation(l);
     }
-  }, [id, reset]);
+  }, [restaurant?.id, reset]);
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -69,25 +70,47 @@ export default function RestaurantEditScreen() {
         name: data.name.trim(),
         comments: data.comments?.trim() || '',
         rating: data.rating || null,
-        location: location || null,
-        tags: selectedTags.map((tag) => tag.id),
+        latitude: location?.latitude || null,
+        longitude: location?.longitude || null,
       };
-
-      await api.put(`/restaurants/${id}`, payload);
+      await drizzleDb.update(schema.restaurants).set(payload).where(eq(schema.restaurants.id, Number(id)));
 
       const newImages = selectedImages.filter((image) => !image.id);
       if (newImages.length > 0) {
-        await uploadImages(newImages.map((img) => img.uri), "RESTAURANT", Number(id));
+        await uploadImages(drizzleDb, newImages.map((img) => img.uri), "RESTAURANT", Number(id));
+      }
+
+      // Eliminar etiquetas
+      const currentTags = restaurant?.tags.map((tag) => tag.id) || [];
+      const removedTags = currentTags.filter((tagId) => !selectedTags.some((tag) => tag.id === tagId));
+      const addedTags = selectedTags.filter((tag) => !currentTags.includes(tag.id)).map((tag) => tag.id);
+      if (removedTags.length > 0) {
+        await Promise.all(
+          removedTags.map((tagId) => {
+            return drizzleDb.delete(schema.restaurantTags).where(and(eq(schema.restaurantTags.restaurantId, Number(id)), (eq(schema.restaurantTags.tagId, tagId))));
+          })
+        );
+      }
+
+      // Agregar etiquetas
+      if (addedTags.length > 0) {
+        await Promise.all(
+          addedTags.map((tagId) => {
+            return drizzleDb.insert(schema.restaurantTags).values({ restaurantId: Number(id), tagId });
+          })
+        );
       }
 
       if (removedImages.length > 0) {
         await Promise.all(
-          removedImages.map((imageId) => api.delete(`/images/${imageId}`))
+          removedImages.map((imageId) => {
+            return drizzleDb.delete(schema.images).where(eq(schema.images.id, imageId));
+          })
         );
       }
 
       Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
-      router.replace({ pathname: '/restaurants/[id]/view', params: { id } });
+      router.back();
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo actualizar el restaurante');
       console.log(error);
@@ -98,17 +121,17 @@ export default function RestaurantEditScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
+      <View className="flex-1 bg-muted dark:bg-dark-muted justify-center items-center">
+        <ActivityIndicator size="large" color={isDarkMode ? "#B27A4D" : "#905c36"} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-muted p-4">
-      <Text className="text-2xl font-bold mb-4">Editar restaurante</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar restaurante</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         <FormInput
           control={control}
           name="name"
@@ -126,21 +149,21 @@ export default function RestaurantEditScreen() {
           numberOfLines={4}
         />
 
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Ubicación</Text>
         <MapLocationPicker location={location} onLocationChange={setLocation} />
 
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
         </View>
 
         <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
+          <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200">Etiquetas</Text>
           <TouchableOpacity
             className="flex-row items-center"
             onPress={() => setTagModalVisible(true)}
           >
-            <View className="bg-primary rounded-full p-2">
+            <View className="bg-primary dark:bg-dark-primary rounded-full p-2">
               <Ionicons name="add" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -170,7 +193,7 @@ export default function RestaurantEditScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center"
           disabled={loading}
         >
           {loading ? (

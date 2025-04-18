@@ -6,11 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthContext } from '@/context/AuthContext';
 import RestaurantsScreen from './restaurants';
 import DishesScreen from './dishes';
 import VisitsScreen from './visits';
 import TagsScreen from './tags';
+import SettingsScreen from './settings';
 import RestaurantCreateScreen from './restaurants/new';
 import RestaurantDetailScreen from './restaurants/[id]/view';
 import RestaurantEditScreen from './restaurants/[id]/edit';
@@ -20,19 +20,22 @@ import DishEditScreen from './dishes/[id]/edit';
 import VisitCreateScreen from './visits/new';
 import VisitDetailScreen from './visits/[id]/view';
 import VisitEditScreen from './visits/[id]/edit';
+import { AuthContext } from '@/lib/context/AuthContext';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
 
 function TabsLayout() {
+  const { isDarkMode } = useTheme();
   return (
     <TopTab.Navigator
       screenOptions={{
         swipeEnabled: true,
-        tabBarIndicatorStyle: { backgroundColor: '#905c36' },
-        tabBarActiveTintColor: '#905c36',
-        tabBarInactiveTintColor: '#6b6246',
-        tabBarStyle: { backgroundColor: '#cdc8b8' },
+        tabBarIndicatorStyle: { backgroundColor: isDarkMode ? '#B27A4D' : '#905c36' },
+        tabBarActiveTintColor: isDarkMode ? '#B27A4D' : '#905c36',
+        tabBarInactiveTintColor: isDarkMode ? '#A09A8C' : '#6b6246',
+        tabBarStyle: { backgroundColor: isDarkMode ? '#2A2A2A' : '#cdc8b8' },
         tabBarLabelStyle: { fontSize: 11 },
       }}
       tabBarPosition="bottom"
@@ -87,31 +90,14 @@ type CustomHeaderProps = {
 };
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
-  function handleLogOut() {
-    Alert.alert(
-      'Cerrar sesión',
-      '¿Estás seguro de que deseas cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          },
-        },
-      ],
-      { cancelable: true }
-    );
-  }
+  const { isDarkMode } = useTheme();
 
   return (
-    <View className="w-full flex-row items-center justify-between p-4 bg-[#e3e6d6]">
+    <View className={`w-full flex-row items-center justify-between p-4 bg-accent dark:bg-dark-accent`}>
       <View className="w-20">
         {route.name !== 'Tabs' && (
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back-outline" size={24} color="#905c36" />
+            <Ionicons name="arrow-back-outline" size={24} color={isDarkMode ? '#B27A4D' : '#905c36'} />
           </TouchableOpacity>
         )}
       </View>
@@ -120,11 +106,13 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
         className="w-12 h-12"
       />
       <View className="w-20 items-end">
-        <TouchableOpacity
-          onPress={async () => handleLogOut()}
-        >
-          <Ionicons name="log-out-outline" size={32} color="#905c36" />
-        </TouchableOpacity>
+        {route.name !== 'settings' && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('settings')}
+          >
+            <Ionicons name="settings-outline" size={28} color={isDarkMode ? '#B27A4D' : '#905c36'} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -134,21 +122,22 @@ let logout: () => Promise<void>;
 let router: ReturnType<typeof useRouter>;
 
 export default function MainLayout() {
-  const { userToken, loading, logout: contextLogout } = useContext(AuthContext);
+  const { userToken, loading, logout: contextLogout, isOfflineMode } = useContext(AuthContext);
+  const { isDarkMode } = useTheme();
   router = useRouter();
   logout = contextLogout;
 
   useEffect(() => {
-    if (!loading && !userToken) {
+    if (!loading && (!userToken && !isOfflineMode)) {
       router.replace('/login');
     }
   }, [userToken, loading, router]);
 
-  if (loading || !userToken) return null;
+  if (loading || (!userToken && !isOfflineMode)) return null;
 
   return (
-    <SafeAreaView className="flex-1 bg-muted">
-      <StatusBar style="dark" backgroundColor="#e3e6d6" />
+    <SafeAreaView className="flex-1 bg-muted dark:bg-dark-muted">
+      <StatusBar style={isDarkMode ? "light" : "dark"} backgroundColor={isDarkMode ? "#111c16" : "#e3e6d6"} />
       <Stack.Navigator
         screenOptions={{
           headerShown: true,
@@ -207,6 +196,11 @@ export default function MainLayout() {
         <Stack.Screen
           name="visits/[id]/edit"
           component={VisitEditScreen}
+          options={{ presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="settings"
+          component={SettingsScreen}
           options={{ presentation: 'modal' }}
         />
       </Stack.Navigator>

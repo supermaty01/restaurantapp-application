@@ -1,68 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Alert, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import TagItem from '@/components/tags/TagItem';
-import CreateTagModal from '@/components/tags/CreateTagModal';
-import api from '@/services/api';
-import { TagDTO } from '@/types/tag-dto';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+import * as schema from '@/services/db/schema';
+import CreateTagModal from '@/features/tags/components/CreateTagModal';
+import TagItem from '@/features/tags/components/TagItem';
+import { eq } from 'drizzle-orm';
+import { TagDTO } from '@/features/tags/types/tag-dto';
+import { useTagsList } from '@/features/tags/hooks/useTagsList';
 
 export default function TagsScreen() {
-  const [tags, setTags] = useState<TagDTO[]>([]);
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  // Solo mostrar etiquetas no eliminadas en la lista principal
+  const { data: tags } = useTagsList(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagDTO | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const getTags = async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.get('/tags');
-      setTags(response.data.data);
-    } catch (error: any) {
-      console.log('Error fetching tags:', error);
-      Alert.alert('Error', 'No se pudieron cargar las etiquetas');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getTags();
-  }, []);
-
-  const handleSubmit = async (tagData: Pick<TagDTO, "name" | "color"> & { id?: string }) => {
+  const handleSubmit = async (tagData: { id?: number; name: string; color: string }) => {
     try {
       if (selectedTag) {
         // Actualizar etiqueta existente
-        await api.put(`/tags/${selectedTag.id}`, tagData);
+        await drizzleDb.update(schema.tags).set({ name: tagData.name, color: tagData.color }).where(eq(schema.tags.id, selectedTag.id));
       } else {
         // Crear nueva etiqueta
-        await api.post('/tags', tagData);
+        await drizzleDb.insert(schema.tags).values({ name: tagData.name, color: tagData.color });
       }
-      getTags();
+
       handleModalClose();
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       console.log('Error in tag operation:', error);
-      return {
-        success: false,
-        error: error.response ? error.response.data : error.message,
-      };
+      return { success: false, error: 'Error al procesar la etiqueta' };
     }
   };
 
-  const handleDeleteTag = async (tagId: string) => {
+  const handleDeleteTag = async (tagId: number) => {
     try {
-      await api.delete(`/tags/${tagId}`);
-      getTags();
+      // Implementar soft delete en lugar de eliminación permanente
+      await drizzleDb.update(schema.tags)
+        .set({ deleted: true })
+        .where(eq(schema.tags.id, tagId));
       handleModalClose();
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       console.log('Error deleting tag:', error);
       Alert.alert('Error', 'No se pudo eliminar la etiqueta');
-      return {
-        success: false,
-        error: error.response ? error.response.data : error.message,
-      };
+      return { success: false, error: 'Error al eliminar la etiqueta' };
     }
   };
 
@@ -76,34 +61,27 @@ export default function TagsScreen() {
     setModalVisible(false);
   };
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
-
   return (
-    <View className="flex-1 bg-muted px-4 pt-2 relative">
+    <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-2xl font-bold text-gray-800">Etiquetas</Text>
+        <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Etiquetas</Text>
       </View>
 
       <FlatList
         data={tags}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TagItem
             label={item.name}
             color={item.color}
+            deleted={item.deleted}
             onPress={() => handleTagPress(item)}
           />
         )}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800">No se encontraron etiquetas.</Text>
+            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron etiquetas.</Text>
           </View>
         }
       />
@@ -113,7 +91,7 @@ export default function TagsScreen() {
           setSelectedTag(null);
           setModalVisible(true);
         }}
-        className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
+        className="absolute bottom-5 right-5 w-12 h-12 bg-primary dark:bg-dark-primary rounded-full items-center justify-center"
       >
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>

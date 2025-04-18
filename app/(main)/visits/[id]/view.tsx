@@ -1,55 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
-  ActivityIndicator,
   Alert,
-  Dimensions,
-  Image,
-  Modal,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/services/api';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { VisitDTO } from '@/types/visit-dto'
-import VisitDetails from '@/components/visits/VisitDetails'
-import VisitDishes from '@/components/visits/VisitDishes'
-import { ImageDisplay } from '@/components/ImageDisplay';
+import VisitDetails from '@/features/visits/components/VisitDetails'
+import VisitDishes from '@/features/visits/components/VisitDishes'
+import { ImageDisplay } from '@/features/images/components/ImageDisplay';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { eq } from 'drizzle-orm/sql';
+import { canDeleteVisitPermanently, softDeleteVisit } from '@/lib/helpers/soft-delete';
+import { useVisitById } from '@/features/visits/hooks/useVisitById';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 const Tab = createMaterialTopTabNavigator();
-const screenWidth = Dimensions.get('window').width;
 
 export default function VisitDetailScreen() {
   const router = useRouter();
   const { id } = useGlobalSearchParams();
-  const [visit, setVisit] = useState<VisitDTO | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    fetchVisit();
-  }, []);
-
-  async function fetchVisit() {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/visits/${id}`);
-      setVisit(response.data.data);
-    } catch (error) {
-      console.log('Error fetching visit:', error);
-      Alert.alert('Error', 'No se pudo cargar la información de la visita');
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const visit = useVisitById(Number(id));
+  const { isDarkMode } = useTheme();
 
   function handleEdit() {
     router.replace({
@@ -58,78 +38,106 @@ export default function VisitDetailScreen() {
     });
   }
 
-  function handleDelete() {
-    Alert.alert(
-      'Eliminar Visita',
-      '¿Estás seguro de que deseas eliminar esta visita?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/visits/${id}`);
-              Alert.alert('Eliminada', 'Visita eliminada correctamente');
-              router.back();
-            } catch (error) {
-              console.log('Error deleting visit:', error);
-              Alert.alert('Error', 'No se pudo eliminar la visita');
-            }
+  async function handleDelete() {
+    try {
+      // Verificar si la visita puede ser eliminada permanentemente
+      const canDeletePermanently = await canDeleteVisitPermanently(drizzleDb, Number(id));
+
+      const message = canDeletePermanently
+        ? '¿Estás seguro de que deseas eliminar esta visita? Esta acción no se puede deshacer.'
+        : '¿Estás seguro de que deseas eliminar esta visita?';
+
+      Alert.alert(
+        'Eliminar Visita',
+        message,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                if (canDeletePermanently) {
+                  // Eliminar permanentemente
+                  await drizzleDb.delete(schema.visits).where(eq(schema.visits.id, Number(id)));
+                } else {
+                  // Soft delete
+                  await softDeleteVisit(drizzleDb, Number(id));
+                }
+
+                Alert.alert('Eliminada', 'Visita eliminada correctamente');
+                router.back();
+              } catch (error) {
+                console.log('Error deleting visit:', error);
+                Alert.alert('Error', 'No se pudo eliminar la visita');
+              }
+            },
           },
-        },
-      ],
-      { cancelable: true },
-    );
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.log('Error checking visit references:', error);
+      Alert.alert('Error', 'No se pudo verificar las referencias de la visita');
+    }
   }
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
-      </View>
-    );
-  }
+
 
   if (!visit) {
     return (
-      <View className="flex-1 justify-center items-center bg-muted p-4">
-        <Text className="text-base text-gray-800">
+      <View className="flex-1 justify-center items-center bg-muted dark:bg-dark-muted p-4">
+        <Text className="text-base text-gray-800 dark:text-gray-200">
           No se encontró la visita
         </Text>
       </View>
     );
   }
 
-  const parsedDate = parse(visit.visited_at, 'yyyy/MM/dd', new Date());
+  const parsedDate = parse(visit.visited_at, 'yyyy-MM-dd', new Date());
   const formattedDate = format(parsedDate, "dd 'de' MMMM, yyyy", { locale: es });
 
   return (
-    <View className="flex-1 bg-muted">
+    <View className="flex-1 bg-muted dark:bg-dark-muted">
       <ImageDisplay images={visit.images} />
 
       <View className="flex-row items-center justify-between px-4 mt-4">
-        <Text className="text-2xl font-bold text-gray-800 flex-1 mr-2">
-          {formattedDate}
-        </Text>
+        <View className="flex-1 mr-2">
+          <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+            {formattedDate}
+          </Text>
+        </View>
         <View className="flex-row">
-          <TouchableOpacity className="bg-primary p-2 rounded-full mr-2" onPress={handleEdit}>
+          <TouchableOpacity className="bg-primary dark:bg-dark-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity className="bg-destructive p-2 rounded-full" onPress={handleDelete}>
+          <TouchableOpacity className="bg-destructive dark:bg-dark-destructive p-2 rounded-full" onPress={handleDelete}>
             <Ionicons name="trash-outline" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View className="bg-white mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
+      {visit.deleted && (
+        <View className="mt-3 mx-4 bg-red-100 px-2 py-2 rounded flex-row gap-2 border-red-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#dc2626" />
+          <Text className="flex text-red-600 text-sm">Esta visita ha sido eliminada</Text>
+        </View>
+      )}
+      {visit.restaurant.deleted && (
+        <View className="mt-3 mx-4 bg-orange-100 px-2 py-2 rounded flex-row gap-2 border-orange-600 border-[1px]">
+          <Ionicons className="flex" name="warning-outline" size={16} color="#ea580c" />
+          <Text className="flex text-orange-600 text-sm">El restaurante de esta visita ha sido eliminado</Text>
+        </View>
+      )}
+
+      <View className="bg-card dark:bg-dark-card mt-4 mx-4 rounded-xl flex-1 overflow-hidden mb-4">
         <Tab.Navigator
           screenOptions={{
-            tabBarActiveTintColor: '#93AE72',
-            tabBarInactiveTintColor: '#6b7280',
-            tabBarIndicatorStyle: { backgroundColor: '#93AE72', height: 3 },
+            tabBarActiveTintColor: isDarkMode ? '#7A9455' : '#93AE72',
+            tabBarInactiveTintColor: isDarkMode ? '#a0a0a0' : '#6b7280',
+            tabBarIndicatorStyle: { backgroundColor: isDarkMode ? '#7A9455' : '#93AE72', height: 3 },
             tabBarLabelStyle: { fontSize: 16, fontWeight: 'bold' },
-            tabBarStyle: { backgroundColor: 'white' },
+            tabBarStyle: { backgroundColor: isDarkMode ? '#2A2A2A' : 'white' },
           }}
         >
           <Tab.Screen name="Details" options={{ tabBarLabel: 'Detalles' }}>
@@ -140,6 +148,6 @@ export default function VisitDetailScreen() {
           </Tab.Screen>
         </Tab.Navigator>
       </View>
-    </View>
+    </View >
   );
 }

@@ -2,21 +2,22 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
-import TagSelectorModal from '@/components/tags/TagSelectorModal';
-import ImagesUploader from '@/components/ImagesUploader';
-import RestaurantPicker from '@/components/restaurants/RestaurantPicker';
-
-import api from '@/services/api';
-import { TagDTO } from '@/types/tag-dto';
-import Tag from '@/components/tags/Tag';
+import ImagesUploader from '@/features/images/components/ImagesUploader';
+import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { Ionicons } from '@expo/vector-icons';
-import { uploadImages } from '@/helpers/upload-images';
-import { DishFormData, dishSchema } from '@/schemas/dish';
+import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import { router, useGlobalSearchParams } from 'expo-router';
-import { useNewDish } from '@/context/NewDishContext';
+import { useNewDish } from '@/features/dishes/hooks/useNewDish';
+import Tag from '@/features/tags/components/Tag';
+import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import { useSQLiteContext } from 'expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import * as schema from '@/services/db/schema';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function DishCreateScreen() {
   const { useBackRedirect, restaurantId } = useGlobalSearchParams();
@@ -29,7 +30,7 @@ export default function DishCreateScreen() {
     resolver: zodResolver(dishSchema),
     defaultValues: {
       name: '',
-      restaurant_id: Number(restaurantId),
+      restaurantId: restaurantId ? Number(restaurantId) : undefined,
       comments: '',
       price: undefined,
       rating: undefined,
@@ -41,29 +42,43 @@ export default function DishCreateScreen() {
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const { setNewDish } = useNewDish();
   const [loading, setLoading] = useState(false);
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const { isDarkMode } = useTheme();
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
     try {
       const payload = {
         name: data.name.trim(),
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         comments: data.comments?.trim() || "",
         price: data.price || null,
         rating: data.rating || null,
-        tags: selectedTags.map((tag) => tag.id),
       };
 
-      const response = await api.post('/dishes', payload);
-      const dishId = response.data.data.id;
+      const response = await drizzleDb.insert(schema.dishes).values(payload);
+      const dishId = response.lastInsertRowId;
+
+      // Asociar etiquetas
+      for (const tag of selectedTags) {
+        await drizzleDb.insert(schema.dishTags).values({ dishId, tagId: tag.id });
+      }
 
       if (selectedImages.length > 0) {
-        await uploadImages(selectedImages, "DISH", dishId);
+        await uploadImages(drizzleDb, selectedImages, "DISH", dishId);
       }
 
       Alert.alert('Éxito', 'Plato creado correctamente.');
       if (useBackRedirect && useBackRedirect === 'true') {
-        setNewDish(response.data.data);
+        setNewDish({
+          id: dishId,
+          name: payload.name,
+          comments: payload.comments,
+          rating: payload.rating,
+          tags: [], // No se necesitan
+          images: [], // No se necesitan
+        });
         router.back();
       } else {
         router.replace({
@@ -80,10 +95,10 @@ export default function DishCreateScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir plato</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Añadir plato</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         {/* Nombre */}
         <FormInput
           control={control}
@@ -116,14 +131,14 @@ export default function DishCreateScreen() {
         <RestaurantPicker
           control={control}
           setValue={setValue}
-          name="restaurant_id"
+          name="restaurantId"
           fixedValue={!!restaurantId}
           label="Restaurante"
           errors={errors}
         />
 
         {/* Rating (opcional) */}
-        <Text className="text-xl font-semibold text-gray-800 my-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars
             control={control}
@@ -133,12 +148,12 @@ export default function DishCreateScreen() {
 
         {/* Tags */}
         <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
+          <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200">Etiquetas</Text>
           <TouchableOpacity
             className="flex-row items-center"
             onPress={() => setTagModalVisible(true)}
           >
-            <View className="bg-primary rounded-full p-2">
+            <View className="bg-primary dark:bg-dark-primary rounded-full p-2">
               <Ionicons name="add" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -166,7 +181,7 @@ export default function DishCreateScreen() {
         {/* Botón para crear plato */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center disabled:bg-primary/30"
+          className="mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center disabled:bg-primary/30 dark:disabled:bg-dark-primary/30"
           disabled={loading}
         >
           {loading ? (
