@@ -4,6 +4,7 @@ import * as schema from "@/services/db/schema";
 import { and, eq } from "drizzle-orm";
 import { DishDetailsDTO } from "../types/dish-dto";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import { imagePathToUri } from "@/lib/helpers/image-paths";
 
 export const useDishById = (id: number, includeDeleted: boolean = true) => {
   const db = useSQLiteContext();
@@ -76,7 +77,7 @@ export const useDishById = (id: number, includeDeleted: boolean = true) => {
       if (row.imageId && !dish.images.some((i) => i.id === row.imageId)) {
         dish.images.push({
           id: row.imageId,
-          uri: row.imagePath!,
+          uri: imagePathToUri(row.imagePath!),
         });
       }
 

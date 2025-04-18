@@ -25,6 +25,7 @@ export default function RestaurantsScreen() {
             comments={item.comments}
             rating={item.rating}
             tags={item.tags || []}
+            imageUrl={item.images && item.images.length > 0 ? item.images[0].uri : undefined}
             onPress={() => router.push({
               pathname: '/restaurants/[id]/view',
               params: { id: item.id },
@@ -34,7 +35,7 @@ export default function RestaurantsScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800">No se encontraron restaurantes.</Text>
+            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron restaurantes.</Text>
           </View>
         }
       />

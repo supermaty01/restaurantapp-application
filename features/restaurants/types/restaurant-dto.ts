@@ -20,4 +20,5 @@ export interface RestaurantListDTO {
   rating: number | null;
   deleted?: boolean;
   tags: TagDTO[];
+  images: ImageDTO[];
 }

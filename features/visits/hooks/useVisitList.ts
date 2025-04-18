@@ -4,6 +4,7 @@ import * as schema from "@/services/db/schema";
 import { VisitListDTO } from "../types/visit-dto";
 import { and, eq } from "drizzle-orm";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import { imagePathToUri } from "@/lib/helpers/image-paths";
 
 export const useVisitList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
@@ -56,7 +57,7 @@ export const useVisitList = (includeDeleted: boolean = false) => {
     if (row.imageId && !visit.images.some((i) => i.id === row.imageId)) {
       visit.images.push({
         id: row.imageId,
-        uri: row.imagePath!,
+        uri: imagePathToUri(row.imagePath!),
       });
     }
 

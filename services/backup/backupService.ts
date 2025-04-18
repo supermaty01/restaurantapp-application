@@ -6,6 +6,7 @@ import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm';
 import { DATABASE_NAME } from '@/app/_layout';
 import JSZip from 'jszip';
+import { normalizeImagePath } from '@/lib/helpers/image-paths';
 
 // Estructura para almacenar información sobre la exportación
 export interface BackupInfo {
@@ -333,17 +334,45 @@ export class BackupService {
       try {
         const extractedImages = await FileSystem.readDirectoryAsync(`${extractDir}images/`);
 
+        // Crear un mapa de nombres de archivo para actualizar las rutas en la base de datos
+        const fileNameMap = new Map<string, string>();
+
         for (const fileName of extractedImages) {
+          const newPath = `${imagesDir}${fileName}`;
           await FileSystem.copyAsync({
             from: `${extractDir}images/${fileName}`,
-            to: `${imagesDir}${fileName}`
+            to: newPath
           });
+
+          // Guardar la nueva ruta para cada archivo
+          fileNameMap.set(fileName, newPath);
+        }
+
+        // 5. Actualizar las rutas de las imágenes en la base de datos
+        // Primero, obtener todas las imágenes de la base de datos
+        const imageRecords = await this.drizzleDb
+          .select()
+          .from(schema.images);
+
+        // Actualizar cada registro con la nueva ruta
+        for (const record of imageRecords) {
+          const oldPath = record.path;
+          const fileName = oldPath.split('/').pop();
+
+          if (fileName && fileNameMap.has(fileName)) {
+            const newPath = fileNameMap.get(fileName)!;
+
+            await this.drizzleDb
+              .update(schema.images)
+              .set({ path: newPath })
+              .where(eq(schema.images.id, record.id));
+          }
         }
       } catch (e) {
-        console.log('Error o no hay imágenes para restaurar:', e);
+        console.log('Error al restaurar o actualizar imágenes:', e);
       }
 
-      // 5. Limpiar directorio temporal
+      // 6. Limpiar directorio temporal
       await FileSystem.deleteAsync(extractDir, { idempotent: true });
 
       progressCallback(100);
@@ -398,14 +427,41 @@ export class BackupService {
       try {
         const imageFiles = await FileSystem.readDirectoryAsync(imagesBackupDir);
 
+        // Crear un mapa de nombres de archivo para actualizar las rutas en la base de datos
+        const fileNameMap = new Map<string, string>();
+
         for (const fileName of imageFiles) {
+          const newPath = `${imagesDir}${fileName}`;
           await FileSystem.copyAsync({
             from: `${imagesBackupDir}${fileName}`,
-            to: `${imagesDir}${fileName}`
+            to: newPath
           });
+
+          // Guardar la nueva ruta para cada archivo
+          fileNameMap.set(fileName, newPath);
+        }
+
+        // Actualizar las rutas de las imágenes en la base de datos
+        const imageRecords = await this.drizzleDb
+          .select()
+          .from(schema.images);
+
+        // Actualizar cada registro con la nueva ruta
+        for (const record of imageRecords) {
+          const oldPath = record.path;
+          const fileName = oldPath.split('/').pop();
+
+          if (fileName && fileNameMap.has(fileName)) {
+            const newPath = fileNameMap.get(fileName)!;
+
+            await this.drizzleDb
+              .update(schema.images)
+              .set({ path: newPath })
+              .where(eq(schema.images.id, record.id));
+          }
         }
       } catch (e) {
-        console.log('Error o no hay imágenes para restaurar:', e);
+        console.log('Error al restaurar o actualizar imágenes:', e);
       }
 
       // Eliminar la copia de seguridad después de un día

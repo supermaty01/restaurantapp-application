@@ -4,6 +4,7 @@ import * as schema from "@/services/db/schema";
 import { and, eq } from "drizzle-orm";
 import { RestaurantListDTO } from "../types/restaurant-dto";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import { imagePathToUri } from "@/lib/helpers/image-paths";
 
 export const useRestaurantList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
@@ -19,6 +20,8 @@ export const useRestaurantList = (includeDeleted: boolean = false) => {
       tagId: schema.tags.id,
       tagName: schema.tags.name,
       tagColor: schema.tags.color,
+      imageId: schema.images.id,
+      imagePath: schema.images.path,
     })
     .from(schema.restaurants);
 
@@ -28,10 +31,11 @@ export const useRestaurantList = (includeDeleted: boolean = false) => {
   }
 
   query.leftJoin(schema.restaurantTags, eq(schema.restaurants.id, schema.restaurantTags.restaurantId))
-      .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id));
+      .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
+      .leftJoin(schema.images, eq(schema.restaurants.id, schema.images.restaurantId));
 
   const { data: rawData } = useLiveTablesQuery(query
-  , ["restaurants", "restaurantTags", "tags"]);
+  , ["restaurants", "restaurantTags", "tags", "images"]);
 
   const restaurants = rawData?.reduce<RestaurantListDTO[]>((acc, row) => {
     let restaurant = acc.find((r) => r.id === row.restaurantId);
@@ -42,16 +46,25 @@ export const useRestaurantList = (includeDeleted: boolean = false) => {
         comments: row.restaurantComments,
         rating: row.restaurantRating,
         deleted: row.restaurantDeleted,
-        tags: []
+        tags: [],
+        images: [],
       };
       acc.push(restaurant);
     }
 
-    if (row.tagId) {
+    if (row.tagId && !restaurant.tags.some(t => t.id === row.tagId)) {
       restaurant.tags.push({
         id: row.tagId,
         name: row.tagName!,
         color: row.tagColor!,
+      });
+    }
+
+    // Agregar imágenes
+    if (row.imageId && row.imagePath && !restaurant.images.some(i => i.id === row.imageId)) {
+      restaurant.images.push({
+        id: row.imageId,
+        uri: imagePathToUri(row.imagePath),
       });
     }
 
