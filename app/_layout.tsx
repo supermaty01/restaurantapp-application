@@ -1,4 +1,4 @@
-import React, { Suspense, useState, createContext } from 'react';
+import React, { Suspense, useState, createContext, useEffect } from 'react';
 import { Slot } from 'expo-router';
 import { SQLiteProvider, openDatabaseSync } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
@@ -10,6 +10,7 @@ import { AuthProvider } from '@/lib/context/AuthContext';
 import { NewDishProvider } from '@/lib/context/NewDishContext';
 import { NewRestaurantProvider } from '@/lib/context/NewRestaurantContext';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
+import { ensureAppDirectories } from '@/lib/helpers/directory-setup';
 
 export const DATABASE_NAME = 'restaurantapp';
 
@@ -23,6 +24,13 @@ export default function RootLayout() {
   const expoDb = openDatabaseSync(DATABASE_NAME);
   const db = drizzle(expoDb);
   useMigrations(db, migrations);
+
+  // Asegurar que los directorios necesarios existan al iniciar la aplicación
+  useEffect(() => {
+    ensureAppDirectories().catch(error => {
+      console.error('Error al inicializar directorios:', error);
+    });
+  }, []);
 
   return (
     <DBVersionContext.Provider value={() => setDbVersion(v => v + 1)}>

@@ -359,8 +359,16 @@ export class BackupService {
           const oldPath = record.path;
           const fileName = oldPath.split('/').pop();
 
-          if (fileName && fileNameMap.has(fileName)) {
-            const newPath = fileNameMap.get(fileName)!;
+          if (fileName) {
+            // Usar normalizeImagePath para asegurar que la ruta sea correcta
+            const newPath = normalizeImagePath(fileName);
+
+            // Verificar si el archivo existe en el directorio de imágenes
+            if (fileNameMap.has(fileName)) {
+              console.log(`Actualizando ruta de imagen: ${oldPath} -> ${newPath} (archivo existente)`);
+            } else {
+              console.log(`Actualizando ruta de imagen: ${oldPath} -> ${newPath} (archivo no encontrado)`);
+            }
 
             await this.drizzleDb
               .update(schema.images)
@@ -451,8 +459,16 @@ export class BackupService {
           const oldPath = record.path;
           const fileName = oldPath.split('/').pop();
 
-          if (fileName && fileNameMap.has(fileName)) {
-            const newPath = fileNameMap.get(fileName)!;
+          if (fileName) {
+            // Usar normalizeImagePath para asegurar que la ruta sea correcta
+            const newPath = normalizeImagePath(fileName);
+
+            // Verificar si el archivo existe en el directorio de imágenes
+            if (fileNameMap.has(fileName)) {
+              console.log(`Restaurando ruta de imagen: ${oldPath} -> ${newPath} (archivo existente)`);
+            } else {
+              console.log(`Restaurando ruta de imagen: ${oldPath} -> ${newPath} (archivo no encontrado)`);
+            }
 
             await this.drizzleDb
               .update(schema.images)
