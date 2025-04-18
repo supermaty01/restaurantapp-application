@@ -162,19 +162,42 @@ export class BackupService {
     progressCallback(80);
 
     // 4) Reemplazar Imágenes (evitar directorios)
-    const imgKeys = Object.keys(zip.files).filter(k => k.startsWith('images/') && !zip.files[k].dir);
-    for (let i = 0; i < imgKeys.length; i++) {
-      const key = imgKeys[i];
-      const fn = key.replace(/^images\//, '');
-      const data64 = await zip.files[key].async('base64');
-      await FileSystem.writeAsStringAsync(`${extractDir}images/${fn}`, data64, { encoding: FileSystem.EncodingType.Base64 });
+    const extractImagesDir = `${extractDir}images/`;
+    await FileSystem.makeDirectoryAsync(extractImagesDir, { intermediates: true });
+
+    // Recorremos todas las entradas del ZIP
+    for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
+      // 1. Solo nos interesan ficheros, no directorios
+      if (zipEntry.dir) continue;
+
+      // 2. Solo las que estén bajo images/
+      if (!relativePath.startsWith("images/")) continue;
+
+      // 3. Extrayendo el nombre real del fichero (sin el prefijo images/)
+      const filename = relativePath.replace(/^images\//, "");
+
+      // 4. Leemos el contenido en Base64
+      const fileBase64 = await zipEntry.async("base64");
+
+      // 5. Lo escribimos en cache/import_temp/images/{filename}
+      const tempFilePath = `${extractImagesDir}${filename}`;
+      await FileSystem.writeAsStringAsync(tempFilePath, fileBase64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
     }
+
+    // Ahora copiamos de cache/import_temp/images/ a nuestro IMAGES_DIR
     await FileSystem.deleteAsync(IMAGES_DIR, { idempotent: true });
     await FileSystem.makeDirectoryAsync(IMAGES_DIR, { intermediates: true });
-    const extracted = await FileSystem.readDirectoryAsync(`${extractDir}images/`);
-    for (const fn of extracted) {
-      await FileSystem.copyAsync({ from: `${extractDir}images/${fn}`, to: `${IMAGES_DIR}${fn}` });
+
+    const extractedFiles = await FileSystem.readDirectoryAsync(extractImagesDir);
+    for (const fn of extractedFiles) {
+      await FileSystem.copyAsync({
+        from: `${extractImagesDir}${fn}`,
+        to: `${IMAGES_DIR}${fn}`,
+      });
     }
+
     progressCallback(95);
 
     // 5) Limpieza
