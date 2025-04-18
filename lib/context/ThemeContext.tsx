@@ -1,9 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { eq } from 'drizzle-orm';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -16,7 +13,7 @@ interface ThemeContextData {
 export const ThemeContext = createContext<ThemeContextData>({
   themeMode: 'system',
   isDarkMode: false,
-  setThemeMode: async () => {},
+  setThemeMode: async () => { },
 });
 
 interface ThemeProviderProps {
@@ -27,34 +24,29 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
   const systemColorScheme = useColorScheme();
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
-  
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, { schema });
 
-  // Load theme preference from database
+  // Load theme preference from AsyncStorage
   useEffect(() => {
     const loadThemePreference = async () => {
       try {
-        const result = await drizzleDb.select()
-          .from(schema.appSettings)
-          .where(eq(schema.appSettings.key, 'themeMode'));
-        
-        if (result.length > 0 && result[0].value) {
-          const savedMode = result[0].value as ThemeMode;
-          setThemeModeState(savedMode);
-          
+        const savedMode = await AsyncStorage.getItem('themeMode');
+
+        if (savedMode) {
+          const mode = savedMode as ThemeMode;
+          setThemeModeState(mode);
+
           // Set dark mode based on preference or system
-          if (savedMode === 'system') {
+          if (mode === 'system') {
             setIsDarkMode(systemColorScheme === 'dark');
           } else {
-            setIsDarkMode(savedMode === 'dark');
+            setIsDarkMode(mode === 'dark');
           }
         }
       } catch (error) {
         console.error('Error loading theme preference:', error);
       }
     };
-    
+
     loadThemePreference();
   }, []);
 
@@ -65,26 +57,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     }
   }, [systemColorScheme, themeMode]);
 
-  // Save theme preference to database
+  // Save theme preference to AsyncStorage
   const setThemeMode = async (mode: ThemeMode) => {
     try {
-      await drizzleDb
-        .insert(schema.appSettings)
-        .values({
-          key: 'themeMode',
-          value: mode,
-          updatedAt: new Date().toISOString(),
-        })
-        .onConflictDoUpdate({
-          target: schema.appSettings.key,
-          set: {
-            value: mode,
-            updatedAt: new Date().toISOString(),
-          },
-        });
-      
+      await AsyncStorage.setItem('themeMode', mode);
+
       setThemeModeState(mode);
-      
+
       // Update dark mode based on new preference
       if (mode === 'system') {
         setIsDarkMode(systemColorScheme === 'dark');

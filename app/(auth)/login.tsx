@@ -58,7 +58,7 @@ const LoginScreen: FC = () => {
   return (
     <>
       <Text className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-200">
-        {isOfflineMode ? "Modo sin conexión" : "Ingresa a tu cuenta"}
+        {isOfflineMode ? "¡Bienvenido!" : "Ingresa a tu cuenta"}
       </Text>
       <View className="w-full bg-card dark:bg-dark-card p-5 rounded-lg">
         {isOfflineMode ? (
@@ -71,6 +71,10 @@ const LoginScreen: FC = () => {
             </Text>
             <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
               Puedes exportar e importar tus datos desde la pantalla de configuración para hacer copias de seguridad o transferirlos a otro dispositivo.
+            </Text>
+            <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
+              Actualmente la app guarda todo en tu dispositivo, por lo que no es necesario registrarse.
+              Quizás en un futuro se agregue la posibilidad de sincronizar tus datos con un servidor.
             </Text>
           </View>
         ) : (
