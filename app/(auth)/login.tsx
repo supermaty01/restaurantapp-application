@@ -64,12 +64,13 @@ const LoginScreen: FC = () => {
         {isOfflineMode ? (
           <View className="mb-6">
             <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
-              Actualmente la aplicación funciona 100% local y no requiere conexión a internet.
-              Todos tus datos se guardarán en tu dispositivo.
+              ¡Bienvenido a RestaurantApp! Tu compañero perfecto para guardar y organizar tus experiencias gastronómicas.
             </Text>
             <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
-              En futuras versiones, se implementará un sistema de sincronización
-              que te permitirá conservar tus datos si cambias de dispositivo o reinstalás la aplicación.
+              Guarda tus restaurantes favoritos, platos que has probado y visitas realizadas. Añade fotos, calificaciones y etiquetas para personalizar tu experiencia.
+            </Text>
+            <Text className="text-gray-700 dark:text-gray-300 text-base mb-4">
+              Puedes exportar e importar tus datos desde la pantalla de configuración para hacer copias de seguridad o transferirlos a otro dispositivo.
             </Text>
           </View>
         ) : (
@@ -115,7 +116,7 @@ const LoginScreen: FC = () => {
           onPress={handleContinueOffline}
           className="w-full py-4 rounded-lg items-center bg-gray-600"
         >
-          <Text className="text-white font-semibold text-base">Continuar sin cuenta</Text>
+          <Text className="text-white font-semibold text-base">Comenzar a usar la app</Text>
         </TouchableOpacity>
       </View>
     </>

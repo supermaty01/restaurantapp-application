@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { useNewDish } from '@/features/dishes/hooks/useNewDish';
 import { useDishesByRestaurant } from '@/features/dishes/hooks/useDishesByRestaurant';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface DishPickerProps {
   control: Control<any>;
@@ -28,6 +29,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { newDish, setNewDish } = useNewDish();
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   // Usar el hook para obtener los platos del restaurante
   const dishes = useDishesByRestaurant(restaurantId);
@@ -57,17 +59,17 @@ const DishPicker: React.FC<DishPickerProps> = ({
 
   return (
     <View>
-      <Text className="text-xl font-semibold text-gray-800 mt-2">Platos</Text>
+      <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-2">Platos</Text>
 
       {selectedDishes.length > 0 && (
         <View className="mt-3">
           {selectedDishes.map((dish) => (
             <View key={dish.id} className="flex-row items-center w-full mb-3">
-              <Text className="flex-1 py-2 px-4 border border-gray-200 text-gray-800 rounded-lg">{dish.name}</Text>
+              <Text className="flex-1 py-2 px-4 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg">{dish.name}</Text>
 
               <TouchableOpacity
                 onPress={() => handleRemoveDish(dish.id)}
-                className="ml-3 p-2 bg-destructive rounded-lg"
+                className="ml-3 p-2 bg-destructive dark:bg-dark-destructive rounded-lg"
               >
                 <Ionicons name="close" size={23} color="white" />
               </TouchableOpacity>
@@ -78,7 +80,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
 
       <View className="flex-row justify-between mt-3">
         <TouchableOpacity
-          className={`bg-primary py-3 px-4 rounded-md ${!restaurantId ? 'opacity-50' : ''}`}
+          className={`bg-primary dark:bg-dark-primary py-3 px-4 rounded-md ${!restaurantId ? 'opacity-50' : ''}`}
           onPress={() => setIsModalVisible(true)}
           disabled={!restaurantId}
         >
@@ -86,7 +88,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          className={`bg-primary py-3 px-4 rounded-md ${!restaurantId ? 'opacity-50' : ''}`}
+          className={`bg-primary dark:bg-dark-primary py-3 px-4 rounded-md ${!restaurantId ? 'opacity-50' : ''}`}
           onPress={() => router.push({ pathname: '/dishes/new', params: { useBackRedirect: 'true', restaurantId } })}
           disabled={!restaurantId}
         >
@@ -94,27 +96,27 @@ const DishPicker: React.FC<DishPickerProps> = ({
         </TouchableOpacity>
       </View>
 
-      {errors?.[name] && <Text className="text-red-500 mt-1">{errors[name].message}</Text>}
+      {errors?.[name] && <Text className="text-red-600 dark:text-red-400 mt-1">{errors[name].message}</Text>}
 
       <Modal visible={isModalVisible} animationType="slide" transparent={true}>
         <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-          <View className="bg-white w-4/5 p-4 rounded-md">
-            <Text className="text-lg font-bold mb-3">Seleccionar Platos</Text>
+          <View className="bg-white dark:bg-dark-card w-4/5 p-4 rounded-md">
+            <Text className="text-lg font-bold mb-3 text-gray-800 dark:text-gray-200">Seleccionar Platos</Text>
 
             {isLoading ? (
-              <ActivityIndicator size="large" color="#905c36" />
+              <ActivityIndicator size="large" color={isDarkMode ? "#B27A4D" : "#905c36"} />
             ) : dishes.length === 0 ? (
-              <Text className="text-gray-500 text-center mt-4">No hay platos disponibles</Text>
+              <Text className="text-gray-500 dark:text-gray-400 text-center mt-4">No hay platos disponibles</Text>
             ) : (
               <FlatList
                 data={dishes}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    className="flex-row justify-between items-center p-3 border-b border-gray-200"
+                    className="flex-row justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700"
                     onPress={() => handleAddDish(item)}
                   >
-                    <Text>{item.name}</Text>
+                    <Text className="text-gray-800 dark:text-gray-200">{item.name}</Text>
                     {selectedDishes.some(d => d.id === item.id) && (
                       <Ionicons name="checkmark-circle" size={19} color="green" />
                     )}
@@ -124,7 +126,7 @@ const DishPicker: React.FC<DishPickerProps> = ({
             )}
 
             <TouchableOpacity
-              className="bg-primary py-3 px-4 rounded-md mt-4"
+              className="bg-primary dark:bg-dark-primary py-3 px-4 rounded-md mt-4"
               onPress={() => setIsModalVisible(false)}
             >
               <Text className="text-white text-center font-bold">Cerrar</Text>

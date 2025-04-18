@@ -14,6 +14,7 @@ import { uploadImages } from '@/lib/helpers/upload-images';
 import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitCreateScreen() {
   const {
@@ -38,6 +39,7 @@ export default function VisitCreateScreen() {
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
+  const { isDarkMode } = useTheme();
 
   const restaurantId = watch('restaurantId');
 
@@ -87,10 +89,10 @@ export default function VisitCreateScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir visita</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Añadir visita</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         <FormDatePicker control={control} name="visited_at" label="Fecha" />
 
         <FormInput
@@ -128,7 +130,7 @@ export default function VisitCreateScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className={`mt-4 bg-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
+          className={`mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
           disabled={isSubmitting}
         >
           {isSubmitting ? (

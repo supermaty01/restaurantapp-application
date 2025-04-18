@@ -3,6 +3,7 @@ import { Controller, Control } from 'react-hook-form';
 import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, parse } from 'date-fns';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface FormDatePickerProps {
   control: Control<any>;
@@ -12,6 +13,7 @@ interface FormDatePickerProps {
 
 const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label }) => {
   const [showPicker, setShowPicker] = useState(false);
+  const { isDarkMode } = useTheme();
 
   return (
     <Controller
@@ -24,13 +26,13 @@ const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label })
 
         return (
           <View className="mb-4">
-            {label && <Text className="text-base mb-2 text-gray-800">{label}</Text>}
+            {label && <Text className="text-base mb-2 text-gray-800 dark:text-gray-200">{label}</Text>}
 
             <TouchableOpacity
               onPress={() => setShowPicker(true)}
-              className="w-full min-h-12 px-4 border border-gray-200 rounded-lg bg-white flex justify-center"
+              className="w-full min-h-12 px-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-dark-card flex justify-center"
             >
-              <Text className="text-gray-800">{formattedDate}</Text>
+              <Text className="text-gray-800 dark:text-gray-200">{formattedDate}</Text>
             </TouchableOpacity>
 
             {showPicker && (
@@ -48,7 +50,7 @@ const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label })
               />
             )}
 
-            {error && <Text className="text-red-600 mt-1">{error.message}</Text>}
+            {error && <Text className="text-red-600 dark:text-red-400 mt-1">{error.message}</Text>}
           </View>
         );
       }}

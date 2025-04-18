@@ -17,6 +17,7 @@ import { uploadImages } from '@/lib/helpers/upload-images';
 import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -41,6 +42,7 @@ export default function RestaurantCreateScreen() {
   const { setNewRestaurantId } = useNewRestaurant();
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
+  const { isDarkMode } = useTheme();
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -84,10 +86,10 @@ export default function RestaurantCreateScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-muted p-4">
-      <Text className="text-2xl font-bold mb-4">Añadir restaurante</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Añadir restaurante</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         {/* Nombre */}
         <FormInput
           control={control}
@@ -108,23 +110,23 @@ export default function RestaurantCreateScreen() {
         />
 
         {/* Ubicación (opcional) */}
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Ubicación</Text>
         <MapLocationPicker location={location} onLocationChange={setLocation} />
 
         {/* Rating (opcional) */}
-        <Text className="text-xl font-semibold text-gray-800 my-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
         </View>
 
         {/* Tags */}
         <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
+          <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200">Etiquetas</Text>
           <TouchableOpacity
             className="flex-row items-center"
             onPress={() => setTagModalVisible(true)}
           >
-            <View className="bg-primary rounded-full p-2">
+            <View className="bg-primary dark:bg-dark-primary rounded-full p-2">
               <Ionicons name="add" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -152,7 +154,7 @@ export default function RestaurantCreateScreen() {
         {/* Botón para crear restaurante */}
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center disabled:bg-primary/30"
+          className="mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center disabled:bg-primary/30 dark:disabled:bg-dark-primary/30"
           disabled={loading}
         >
           {loading ? (

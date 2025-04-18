@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
 import { useRestaurantList } from '../hooks/useRestaurantList';
 import { clsx } from 'clsx';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 interface RestaurantPickerProps {
   control: Control<any>;
@@ -18,6 +19,7 @@ interface RestaurantPickerProps {
 
 const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, name, label, errors, fixedValue }) => {
   const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
+  const { isDarkMode } = useTheme();
 
   const restaurants = useRestaurantList();
 
@@ -33,12 +35,12 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
 
   return (
     <View>
-      {label && <Text className={clsx("text-base text-gray-800 mb-2", errors?.[name] ? "text-red-600" : "")}>{label}</Text>}
+      {label && <Text className={clsx("text-base text-gray-800 dark:text-gray-200 mb-2", errors?.[name] ? "text-red-600 dark:text-red-400" : "")}>{label}</Text>}
       <Controller
         control={control}
         name={name}
         render={({ field: { onChange, value } }) => (
-          <View className="border border-gray-200 rounded-md">
+          <View className="border border-gray-200 dark:border-gray-700 rounded-md">
             <Picker
               selectedValue={value}
               onValueChange={(itemValue) => onChange(itemValue)}
@@ -47,14 +49,14 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
               <Picker.Item
                 label="Selecciona un restaurante"
                 value={-1}
-                style={{ color: '#6b7280;', fontSize: 15 }}
+                style={{ color: isDarkMode ? '#9ca3af' : '#6b7280', fontSize: 15 }}
               />
               {restaurants.map((restaurant) => (
                 <Picker.Item
                   key={restaurant.id}
                   label={restaurant.name}
                   value={restaurant.id}
-                  style={{ color: '#6b7280;', fontSize: 15 }}
+                  style={{ color: isDarkMode ? '#9ca3af' : '#6b7280', fontSize: 15 }}
                 />
               ))}
             </Picker>
@@ -62,7 +64,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
         )}
       />
 
-      {errors?.[name] && <Text className="text-red-500 mt-1">{errors[name].message}</Text>}
+      {errors?.[name] && <Text className="text-red-600 dark:text-red-400 mt-1">{errors[name].message}</Text>}
       {!fixedValue && (
         <TouchableOpacity
           className="mt-2"
@@ -73,7 +75,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
             })
           }
         >
-          <Text className="text-primary">¿No lo encuentras? Añade uno nuevo</Text>
+          <Text className="text-primary dark:text-dark-primary">¿No lo encuentras? Añade uno nuevo</Text>
         </TouchableOpacity>
       )}
     </View>

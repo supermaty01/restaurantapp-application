@@ -18,9 +18,11 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { and, eq } from 'drizzle-orm/sql';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function RestaurantEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
+  const { isDarkMode } = useTheme();
 
   const { control, handleSubmit, reset } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
@@ -119,17 +121,17 @@ export default function RestaurantEditScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-muted justify-center items-center">
-        <ActivityIndicator size="large" color="#905c36" />
+      <View className="flex-1 bg-muted dark:bg-dark-muted justify-center items-center">
+        <ActivityIndicator size="large" color={isDarkMode ? "#B27A4D" : "#905c36"} />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-muted p-4">
-      <Text className="text-2xl font-bold mb-4">Editar restaurante</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar restaurante</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         <FormInput
           control={control}
           name="name"
@@ -147,21 +149,21 @@ export default function RestaurantEditScreen() {
           numberOfLines={4}
         />
 
-        <Text className="text-xl font-semibold text-gray-800 mb-2">Ubicación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Ubicación</Text>
         <MapLocationPicker location={location} onLocationChange={setLocation} />
 
-        <Text className="text-xl font-semibold text-gray-800 my-2">Calificación</Text>
+        <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-2">Calificación</Text>
         <View className="flex justify-center items-center">
           <RatingStars control={control} name="rating" />
         </View>
 
         <View className="flex-row items-center justify-between mt-4">
-          <Text className="text-xl font-semibold text-gray-800">Etiquetas</Text>
+          <Text className="text-xl font-semibold text-gray-800 dark:text-gray-200">Etiquetas</Text>
           <TouchableOpacity
             className="flex-row items-center"
             onPress={() => setTagModalVisible(true)}
           >
-            <View className="bg-primary rounded-full p-2">
+            <View className="bg-primary dark:bg-dark-primary rounded-full p-2">
               <Ionicons name="add" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -191,7 +193,7 @@ export default function RestaurantEditScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className="mt-4 bg-primary py-3 rounded-md items-center"
+          className="mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center"
           disabled={loading}
         >
           {loading ? (

@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormInput from '@/components/FormInput';
 import clsx from 'clsx';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -62,6 +63,7 @@ export default function CreateTagModal({
   editTag,
   isEditing = false,
 }: CreateTagModalProps) {
+  const { isDarkMode } = useTheme();
   const {
     control,
     handleSubmit,
@@ -139,8 +141,8 @@ export default function CreateTagModal({
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white w-11/12 rounded-md p-4">
-          <Text className="text-lg font-bold text-gray-800 mb-2">
+        <View className="bg-white dark:bg-dark-card w-11/12 rounded-md p-4">
+          <Text className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">
             {isEditing ? 'Editar Etiqueta' : 'Crear Etiqueta'}
           </Text>
           <FormInput
@@ -148,7 +150,7 @@ export default function CreateTagModal({
             name="name"
             placeholder="Nombre de la etiqueta"
             autoFocus={!isEditing}
-            inputClassName="border border-gray-300 rounded-md px-3 py-2 text-base text-gray-800 mb-4"
+            inputClassName="border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-base text-gray-800 dark:text-gray-200 mb-4"
           />
           <ScrollView
             ref={scrollRef}
@@ -173,7 +175,7 @@ export default function CreateTagModal({
                       onPress={() => setSelectedColor(color)}
                       className={clsx(
                         'm-2 rounded-full border-2 aspect-square justify-center items-center',
-                        isSelected ? 'border-black border-[3px]' : 'border-black/20'
+                        isSelected ? (isDarkMode ? 'border-white border-[3px]' : 'border-black border-[3px]') : (isDarkMode ? 'border-white/20' : 'border-black/20')
                       )}
                       style={{ backgroundColor: color, width: circleWidth, height: circleWidth }}
                     />
@@ -189,7 +191,7 @@ export default function CreateTagModal({
                 key={index}
                 className={clsx(
                   'w-2 h-2 rounded-full mx-1',
-                  currentPage === index ? 'bg-black' : 'bg-gray-300'
+                  currentPage === index ? (isDarkMode ? 'bg-white' : 'bg-black') : (isDarkMode ? 'bg-gray-600' : 'bg-gray-300')
                 )}
               />
             ))}
@@ -199,7 +201,7 @@ export default function CreateTagModal({
             {isEditing && (
               <TouchableOpacity
                 onPress={handleDeletePress}
-                className="px-4 py-2 rounded-md bg-red-500"
+                className="px-4 py-2 rounded-md bg-destructive dark:bg-dark-destructive"
               >
                 <Text className="text-white font-semibold">Eliminar</Text>
               </TouchableOpacity>
@@ -208,13 +210,13 @@ export default function CreateTagModal({
             <View className="flex-row ml-auto">
               <TouchableOpacity
                 onPress={onClose}
-                className="px-4 py-2 rounded-md bg-gray-300 mr-2"
+                className="px-4 py-2 rounded-md bg-gray-300 dark:bg-gray-700 mr-2"
               >
-                <Text className="text-gray-800 font-semibold">Cancelar</Text>
+                <Text className="text-gray-800 dark:text-gray-200 font-semibold">Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
-                className="px-4 py-2 rounded-md bg-primary"
+                className="px-4 py-2 rounded-md bg-primary dark:bg-dark-primary"
               >
                 <Text className="text-white font-semibold">
                   {isEditing ? 'Guardar' : 'Añadir'}

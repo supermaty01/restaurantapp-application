@@ -17,10 +17,12 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
 import { useVisitById } from '@/features/visits/hooks/useVisitById';
 import { eq } from 'drizzle-orm/sql';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   const {
     control,
@@ -125,10 +127,10 @@ export default function VisitEditScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-[#e5eae0] p-4">
-      <Text className="text-2xl font-bold mb-4">Editar visita</Text>
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+      <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar visita</Text>
 
-      <View className="bg-white p-4 rounded-md mb-8">
+      <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
         <FormDatePicker control={control} name="visited_at" label="Fecha" />
 
         <FormInput
@@ -170,7 +172,7 @@ export default function VisitEditScreen() {
 
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
-          className={`mt-4 bg-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
+          className={`mt-4 bg-primary dark:bg-dark-primary py-3 rounded-md items-center ${isSubmitting ? 'opacity-50' : ''}`}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
