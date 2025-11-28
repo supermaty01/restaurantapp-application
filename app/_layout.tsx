@@ -1,16 +1,18 @@
-import React, { Suspense, useState, createContext, useEffect } from 'react';
-import { Slot } from 'expo-router';
+import React, { Suspense, useState, createContext, useEffect, useCallback } from 'react';
+import { Slot, useRouter, useNavigationContainerRef } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import migrations from '@/drizzle/migrations';
 import { ActivityIndicator } from 'react-native';
+import * as Linking from 'expo-linking';
 import "../global.css";
 import { AuthProvider } from '@/lib/context/AuthContext';
 import { NewDishProvider } from '@/lib/context/NewDishContext';
 import { NewRestaurantProvider } from '@/lib/context/NewRestaurantContext';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import { ensureAppDirectories } from '@/lib/helpers/directory-setup';
+import { IntentHandler } from '@/components/IntentHandler';
 
 export const DATABASE_NAME = 'restaurantapp';
 // Contexto para exponer la función que “bump” la versión de la BBDD
@@ -51,6 +53,7 @@ export default function RootLayout() {
               <ThemeProvider>
                 <NewRestaurantProvider>
                   <NewDishProvider>
+                    <IntentHandler />
                     <Slot />
                   </NewDishProvider>
                 </NewRestaurantProvider>
