@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,7 @@ import * as schema from '@/services/db/schema';
 import { eq } from 'drizzle-orm/sql';
 import { canDeleteRestaurantPermanently, softDeleteRestaurant } from '@/lib/helpers/soft-delete';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { exportRestaurant } from '@/services/share/exportService';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -29,12 +31,25 @@ export default function RestaurantDetailScreen() {
   const drizzleDb = drizzle(db, { schema });
   const restaurant = useRestaurantById(Number(id));
   const { isDarkMode } = useTheme();
+  const [isSharing, setIsSharing] = useState(false);
 
   function handleEdit() {
     router.push({
       pathname: '/restaurants/[id]/edit',
       params: { id: id?.toString() },
     });
+  }
+
+  async function handleShare() {
+    try {
+      setIsSharing(true);
+      await exportRestaurant(drizzleDb, Number(id));
+    } catch (error) {
+      console.error('Error sharing restaurant:', error);
+      Alert.alert('Error', 'No se pudo compartir el restaurante');
+    } finally {
+      setIsSharing(false);
+    }
   }
 
   async function handleDelete() {
@@ -102,6 +117,17 @@ export default function RestaurantDetailScreen() {
           </Text>
         </View>
         <View className="flex-row">
+          <TouchableOpacity
+            className="bg-blue-500 p-2 rounded-full mr-2"
+            onPress={handleShare}
+            disabled={isSharing}
+          >
+            {isSharing ? (
+              <ActivityIndicator size={20} color="#fff" />
+            ) : (
+              <Ionicons name="share-outline" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
           <TouchableOpacity className="bg-primary dark:bg-dark-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>

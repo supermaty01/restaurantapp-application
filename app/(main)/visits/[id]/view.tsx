@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
+  ActivityIndicator,
   Alert,
   Text,
   TouchableOpacity,
@@ -20,6 +21,7 @@ import { eq } from 'drizzle-orm/sql';
 import { canDeleteVisitPermanently, softDeleteVisit } from '@/lib/helpers/soft-delete';
 import { useVisitById } from '@/features/visits/hooks/useVisitById';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { exportVisit } from '@/services/share/exportService';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -30,12 +32,25 @@ export default function VisitDetailScreen() {
   const drizzleDb = drizzle(db, { schema });
   const visit = useVisitById(Number(id));
   const { isDarkMode } = useTheme();
+  const [isSharing, setIsSharing] = useState(false);
 
   function handleEdit() {
     router.replace({
       pathname: '/visits/[id]/edit',
       params: { id: id?.toString() },
     });
+  }
+
+  async function handleShare() {
+    try {
+      setIsSharing(true);
+      await exportVisit(drizzleDb, Number(id));
+    } catch (error) {
+      console.error('Error sharing visit:', error);
+      Alert.alert('Error', 'No se pudo compartir la visita');
+    } finally {
+      setIsSharing(false);
+    }
   }
 
   async function handleDelete() {
@@ -108,6 +123,17 @@ export default function VisitDetailScreen() {
           </Text>
         </View>
         <View className="flex-row">
+          <TouchableOpacity
+            className="bg-blue-500 p-2 rounded-full mr-2"
+            onPress={handleShare}
+            disabled={isSharing}
+          >
+            {isSharing ? (
+              <ActivityIndicator size={20} color="#fff" />
+            ) : (
+              <Ionicons name="share-outline" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
           <TouchableOpacity className="bg-primary dark:bg-dark-primary p-2 rounded-full mr-2" onPress={handleEdit}>
             <Ionicons name="create-outline" size={20} color="#fff" />
           </TouchableOpacity>

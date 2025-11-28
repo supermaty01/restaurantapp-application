@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ import { eq } from 'drizzle-orm/sql';
 import { canDeleteDishPermanently, softDeleteDish } from '@/lib/helpers/soft-delete';
 import { useDishById } from '@/features/dishes/hooks/useDishById';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { exportDish } from '@/services/share/exportService';
 
 export default function DishDetailScreen() {
 
@@ -21,12 +22,25 @@ export default function DishDetailScreen() {
   const drizzleDb = drizzle(db, { schema });
   const dish = useDishById(Number(id));
   const { isDarkMode } = useTheme();
+  const [isSharing, setIsSharing] = useState(false);
 
   function handleEdit() {
     router.push({
       pathname: '/dishes/[id]/edit',
       params: { id: id?.toString() },
     })
+  }
+
+  async function handleShare() {
+    try {
+      setIsSharing(true);
+      await exportDish(drizzleDb, Number(id));
+    } catch (error) {
+      console.error('Error sharing dish:', error);
+      Alert.alert('Error', 'No se pudo compartir el plato');
+    } finally {
+      setIsSharing(false);
+    }
   }
 
   async function handleDelete() {
@@ -93,6 +107,17 @@ export default function DishDetailScreen() {
           </Text>
         </View>
         <View className="flex-row">
+          <TouchableOpacity
+            className="bg-blue-500 p-2 rounded-full mr-2"
+            onPress={handleShare}
+            disabled={isSharing}
+          >
+            {isSharing ? (
+              <ActivityIndicator size={20} color="#fff" />
+            ) : (
+              <Ionicons name="share-outline" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
           <TouchableOpacity
             className="bg-primary dark:bg-dark-primary p-2 rounded-full mr-2"
             onPress={handleEdit}

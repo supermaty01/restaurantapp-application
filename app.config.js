@@ -4,7 +4,7 @@ export default {
   "expo": {
     "name": "RestaurantApp",
     "slug": "restaurantapp",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/burger-logo-fondo.png",
     "scheme": "myapp",
@@ -14,7 +14,25 @@ export default {
       "supportsTablet": true,
       "bundleIdentifier": "com.supermaty01.restaurantapp",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "RestoShare File",
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "Owner",
+            "LSItemContentTypes": ["com.supermaty01.restaurantapp.restoshare"]
+          }
+        ],
+        "UTExportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "com.supermaty01.restaurantapp.restoshare",
+            "UTTypeDescription": "RestoShare File",
+            "UTTypeConformsTo": ["public.data", "public.json"],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": ["restoshare"]
+            }
+          }
+        ]
       }
     },
     "android": {
@@ -36,7 +54,33 @@ export default {
         "googleMaps": {
           "apiKey": process.env.GOOGLE_MAPS_API_KEY
         }
-      }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": [
+            {
+              "scheme": "file",
+              "mimeType": "*/*",
+              "pathPattern": ".*\\.restoshare"
+            },
+            {
+              "scheme": "content",
+              "mimeType": "*/*"
+            }
+          ]
+        },
+        {
+          "action": "SEND",
+          "category": ["DEFAULT"],
+          "data": [
+            {
+              "mimeType": "*/*"
+            }
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
