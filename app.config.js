@@ -4,7 +4,7 @@ export default {
   "expo": {
     "name": "RestaurantApp",
     "slug": "restaurantapp",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/burger-logo-fondo.png",
     "scheme": "myapp",
