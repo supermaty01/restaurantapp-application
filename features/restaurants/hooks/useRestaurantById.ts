@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
+import { useMemo } from "react";
 
 import { imagePathToUri } from "@/lib/helpers/image-paths";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
@@ -47,42 +48,44 @@ export const useRestaurantById = (id: number, includeDeleted: boolean = true) =>
     [id, includeDeleted]
   );
 
-  const restaurant = rawData?.reduce<RestaurantDetailsDTO[]>((acc, row) => {
-    let restaurant = acc.find((r) => r.id === row.restaurantId);
-    if (!restaurant) {
-      restaurant = {
-        id: row.restaurantId,
-        name: row.restaurantName,
-        comments: row.restaurantComments,
-        rating: row.restaurantRating,
-        latitude: row.restaurantLatitude,
-        longitude: row.restaurantLongitude,
-        deleted: row.restaurantDeleted,
-        tags: [],
-        images: [],
-      };
-      acc.push(restaurant);
-    }
+  const restaurant = useMemo(() => {
+    const restaurants = rawData?.reduce<RestaurantDetailsDTO[]>((acc, row) => {
+      let restaurant = acc.find((r) => r.id === row.restaurantId);
+      if (!restaurant) {
+        restaurant = {
+          id: row.restaurantId,
+          name: row.restaurantName,
+          comments: row.restaurantComments,
+          rating: row.restaurantRating,
+          latitude: row.restaurantLatitude,
+          longitude: row.restaurantLongitude,
+          deleted: row.restaurantDeleted,
+          tags: [],
+          images: [],
+        };
+        acc.push(restaurant);
+      }
 
-    // Agregar tags
-    if (row.tagId && !restaurant.tags.some((t) => t.id === row.tagId)) {
-      restaurant.tags.push({
-        id: row.tagId,
-        name: row.tagName!,
-        color: row.tagColor!,
-      });
-    }
+      if (row.tagId && !restaurant.tags.some((t) => t.id === row.tagId)) {
+        restaurant.tags.push({
+          id: row.tagId,
+          name: row.tagName!,
+          color: row.tagColor!,
+        });
+      }
 
-    // Agregar imágenes
-    if (row.imageId && !restaurant.images.some((i) => i.id === row.imageId)) {
-      restaurant.images.push({
-        id: row.imageId,
-        uri: imagePathToUri(row.imagePath!),
-      });
-    }
+      if (row.imageId && !restaurant.images.some((i) => i.id === row.imageId)) {
+        restaurant.images.push({
+          id: row.imageId,
+          uri: imagePathToUri(row.imagePath!),
+        });
+      }
 
-    return acc;
-  }, []);
+      return acc;
+    }, []);
 
-  return restaurant?.[0];
+    return restaurants?.[0];
+  }, [rawData]);
+
+  return restaurant;
 };

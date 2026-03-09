@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
+import { useMemo } from "react";
 
 import { imagePathToUri } from "@/lib/helpers/image-paths";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
@@ -50,6 +51,7 @@ export const useDishById = (id: number, includeDeleted: boolean = true) => {
     [id, includeDeleted]
   );
 
+  const dish = useMemo(() => {
     const dishes = rawData?.reduce<DishDetailsDTO[]>((acc, row) => {
       let dish = acc.find((r) => r.id === row.dishId);
       if (!dish) {
@@ -90,5 +92,8 @@ export const useDishById = (id: number, includeDeleted: boolean = true) => {
       return acc;
     }, []);
 
-  return dishes?.[0];
+    return dishes?.[0];
+  }, [rawData]);
+
+  return dish;
 };

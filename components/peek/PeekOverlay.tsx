@@ -48,13 +48,13 @@ export default function PeekOverlay({ activeSession, isPeeking }: PeekOverlayPro
       Animated.parallel([
         Animated.timing(progress, {
           toValue: 1,
-          duration: 220,
+          duration: 130,
           useNativeDriver: false,
         }),
         Animated.timing(contentOpacity, {
           toValue: 1,
-          duration: 140,
-          delay: 40,
+          duration: 90,
+          delay: 15,
           useNativeDriver: true,
         }),
       ]).start();
@@ -65,12 +65,12 @@ export default function PeekOverlay({ activeSession, isPeeking }: PeekOverlayPro
       Animated.parallel([
         Animated.timing(progress, {
           toValue: 0,
-          duration: 160,
+          duration: 95,
           useNativeDriver: false,
         }),
         Animated.timing(contentOpacity, {
           toValue: 0,
-          duration: 90,
+          duration: 60,
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {

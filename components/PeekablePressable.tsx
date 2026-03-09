@@ -4,7 +4,7 @@ import { Animated, GestureResponderEvent, StyleProp, View, ViewStyle } from 'rea
 import { PeekPreviewData } from '@/components/peek/types';
 import { usePeek } from '@/lib/context/PeekContext';
 
-const LONG_PRESS_DELAY = 220;
+const LONG_PRESS_DELAY = 150;
 const MOVE_CANCEL_THRESHOLD = 12;
 
 interface PeekablePressableProps {
@@ -40,8 +40,8 @@ const PeekablePressable: React.FC<PeekablePressableProps> = ({
   const animateScale = useCallback((toValue: number) => {
     Animated.spring(scaleAnim, {
       toValue,
-      friction: 8,
-      tension: 100,
+      friction: 7,
+      tension: 130,
       useNativeDriver: true,
     }).start();
   }, [scaleAnim]);

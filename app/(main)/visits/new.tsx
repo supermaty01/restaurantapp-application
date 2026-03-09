@@ -13,6 +13,7 @@ import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
+import { getTodayLocalDateString } from '@/lib/helpers/date';
 import { uploadImages } from '@/lib/helpers/upload-images';
 import * as schema from '@/services/db/schema';
 
@@ -27,7 +28,7 @@ export default function VisitCreateScreen() {
   } = useForm<VisitFormData>({
     resolver: zodResolver(visitSchema),
     defaultValues: {
-      visited_at: new Date().toISOString().split('T')[0],
+      visited_at: getTodayLocalDateString(),
       comments: '',
       restaurantId: routeRestaurantId ? Number(routeRestaurantId) : undefined,
       dishes: [],

@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
+import { useMemo } from "react";
 
 import { imagePathToUri } from "@/lib/helpers/image-paths";
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
@@ -48,44 +49,46 @@ export const useVisitById = (id: number, includeDeleted: boolean = true) => {
     [id, includeDeleted]
   );
 
-  const visits = rawData?.reduce<VisitDetailsDTO[]>((acc, row) => {
-    let visit = acc.find((v) => v.id === row.visitId);
-    if (!visit) {
-      visit = {
-        id: row.visitId,
-        visited_at: row.visitedAt,
-        comments: row.visitComments,
-        deleted: row.visitDeleted,
-        restaurant: {
-          id: row.restaurantId!,
-          name: row.restaurantName!,
-          deleted: row.restaurantDeleted,
-        },
-        images: [],
-        dishes: [],
-      };
-      acc.push(visit);
-    }
+  const visit = useMemo(() => {
+    const visits = rawData?.reduce<VisitDetailsDTO[]>((acc, row) => {
+      let visit = acc.find((v) => v.id === row.visitId);
+      if (!visit) {
+        visit = {
+          id: row.visitId,
+          visited_at: row.visitedAt,
+          comments: row.visitComments,
+          deleted: row.visitDeleted,
+          restaurant: {
+            id: row.restaurantId!,
+            name: row.restaurantName!,
+            deleted: row.restaurantDeleted,
+          },
+          images: [],
+          dishes: [],
+        };
+        acc.push(visit);
+      }
 
-    // Agregar imágenes
-    if (row.imageId && !visit.images.some((i) => i.id === row.imageId)) {
-      visit.images.push({
-        id: row.imageId,
-        uri: imagePathToUri(row.imagePath!),
-      });
-    }
+      if (row.imageId && !visit.images.some((i) => i.id === row.imageId)) {
+        visit.images.push({
+          id: row.imageId,
+          uri: imagePathToUri(row.imagePath!),
+        });
+      }
 
-    // Agregar platos
-    if (row.dishId && !visit.dishes.some((d) => d.id === row.dishId)) {
-      visit.dishes.push({
-        id: row.dishId,
-        name: row.dishName!,
-        deleted: row.dishDeleted,
-      });
-    }
+      if (row.dishId && !visit.dishes.some((d) => d.id === row.dishId)) {
+        visit.dishes.push({
+          id: row.dishId,
+          name: row.dishName!,
+          deleted: row.dishDeleted,
+        });
+      }
 
-    return acc;
-  }, []);
+      return acc;
+    }, []);
 
-  return visits?.[0];
+    return visits?.[0];
+  }, [rawData]);
+
+  return visit;
 };

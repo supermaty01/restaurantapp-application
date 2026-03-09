@@ -9,6 +9,7 @@ import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { formatVisitDate } from '@/lib/helpers/date';
 
 export default function VisitsScreen() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function VisitsScreen() {
     return {
       type: 'visit',
       id: item.id,
-      date: item.visited_at,
+      date: formatVisitDate(item.visited_at),
       restaurantName: item.restaurant.name,
       comments: item.comments,
       imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
@@ -136,6 +137,7 @@ export default function VisitsScreen() {
         renderItem={({ item }) => {
           const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
           const previewData = buildPreviewData(item);
+          const formattedVisitDate = formatVisitDate(item.visited_at);
 
           if (isGridView) {
             return (
@@ -154,7 +156,7 @@ export default function VisitsScreen() {
                 )}
                 <View className="p-2">
                   <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.restaurant.name}</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">{item.visited_at}</Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">{formattedVisitDate}</Text>
                 </View>
               </GridPeekItem>
             );
@@ -162,7 +164,7 @@ export default function VisitsScreen() {
           return (
             <VisitItem
               imageUrl={imageUrl}
-              date={item.visited_at}
+              date={formattedVisitDate}
               title={item.restaurant.name}
               comments={item.comments}
               deleted={item.deleted}

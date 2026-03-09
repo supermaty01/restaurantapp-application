@@ -5,6 +5,7 @@ import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 
 import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
 import { useVisitsByRestaurant } from '@/features/visits/hooks/useVisitsByRestaurant';
+import { formatVisitDate } from '@/lib/helpers/date';
 
 interface RestaurantVisitsProps {
   restaurant: RestaurantDetailsDTO;
@@ -39,7 +40,9 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
                 <View className="w-14 h-14 rounded bg-gray-300 dark:bg-gray-700 mr-3" />
               )}
               <View className="flex-1">
-                <Text className="text-base font-bold text-gray-800 dark:text-gray-200">{item.visited_at}</Text>
+                <Text className="text-base font-bold text-gray-800 dark:text-gray-200">
+                  {formatVisitDate(item.visited_at)}
+                </Text>
                 {item.comments && (
                   <Text className="text-sm text-gray-500 dark:text-gray-400">{item.comments}</Text>
                 )}
