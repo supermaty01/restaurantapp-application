@@ -37,7 +37,6 @@ async function copyToLocalFile(uri: string): Promise<string | null> {
 
     return localPath;
   } catch (error) {
-    console.error('Error copying file to local:', error);
     return null;
   }
 }
@@ -45,30 +44,23 @@ async function copyToLocalFile(uri: string): Promise<string | null> {
 // Parse a share file
 export async function parseShareFile(fileUri: string): Promise<ShareFileData | null> {
   try {
-    console.log('Parsing share file:', fileUri);
-
     let localUri = fileUri;
 
     // If it's a content:// URI, we need to copy it locally first
     if (fileUri.startsWith('content://')) {
-      console.log('Content URI detected, copying to local file...');
       const copiedPath = await copyToLocalFile(fileUri);
       if (!copiedPath) {
-        console.error('Failed to copy content URI to local file');
         return null;
       }
       localUri = copiedPath;
-      console.log('Copied to:', localUri);
     }
 
     const content = await FileSystem.readAsStringAsync(localUri, { encoding: FileSystem.EncodingType.UTF8 });
-    console.log('File content length:', content.length);
 
     const data = JSON.parse(content) as ShareFileData;
 
     // Validate version
     if (!data.version || data.version > CURRENT_SHARE_VERSION) {
-      console.warn('Unsupported share file version:', data.version);
       return null;
     }
 
@@ -79,7 +71,6 @@ export async function parseShareFile(fileUri: string): Promise<ShareFileData | n
 
     return data;
   } catch (error) {
-    console.error('Error parsing share file:', error);
     return null;
   }
 }
@@ -94,7 +85,6 @@ export async function findSimilarRestaurants(db: DrizzleDb, name: string): Promi
     
     return allRestaurants.filter(r => r.name.toLowerCase().trim() === normalizedName);
   } catch (error) {
-    console.error('Error finding similar restaurants:', error);
     return [];
   }
 }
@@ -110,7 +100,6 @@ export async function findSimilarDishes(db: DrizzleDb, name: string, restaurantI
     const allDishes = await query;
     return allDishes.filter(d => d.name.toLowerCase().trim() === normalizedName);
   } catch (error) {
-    console.error('Error finding similar dishes:', error);
     return [];
   }
 }
@@ -135,7 +124,6 @@ async function saveBase64Image(image: ShareableImage): Promise<string | null> {
     await FileSystem.writeAsStringAsync(filePath, image.base64, { encoding: FileSystem.EncodingType.Base64 });
     return filePath;
   } catch (error) {
-    console.error('Error saving image:', error);
     return null;
   }
 }
@@ -189,7 +177,6 @@ export async function importRestaurant(
 
     return restaurantId;
   } catch (error) {
-    console.error('Error importing restaurant:', error);
     return null;
   }
 }
@@ -226,7 +213,6 @@ export async function importDish(
 
     return dishId;
   } catch (error) {
-    console.error('Error importing dish:', error);
     return null;
   }
 }
@@ -259,7 +245,6 @@ export async function importVisit(
 
     return visitId;
   } catch (error) {
-    console.error('Error importing visit:', error);
     return null;
   }
 }

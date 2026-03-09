@@ -7,7 +7,7 @@ import { useTagList } from '@/features/tags/hooks/useTagList';
 import { useTheme } from '@/lib/context/ThemeContext';
 import RatingStars from '@/components/RatingStars';
 
-export type SortField = 'name' | 'rating' | 'date' | 'restaurant';
+export type SortField = 'name' | 'rating' | 'date' | 'restaurant' | 'created';
 export type SortOrder = 'asc' | 'desc';
 
 export interface FilterSortOptions {
@@ -114,6 +114,7 @@ export default function FilterSortModal({
     return [
       { field: 'name', label: 'Nombre' },
       { field: 'rating', label: 'Valoración' },
+      { field: 'created', label: 'Fecha de creación' },
     ];
   };
 
@@ -174,13 +175,13 @@ export default function FilterSortModal({
                         key={restaurant.id}
                         onPress={() => handleRestaurantSelect(restaurant.id)}
                         className={`px-3 py-2 mr-2 mb-2 rounded-lg ${isSelected
-                            ? 'bg-primary dark:bg-dark-primary'
-                            : 'bg-gray-200 dark:bg-gray-700'
+                          ? 'bg-primary dark:bg-dark-primary'
+                          : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                       >
                         <Text className={`text-sm ${isSelected
-                            ? 'text-white font-bold'
-                            : 'text-gray-700 dark:text-gray-300'
+                          ? 'text-white font-bold'
+                          : 'text-gray-700 dark:text-gray-300'
                           }`}>
                           {restaurant.name}
                         </Text>
@@ -203,14 +204,14 @@ export default function FilterSortModal({
                       key={rating}
                       onPress={() => handleRatingFilter(rating)}
                       className={`px-3 py-2 mr-2 rounded-lg ${localOptions.minRating === rating
-                          ? 'bg-primary dark:bg-dark-primary'
-                          : 'bg-gray-200 dark:bg-gray-700'
+                        ? 'bg-primary dark:bg-dark-primary'
+                        : 'bg-gray-200 dark:bg-gray-700'
                         }`}
                     >
                       <View className="flex-row items-center">
                         <Text className={`text-sm mr-1 ${localOptions.minRating === rating
-                            ? 'text-white font-bold'
-                            : 'text-gray-700 dark:text-gray-300'
+                          ? 'text-white font-bold'
+                          : 'text-gray-700 dark:text-gray-300'
                           }`}>
                           {rating}+
                         </Text>
@@ -237,13 +238,13 @@ export default function FilterSortModal({
                     key={option.field}
                     onPress={() => handleSortFieldChange(option.field)}
                     className={`px-3 py-2 mr-2 mb-2 rounded-lg ${localOptions.sortField === option.field
-                        ? 'bg-primary dark:bg-dark-primary'
-                        : 'bg-gray-200 dark:bg-gray-700'
+                      ? 'bg-primary dark:bg-dark-primary'
+                      : 'bg-gray-200 dark:bg-gray-700'
                       }`}
                   >
                     <Text className={`text-sm ${localOptions.sortField === option.field
-                        ? 'text-white font-bold'
-                        : 'text-gray-700 dark:text-gray-300'
+                      ? 'text-white font-bold'
+                      : 'text-gray-700 dark:text-gray-300'
                       }`}>
                       {option.label}
                     </Text>

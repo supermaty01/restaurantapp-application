@@ -36,7 +36,6 @@ export default function DishDetailScreen() {
       setIsSharing(true);
       await exportDish(drizzleDb, Number(id));
     } catch (error) {
-      console.error('Error sharing dish:', error);
       Alert.alert('Error', 'No se pudo compartir el plato');
     } finally {
       setIsSharing(false);
@@ -73,7 +72,6 @@ export default function DishDetailScreen() {
                 Alert.alert('Eliminado', 'Plato eliminado correctamente');
                 router.back();
               } catch (error) {
-                console.log('Error deleting dish:', error);
                 Alert.alert('Error', 'No se pudo eliminar el plato');
               }
             },
@@ -82,7 +80,6 @@ export default function DishDetailScreen() {
         { cancelable: true }
       );
     } catch (error) {
-      console.log('Error checking dish references:', error);
       Alert.alert('Error', 'No se pudo verificar las referencias del plato');
     }
   }

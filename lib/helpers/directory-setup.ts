@@ -15,6 +15,6 @@ export async function ensureAppDirectories(): Promise<void> {
       await FileSystem.makeDirectoryAsync(SQLITE_DIR, { intermediates: true });
     }
   } catch (error) {
-    console.error('Error al verificar/crear directorios de la aplicación:', error);
+    // Silently handle directory creation errors
   }
 }

@@ -62,21 +62,13 @@ export default {
           "data": [
             {
               "scheme": "file",
-              "mimeType": "*/*",
+              "mimeType": "application/octet-stream",
               "pathPattern": ".*\\.restoshare"
             },
             {
               "scheme": "content",
-              "mimeType": "*/*"
-            }
-          ]
-        },
-        {
-          "action": "SEND",
-          "category": ["DEFAULT"],
-          "data": [
-            {
-              "mimeType": "*/*"
+              "mimeType": "application/octet-stream",
+              "pathPattern": ".*\\.restoshare"
             }
           ]
         }
@@ -110,7 +102,8 @@ export default {
       "eas": {
         "projectId": "acb4a328-034e-4fa5-8381-226436faaf98"
       },
-      "OFFLINE_MODE": process.env.OFFLINE_MODE || "false"
+      "OFFLINE_MODE": process.env.OFFLINE_MODE || "false",
+      "GOOGLE_MAPS_API_KEY": process.env.GOOGLE_MAPS_API_KEY || ""
     }
   }
 }

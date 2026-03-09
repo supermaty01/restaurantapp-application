@@ -29,7 +29,6 @@ async function imageToBase64(imagePath: string): Promise<ShareableImage | null> 
     
     const fileInfo = await FileSystem.getInfoAsync(fileUri);
     if (!fileInfo.exists) {
-      console.warn('Image file not found:', fileUri);
       return null;
     }
     
@@ -40,7 +39,6 @@ async function imageToBase64(imagePath: string): Promise<ShareableImage | null> 
     const filename = imagePath.split('/').pop() || 'image.jpg';
     return { base64, filename };
   } catch (error) {
-    console.error('Error converting image to base64:', error);
     return null;
   }
 }
@@ -77,7 +75,6 @@ async function fetchRestaurantData(db: DrizzleDb, restaurantId: number): Promise
       images,
     };
   } catch (error) {
-    console.error('Error fetching restaurant data:', error);
     return null;
   }
 }
@@ -106,7 +103,6 @@ async function fetchDishData(db: DrizzleDb, dishId: number): Promise<ShareableDi
 
     return { name: dish.name, price: dish.price, rating: dish.rating, comments: dish.comments, tags, images };
   } catch (error) {
-    console.error('Error fetching dish data:', error);
     return null;
   }
 }
@@ -127,7 +123,6 @@ async function fetchVisitData(db: DrizzleDb, visitId: number): Promise<Shareable
 
     return { visitedAt: visit.visitedAt, comments: visit.comments, images };
   } catch (error) {
-    console.error('Error fetching visit data:', error);
     return null;
   }
 }
@@ -145,7 +140,6 @@ async function fetchVisitDishes(db: DrizzleDb, visitId: number): Promise<Shareab
     }
     return dishes;
   } catch (error) {
-    console.error('Error fetching visit dishes:', error);
     return [];
   }
 }
@@ -169,7 +163,6 @@ async function createAndShareFile(data: ShareFileData, filename: string): Promis
     await Sharing.shareAsync(filePath, { mimeType: 'application/octet-stream', dialogTitle: 'Compartir' });
     return filePath;
   } catch (error) {
-    console.error('Error creating share file:', error);
     return null;
   }
 }
@@ -189,7 +182,6 @@ export async function exportRestaurant(db: DrizzleDb, restaurantId: number): Pro
 
     return await createAndShareFile(shareData, `restaurant_${sanitizeFilename(restaurant.name)}`);
   } catch (error) {
-    console.error('Error exporting restaurant:', error);
     return null;
   }
 }
@@ -215,7 +207,6 @@ export async function exportDish(db: DrizzleDb, dishId: number): Promise<string 
 
     return await createAndShareFile(shareData, `dish_${sanitizeFilename(dish.name)}`);
   } catch (error) {
-    console.error('Error exporting dish:', error);
     return null;
   }
 }
@@ -243,7 +234,6 @@ export async function exportVisit(db: DrizzleDb, visitId: number): Promise<strin
 
     return await createAndShareFile(shareData, `visit_${visit.visitedAt}`);
   } catch (error) {
-    console.error('Error exporting visit:', error);
     return null;
   }
 }

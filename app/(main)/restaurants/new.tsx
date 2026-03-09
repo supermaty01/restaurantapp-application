@@ -79,14 +79,14 @@ export default function RestaurantCreateScreen() {
       }
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo crear el restaurante');
-      console.log(error);
+      // Error already shown via Alert
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4" keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
       <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Añadir restaurante</Text>
 
       <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">
