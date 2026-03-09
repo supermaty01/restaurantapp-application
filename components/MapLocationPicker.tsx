@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Linking } from 
 import MapView, { Marker, PROVIDER_GOOGLE, MapPressEvent } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { set } from 'date-fns';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface MapLocationPickerProps {
@@ -64,7 +63,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
         setAddress('Ubicación no disponible');
       }
     } catch (error) {
-      console.log('Error obteniendo la dirección:', error);
+      // Error getting address - silently handle
       setAddress('Ubicación no disponible');
     }
     setLoadingAddress(false);
@@ -113,16 +112,16 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ location, onLocat
       fetchAddress(coords.latitude, coords.longitude);
     } catch (error) {
       Alert.alert('Error', 'No se pudo obtener la ubicación actual.');
-      console.log(error);
+      // Error getting current location - already shown via Alert
     }
     setGettingCurrentLocation(false);
   };
 
   return (
-    <View style={{ flex: 1, height: 300 }}>
+    <View style={{ flex: 1, minHeight: 300 }}>
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{ flex: 1 }}
+        style={{ flex: 1, minHeight: 250 }}
         region={mapRegion}
         onPress={handleMapPress}
         scrollEnabled={editable}

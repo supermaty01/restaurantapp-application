@@ -113,7 +113,6 @@ export default function RestaurantEditScreen() {
       router.back();
     } catch (error: any) {
       Alert.alert('Error', 'No se pudo actualizar el restaurante');
-      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -128,7 +127,7 @@ export default function RestaurantEditScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4">
+    <ScrollView className="flex-1 bg-muted dark:bg-dark-muted p-4" keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
       <Text className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">Editar restaurante</Text>
 
       <View className="bg-card dark:bg-dark-card p-4 rounded-md mb-8">

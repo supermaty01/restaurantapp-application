@@ -9,7 +9,7 @@ import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker
 import DishPicker from '@/features/dishes/components/DishPicker';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
-import { router } from 'expo-router';
+import { router, useGlobalSearchParams } from 'expo-router';
 import { uploadImages } from '@/lib/helpers/upload-images';
 import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
@@ -17,6 +17,7 @@ import * as schema from '@/services/db/schema';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitCreateScreen() {
+  const { restaurantId: routeRestaurantId } = useGlobalSearchParams();
   const {
     control,
     handleSubmit,
@@ -28,7 +29,7 @@ export default function VisitCreateScreen() {
     defaultValues: {
       visited_at: new Date().toISOString().split('T')[0],
       comments: '',
-      restaurantId: undefined,
+      restaurantId: routeRestaurantId ? Number(routeRestaurantId) : undefined,
       dishes: [],
     },
   });
@@ -109,6 +110,7 @@ export default function VisitCreateScreen() {
           control={control}
           setValue={setValue}
           name="restaurantId"
+          fixedValue={!!routeRestaurantId}
           label="Restaurante"
           errors={errors}
         />

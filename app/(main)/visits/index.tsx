@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View, Image, useWindowDimensions, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import VisitItem from '@/features/visits/components/VisitItem'
@@ -8,11 +8,14 @@ import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantLis
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import PreviewModal, { PreviewData } from '@/components/PreviewModal';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { usePeek } from '@/lib/context/PeekContext';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
+import GridPeekItem from '@/components/GridPeekItem';
 
 export default function VisitsScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const { setIsPeeking } = usePeek();
 
   // Solo mostrar visitas no eliminadas en la lista principal
   const visits = useVisitList(false);
@@ -26,8 +29,15 @@ export default function VisitsScreen() {
   });
   const [previewData, setPreviewData] = useState<PreviewData>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [isGridView, setIsGridView] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 600 ? 3 : 2;
 
   const handlePeek = (item: VisitListDTO) => {
+    setScrollEnabled(false);
+    setIsPeeking(true);
     setPreviewData({
       type: 'visit',
       id: item.id,
@@ -41,6 +51,8 @@ export default function VisitsScreen() {
 
   const handlePeekEnd = () => {
     setPreviewVisible(false);
+    setScrollEnabled(true);
+    setIsPeeking(false);
   };
 
   // Get unique restaurants from visits for filtering
@@ -66,6 +78,12 @@ export default function VisitsScreen() {
   const filteredAndSortedVisits = useMemo(() => {
     let result = [...visits];
 
+    // Filter by search query (restaurant name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
+      result = result.filter((v) => v.restaurant.name.toLowerCase().includes(query));
+    }
+
     // Filter by restaurant
     if (filterOptions.selectedRestaurantId !== null) {
       result = result.filter(
@@ -85,45 +103,102 @@ export default function VisitsScreen() {
     });
 
     return result;
-  }, [visits, filterOptions]);
+  }, [visits, filterOptions, searchQuery]);
 
   return (
     <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Visitas</Text>
-        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-          <View className="relative">
+        <View className="flex-row items-center" style={{ gap: 12 }}>
+          <TouchableOpacity onPress={() => setIsGridView((v) => !v)}>
             <Ionicons
-              name="filter"
-              size={24}
-              color={hasActiveFilters ? (isDarkMode ? '#7A9455' : '#93AE72') : (isDarkMode ? '#ccc' : '#666')}
+              name={isGridView ? 'list' : 'grid'}
+              size={22}
+              color={isDarkMode ? '#ccc' : '#666'}
             />
-            {hasActiveFilters && (
-              <View className="absolute -top-1 -right-1 w-3 h-3 bg-primary dark:bg-dark-primary rounded-full" />
-            )}
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+            <View className="relative">
+              <Ionicons
+                name="filter"
+                size={24}
+                color={hasActiveFilters ? (isDarkMode ? '#7A9455' : '#93AE72') : (isDarkMode ? '#ccc' : '#666')}
+              />
+              {hasActiveFilters && (
+                <View className="absolute -top-1 -right-1 w-3 h-3 bg-primary dark:bg-dark-primary rounded-full" />
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <View className="mb-3">
+        <View className="flex-row items-center bg-card dark:bg-dark-card rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-700">
+          <Ionicons name="search" size={18} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+          <TextInput
+            className="flex-1 ml-2 text-sm text-gray-800 dark:text-gray-200"
+            placeholder="Buscar por nombre..."
+            placeholderTextColor={isDarkMode ? '#6b7280' : '#9ca3af'}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={18} color={isDarkMode ? '#9ca3af' : '#6b7280'} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <FlatList
+        key={isGridView ? `grid-${numColumns}` : 'list'}
         data={filteredAndSortedVisits}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <VisitItem
-            imageUrl={item.images && item.images.length > 0 ? item.images[0].uri : null}
-            date={item.visited_at}
-            title={item.restaurant.name}
-            comments={item.comments}
-            deleted={item.deleted}
-            restaurantDeleted={item.restaurant.deleted}
-            onPress={() => router.push({
-              pathname: '/visits/[id]/view',
-              params: { id: item.id },
-            })}
-            onPeek={() => handlePeek(item)}
-            onPeekEnd={handlePeekEnd}
-          />
-        )}
+        numColumns={isGridView ? numColumns : 1}
+        columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
+        scrollEnabled={scrollEnabled}
+        renderItem={({ item }) => {
+          const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
+          if (isGridView) {
+            return (
+              <GridPeekItem
+                style={{ flex: 1 / numColumns }}
+                onPress={() => router.push({
+                  pathname: '/visits/[id]/view',
+                  params: { id: item.id },
+                })}
+                onPeek={() => handlePeek(item)}
+                onPeekEnd={handlePeekEnd}
+              >
+                {imageUrl ? (
+                  <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 100 }} resizeMode="cover" />
+                ) : (
+                  <View style={{ width: '100%', height: 100 }} className="bg-gray-200 dark:bg-gray-700" />
+                )}
+                <View className="p-2">
+                  <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.restaurant.name}</Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">{item.visited_at}</Text>
+                </View>
+              </GridPeekItem>
+            );
+          }
+          return (
+            <VisitItem
+              imageUrl={imageUrl}
+              date={item.visited_at}
+              title={item.restaurant.name}
+              comments={item.comments}
+              deleted={item.deleted}
+              restaurantDeleted={item.restaurant.deleted}
+              onPress={() => router.push({
+                pathname: '/visits/[id]/view',
+                params: { id: item.id },
+              })}
+              onPeek={() => handlePeek(item)}
+              onPeekEnd={handlePeekEnd}
+            />
+          );
+        }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center mt-10">

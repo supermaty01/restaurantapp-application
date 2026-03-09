@@ -54,8 +54,8 @@ export default function ImportScreen() {
       setShareData(data);
 
       // Check for restaurant conflicts
-      const restaurantName = data.type === 'restaurant' 
-        ? data.restaurant?.name 
+      const restaurantName = data.type === 'restaurant'
+        ? data.restaurant?.name
         : data.includedRestaurant?.name;
 
       if (restaurantName) {
@@ -71,7 +71,6 @@ export default function ImportScreen() {
       // No conflict, proceed with import
       await performImport(data);
     } catch (err) {
-      console.error('Import error:', err);
       setError('Error al importar el archivo');
       setLoading(false);
     }
@@ -103,7 +102,6 @@ export default function ImportScreen() {
         setError(result?.error || 'Error desconocido al importar');
       }
     } catch (err) {
-      console.error('Import error:', err);
       setError('Error al importar el archivo');
     }
     setLoading(false);

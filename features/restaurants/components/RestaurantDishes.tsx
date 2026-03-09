@@ -60,6 +60,15 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
           </View>
         }
       />
+      <TouchableOpacity
+        className="bg-primary dark:bg-dark-primary py-3 rounded-lg mt-2 flex-row items-center justify-center"
+        onPress={() =>
+          router.push({ pathname: '/dishes/new', params: { restaurantId: restaurant.id } })
+        }
+      >
+        <Ionicons name="add-circle-outline" size={20} color="#fff" />
+        <Text className="text-white font-bold ml-2">Añadir Plato</Text>
+      </TouchableOpacity>
     </View>
   );
 }
