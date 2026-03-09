@@ -1,42 +1,49 @@
-import React, { useRef, useState, useCallback } from 'react';
-import { View, ViewStyle, StyleProp } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, GestureResponderEvent, StyleProp, View, ViewStyle } from 'react-native';
+import { usePeek } from '@/lib/context/PeekContext';
+import { PeekPreviewData } from '@/components/peek/types';
 
-const LONG_PRESS_DELAY = 200;
+const LONG_PRESS_DELAY = 220;
+const MOVE_CANCEL_THRESHOLD = 12;
 
 interface PeekablePressableProps {
   children: React.ReactNode;
+  previewData: PeekPreviewData;
   style?: StyleProp<ViewStyle>;
   className?: string;
   onPress?: () => void;
-  onPeek?: () => void;
-  onPeekEnd?: () => void;
-  onScaleChange?: (scale: number) => void;
   scaleValue?: number;
-  /** Base opacity (e.g. 0.7 for disabled/deleted items). Multiplied with press opacity. */
   baseOpacity?: number;
+  sourceBorderRadius?: number;
 }
 
-/**
- * A pressable that supports immediate onPress (no delay) and long-press peeking.
- * Uses touch handlers instead of Pressable to avoid the global delay caused by
- * delayLongPress. The setTimeout is only used for long-press detection - onPress
- * fires immediately when the user releases on a quick tap.
- */
 const PeekablePressable: React.FC<PeekablePressableProps> = ({
   children,
+  previewData,
   style,
   className,
   onPress,
-  onPeek,
-  onPeekEnd,
-  onScaleChange,
   scaleValue = 1.03,
   baseOpacity = 1,
+  sourceBorderRadius = 16,
 }) => {
+  const { beginPeek, endPeek } = usePeek();
+  const containerRef = useRef<View>(null);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const longPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isPeekingRef = useRef(false);
+  const movedBeforePeekRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [isPressed, setIsPressed] = useState(false);
-  const [isPeeking, setIsPeeking] = useState(false);
+
+  const animateScale = useCallback((toValue: number) => {
+    Animated.spring(scaleAnim, {
+      toValue,
+      friction: 8,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  }, [scaleAnim]);
 
   const clearLongPressTimeout = useCallback(() => {
     if (longPressTimeoutRef.current) {
@@ -45,67 +52,118 @@ const PeekablePressable: React.FC<PeekablePressableProps> = ({
     }
   }, []);
 
-  const handleLongPress = useCallback(() => {
-    isPeekingRef.current = true;
-    setIsPeeking(true);
-    onPeek?.();
-    onScaleChange?.(scaleValue);
-  }, [onPeek, onScaleChange, scaleValue]);
+  const closePeek = useCallback(() => {
+    if (!isPeekingRef.current) {
+      return;
+    }
 
-  const handleTouchStart = useCallback(() => {
+    isPeekingRef.current = false;
+    animateScale(1);
+    endPeek();
+  }, [animateScale, endPeek]);
+
+  const openPeek = useCallback(() => {
+    if (!containerRef.current || movedBeforePeekRef.current) {
+      return;
+    }
+
+    isPeekingRef.current = true;
+
+    containerRef.current.measureInWindow((x, y, width, height) => {
+      if (width <= 0 || height <= 0) {
+        isPeekingRef.current = false;
+        return;
+      }
+
+      animateScale(scaleValue);
+      beginPeek({
+        preview: previewData,
+        sourceRect: { x, y, width, height },
+        sourceBorderRadius,
+      });
+    });
+  }, [animateScale, beginPeek, previewData, scaleValue, sourceBorderRadius]);
+
+  const handleTouchStart = useCallback((event: GestureResponderEvent) => {
+    const touch = event.nativeEvent.touches?.[0] ?? event.nativeEvent.changedTouches?.[0];
+    touchStartRef.current = touch ? { x: touch.pageX, y: touch.pageY } : null;
+    movedBeforePeekRef.current = false;
+    isPeekingRef.current = false;
     setIsPressed(true);
     clearLongPressTimeout();
     longPressTimeoutRef.current = setTimeout(() => {
       longPressTimeoutRef.current = null;
-      handleLongPress();
+      openPeek();
     }, LONG_PRESS_DELAY);
-  }, [clearLongPressTimeout, handleLongPress]);
+  }, [clearLongPressTimeout, openPeek]);
+
+  const handleTouchMove = useCallback((event: GestureResponderEvent) => {
+    if (isPeekingRef.current || movedBeforePeekRef.current || !touchStartRef.current) {
+      return;
+    }
+
+    const touch = event.nativeEvent.touches?.[0] ?? event.nativeEvent.changedTouches?.[0];
+    if (!touch) {
+      return;
+    }
+
+    const deltaX = touch.pageX - touchStartRef.current.x;
+    const deltaY = touch.pageY - touchStartRef.current.y;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (distance > MOVE_CANCEL_THRESHOLD) {
+      movedBeforePeekRef.current = true;
+      setIsPressed(false);
+      clearLongPressTimeout();
+    }
+  }, [clearLongPressTimeout]);
 
   const handleTouchEnd = useCallback(() => {
     setIsPressed(false);
+    touchStartRef.current = null;
     clearLongPressTimeout();
 
     if (isPeekingRef.current) {
-      isPeekingRef.current = false;
-      setIsPeeking(false);
-      onScaleChange?.(1);
-      onPeekEnd?.();
-    } else {
-      // Fire onPress immediately - no delay. We're in the else branch because
-      // long press didn't fire, so we can call onPress right away.
+      closePeek();
+      return;
+    }
+
+    if (!movedBeforePeekRef.current) {
       onPress?.();
     }
-  }, [clearLongPressTimeout, onPress, onPeekEnd, onScaleChange]);
+  }, [clearLongPressTimeout, closePeek, onPress]);
 
   const handleTouchCancel = useCallback(() => {
     setIsPressed(false);
+    touchStartRef.current = null;
     clearLongPressTimeout();
-    if (isPeekingRef.current) {
-      isPeekingRef.current = false;
-      setIsPeeking(false);
-      onScaleChange?.(1);
-      onPeekEnd?.();
-    }
-  }, [clearLongPressTimeout, onScaleChange, onPeekEnd]);
+    closePeek();
+  }, [clearLongPressTimeout, closePeek]);
 
-  const handleTouchMove = useCallback(() => {
-    // Allow finger movement while holding - preserves peeking functionality.
-    // Optional: could add scroll threshold to cancel peek if moved too far.
-  }, []);
+  useEffect(() => {
+    return () => {
+      clearLongPressTimeout();
+    };
+  }, [clearLongPressTimeout]);
 
   return (
     <View
+      ref={containerRef}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchCancel}
-      onTouchMove={handleTouchMove}
-      style={[
-        style,
-        { opacity: baseOpacity * (isPressed && !isPeeking ? 0.8 : 1) },
-      ]}
-      className={className}
+      style={style}
     >
-      {children}
+      <Animated.View
+        className={className}
+        style={{
+          opacity: baseOpacity * (isPressed && !isPeekingRef.current ? 0.8 : 1),
+          transform: [{ scale: scaleAnim }],
+        }}
+      >
+        {children}
+      </Animated.View>
     </View>
   );
 };

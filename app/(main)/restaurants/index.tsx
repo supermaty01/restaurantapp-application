@@ -1,13 +1,11 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Image, useWindowDimensions, TextInput, Pressable } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Image, useWindowDimensions, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantList';
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
-import PreviewModal, { PreviewData, RestaurantPreviewData } from '@/components/PreviewModal';
 import { useTheme } from '@/lib/context/ThemeContext';
-import { usePeek } from '@/lib/context/PeekContext';
 import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
 import RatingStars from '@/components/RatingStars';
 import GridPeekItem from '@/components/GridPeekItem';
@@ -15,25 +13,18 @@ import GridPeekItem from '@/components/GridPeekItem';
 export default function RestaurantsScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const { setIsPeeking } = usePeek();
 
-  // Solo mostrar restaurantes no eliminados en la lista principal
   const restaurants = useRestaurantList(false);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterOptions, setFilterOptions] = useState<FilterSortOptions>(defaultFilterSortOptions);
-  const [previewData, setPreviewData] = useState<PreviewData>(null);
-  const [previewVisible, setPreviewVisible] = useState(false);
   const [isGridView, setIsGridView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [scrollEnabled, setScrollEnabled] = useState(true);
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
 
-  const handlePeek = (item: RestaurantListDTO) => {
-    setScrollEnabled(false);
-    setIsPeeking(true);
-    setPreviewData({
+  const buildPreviewData = (item: RestaurantListDTO) => {
+    return {
       type: 'restaurant',
       id: item.id,
       name: item.name,
@@ -41,33 +32,22 @@ export default function RestaurantsScreen() {
       rating: item.rating,
       tags: item.tags || [],
       imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
-    });
-    setPreviewVisible(true);
+    } as const;
   };
 
-  const handlePeekEnd = () => {
-    setPreviewVisible(false);
-    setScrollEnabled(true);
-    setIsPeeking(false);
-  };
-
-  // Check if any filter is active
   const hasActiveFilters = filterOptions.selectedTags.length > 0 ||
     filterOptions.minRating !== null ||
     filterOptions.sortField !== 'name' ||
     filterOptions.sortOrder !== 'asc';
 
-  // Apply filters and sorting
   const filteredAndSortedRestaurants = useMemo(() => {
     let result = [...restaurants];
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
       result = result.filter((r) => r.name.toLowerCase().includes(query));
     }
 
-    // Filter by tags (match any)
     if (filterOptions.selectedTags.length > 0) {
       result = result.filter((restaurant) =>
         filterOptions.selectedTags.some((filterTag) =>
@@ -76,14 +56,12 @@ export default function RestaurantsScreen() {
       );
     }
 
-    // Filter by minimum rating
     if (filterOptions.minRating !== null) {
       result = result.filter(
         (restaurant) => restaurant.rating !== null && restaurant.rating >= filterOptions.minRating!
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
       if (filterOptions.sortField === 'name') {
@@ -158,19 +136,19 @@ export default function RestaurantsScreen() {
         keyExtractor={(item) => item.id.toString()}
         numColumns={isGridView ? numColumns : 1}
         columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        scrollEnabled={scrollEnabled}
         renderItem={({ item }) => {
           const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : undefined;
+          const previewData = buildPreviewData(item);
+
           if (isGridView) {
             return (
               <GridPeekItem
                 style={{ flex: 1 / numColumns }}
+                previewData={previewData}
                 onPress={() => router.push({
                   pathname: '/restaurants/[id]/view',
                   params: { id: item.id },
                 })}
-                onPeek={() => handlePeek(item)}
-                onPeekEnd={handlePeekEnd}
               >
                 {imageUrl ? (
                   <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 100 }} resizeMode="cover" />
@@ -193,12 +171,11 @@ export default function RestaurantsScreen() {
               rating={item.rating}
               tags={item.tags || []}
               imageUrl={imageUrl}
+              previewData={previewData}
               onPress={() => router.push({
                 pathname: '/restaurants/[id]/view',
                 params: { id: item.id },
               })}
-              onPeek={() => handlePeek(item)}
-              onPeekEnd={handlePeekEnd}
             />
           );
         }}
@@ -222,12 +199,6 @@ export default function RestaurantsScreen() {
         options={filterOptions}
         onApply={setFilterOptions}
         entityType="restaurant"
-      />
-
-      <PreviewModal
-        visible={previewVisible}
-        onClose={handlePeekEnd}
-        data={previewData}
       />
     </View>
   );

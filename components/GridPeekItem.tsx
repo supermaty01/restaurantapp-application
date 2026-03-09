@@ -1,49 +1,32 @@
-import React, { useRef, useCallback } from 'react';
-import { Animated, ViewStyle, StyleProp } from 'react-native';
+import React from 'react';
+import { ViewStyle, StyleProp } from 'react-native';
 import PeekablePressable from './PeekablePressable';
+import { PeekPreviewData } from '@/components/peek/types';
 
 interface GridPeekItemProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  previewData: PeekPreviewData;
   onPress?: () => void;
-  onPeek?: () => void;
-  onPeekEnd?: () => void;
 }
 
 const GridPeekItem: React.FC<GridPeekItemProps> = ({
   children,
   style,
+  previewData,
   onPress,
-  onPeek,
-  onPeekEnd,
 }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handleScaleChange = useCallback(
-    (scale: number) => {
-      Animated.spring(scaleAnim, {
-        toValue: scale,
-        friction: 8,
-        tension: 100,
-        useNativeDriver: true,
-      }).start();
-    },
-    [scaleAnim]
-  );
-
   return (
-    <Animated.View style={[style, { transform: [{ scale: scaleAnim }] }]}>
-      <PeekablePressable
-        onPress={onPress}
-        onPeek={onPeek}
-        onPeekEnd={onPeekEnd}
-        onScaleChange={handleScaleChange}
-        scaleValue={1.05}
-        className="bg-card dark:bg-dark-card rounded-xl mb-2 overflow-hidden"
-      >
-        {children}
-      </PeekablePressable>
-    </Animated.View>
+    <PeekablePressable
+      style={style}
+      previewData={previewData}
+      onPress={onPress}
+      scaleValue={1.05}
+      sourceBorderRadius={12}
+      className="bg-card dark:bg-dark-card rounded-xl mb-2 overflow-hidden"
+    >
+      {children}
+    </PeekablePressable>
   );
 };
 

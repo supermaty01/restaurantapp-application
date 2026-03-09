@@ -1,23 +1,49 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import PeekOverlay from '@/components/peek/PeekOverlay';
+import { PeekSession } from '@/components/peek/types';
 
 interface PeekContextType {
   isPeeking: boolean;
-  setIsPeeking: (value: boolean) => void;
+  activeSession: PeekSession | null;
+  beginPeek: (session: PeekSession) => void;
+  endPeek: () => void;
 }
 
 const PeekContext = createContext<PeekContextType>({
   isPeeking: false,
-  setIsPeeking: () => {},
+  activeSession: null,
+  beginPeek: () => {},
+  endPeek: () => {},
 });
 
 export const PeekProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isPeeking, setIsPeeking] = useState(false);
+  const [activeSession, setActiveSession] = useState<PeekSession | null>(null);
 
-  const value = useMemo(() => ({ isPeeking, setIsPeeking }), [isPeeking]);
+  const beginPeek = useCallback((session: PeekSession) => {
+    setActiveSession(session);
+    setIsPeeking(true);
+  }, []);
+
+  const endPeek = useCallback(() => {
+    setIsPeeking(false);
+    setActiveSession(null);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      isPeeking,
+      activeSession,
+      beginPeek,
+      endPeek,
+    }),
+    [activeSession, beginPeek, endPeek, isPeeking]
+  );
 
   return (
     <PeekContext.Provider value={value}>
       {children}
+      <PeekOverlay activeSession={activeSession} isPeeking={isPeeking} />
     </PeekContext.Provider>
   );
 };

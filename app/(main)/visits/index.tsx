@@ -4,22 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
-import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantList';
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
-import PreviewModal, { PreviewData } from '@/components/PreviewModal';
 import { useTheme } from '@/lib/context/ThemeContext';
-import { usePeek } from '@/lib/context/PeekContext';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
 import GridPeekItem from '@/components/GridPeekItem';
 
 export default function VisitsScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const { setIsPeeking } = usePeek();
 
-  // Solo mostrar visitas no eliminadas en la lista principal
   const visits = useVisitList(false);
-  const restaurants = useRestaurantList(false);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterOptions, setFilterOptions] = useState<FilterSortOptions>({
@@ -27,35 +21,22 @@ export default function VisitsScreen() {
     sortField: 'date',
     sortOrder: 'desc',
   });
-  const [previewData, setPreviewData] = useState<PreviewData>(null);
-  const [previewVisible, setPreviewVisible] = useState(false);
   const [isGridView, setIsGridView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [scrollEnabled, setScrollEnabled] = useState(true);
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
 
-  const handlePeek = (item: VisitListDTO) => {
-    setScrollEnabled(false);
-    setIsPeeking(true);
-    setPreviewData({
+  const buildPreviewData = (item: VisitListDTO) => {
+    return {
       type: 'visit',
       id: item.id,
       date: item.visited_at,
       restaurantName: item.restaurant.name,
       comments: item.comments,
       imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
-    });
-    setPreviewVisible(true);
+    } as const;
   };
 
-  const handlePeekEnd = () => {
-    setPreviewVisible(false);
-    setScrollEnabled(true);
-    setIsPeeking(false);
-  };
-
-  // Get unique restaurants from visits for filtering
   const restaurantOptions = useMemo(() => {
     const uniqueRestaurants = new Map<number, { id: number; name: string }>();
     visits.forEach((visit) => {
@@ -69,29 +50,24 @@ export default function VisitsScreen() {
     return Array.from(uniqueRestaurants.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [visits]);
 
-  // Check if any filter is active
   const hasActiveFilters = filterOptions.selectedRestaurantId !== null ||
     filterOptions.sortField !== 'date' ||
     filterOptions.sortOrder !== 'desc';
 
-  // Apply filters and sorting
   const filteredAndSortedVisits = useMemo(() => {
     let result = [...visits];
 
-    // Filter by search query (restaurant name)
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
       result = result.filter((v) => v.restaurant.name.toLowerCase().includes(query));
     }
 
-    // Filter by restaurant
     if (filterOptions.selectedRestaurantId !== null) {
       result = result.filter(
         (visit) => visit.restaurant.id === filterOptions.selectedRestaurantId
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       let comparison = 0;
       if (filterOptions.sortField === 'date') {
@@ -156,19 +132,19 @@ export default function VisitsScreen() {
         keyExtractor={(item) => item.id.toString()}
         numColumns={isGridView ? numColumns : 1}
         columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        scrollEnabled={scrollEnabled}
         renderItem={({ item }) => {
           const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
+          const previewData = buildPreviewData(item);
+
           if (isGridView) {
             return (
               <GridPeekItem
                 style={{ flex: 1 / numColumns }}
+                previewData={previewData}
                 onPress={() => router.push({
                   pathname: '/visits/[id]/view',
                   params: { id: item.id },
                 })}
-                onPeek={() => handlePeek(item)}
-                onPeekEnd={handlePeekEnd}
               >
                 {imageUrl ? (
                   <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 100 }} resizeMode="cover" />
@@ -190,12 +166,11 @@ export default function VisitsScreen() {
               comments={item.comments}
               deleted={item.deleted}
               restaurantDeleted={item.restaurant.deleted}
+              previewData={previewData}
               onPress={() => router.push({
                 pathname: '/visits/[id]/view',
                 params: { id: item.id },
               })}
-              onPeek={() => handlePeek(item)}
-              onPeekEnd={handlePeekEnd}
             />
           );
         }}
@@ -220,12 +195,6 @@ export default function VisitsScreen() {
         onApply={setFilterOptions}
         entityType="visit"
         restaurants={restaurantOptions}
-      />
-
-      <PreviewModal
-        visible={previewVisible}
-        onClose={handlePeekEnd}
-        data={previewData}
       />
     </View>
   );
