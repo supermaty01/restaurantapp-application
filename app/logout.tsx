@@ -1,5 +1,6 @@
-import { useEffect, useContext } from 'react';
 import { useRouter } from 'expo-router';
+import { useEffect, useContext } from 'react';
+
 import { AuthContext } from '@/lib/context/AuthContext';
 
 export default function Logout() {
@@ -12,7 +13,7 @@ export default function Logout() {
       router.replace('/login');
     }
     performLogout();
-  }, []);
+  }, [logout, router]);
 
   return null;
 }

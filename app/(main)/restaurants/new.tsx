@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormInput from '@/components/FormInput';
+import MapLocationPicker from '@/components/MapLocationPicker';
 import RatingStars from '@/components/RatingStars';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
-import { TagDTO } from '@/features/tags/types/tag-dto';
-import { Ionicons } from '@expo/vector-icons';
-import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
-import { router, useGlobalSearchParams } from 'expo-router';
-import MapLocationPicker from '@/components/MapLocationPicker';
 import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
+import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { uploadImages } from '@/lib/helpers/upload-images';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
-import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function RestaurantCreateScreen() {
   const {
@@ -42,8 +42,6 @@ export default function RestaurantCreateScreen() {
   const { setNewRestaurantId } = useNewRestaurant();
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
-  const { isDarkMode } = useTheme();
-
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
     try {
@@ -77,7 +75,7 @@ export default function RestaurantCreateScreen() {
           params: { id: restaurantId },
         });
       }
-    } catch (error: any) {
+    } catch {
       Alert.alert('Error', 'No se pudo crear el restaurante');
       // Error already shown via Alert
     } finally {

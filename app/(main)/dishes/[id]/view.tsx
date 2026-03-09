@@ -1,17 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { eq } from 'drizzle-orm/sql';
+import { useRouter, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+
 import RatingStars from '@/components/RatingStars';
+import { useDishById } from '@/features/dishes/hooks/useDishById';
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 import Tag from '@/features/tags/components/Tag';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { eq } from 'drizzle-orm/sql';
-import { canDeleteDishPermanently, softDeleteDish } from '@/lib/helpers/soft-delete';
-import { useDishById } from '@/features/dishes/hooks/useDishById';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { canDeleteDishPermanently, softDeleteDish } from '@/lib/helpers/soft-delete';
+import * as schema from '@/services/db/schema';
 import { exportDish } from '@/services/share/exportService';
 
 export default function DishDetailScreen() {
@@ -35,7 +36,7 @@ export default function DishDetailScreen() {
     try {
       setIsSharing(true);
       await exportDish(drizzleDb, Number(id));
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo compartir el plato');
     } finally {
       setIsSharing(false);
@@ -71,7 +72,7 @@ export default function DishDetailScreen() {
 
                 Alert.alert('Eliminado', 'Plato eliminado correctamente');
                 router.back();
-              } catch (error) {
+              } catch {
                 Alert.alert('Error', 'No se pudo eliminar el plato');
               }
             },
@@ -79,7 +80,7 @@ export default function DishDetailScreen() {
         ],
         { cancelable: true }
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo verificar las referencias del plato');
     }
   }

@@ -1,10 +1,11 @@
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
-import { and, eq } from "drizzle-orm";
-import { DishListDTO } from "../types/dish-dto";
-import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
-import { imagePathToUri } from "@/lib/helpers/image-paths";
+import { and, eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+
+import { useLiveTablesQuery } from '@/lib/hooks/useLiveTablesQuery';
+import * as schema from '@/services/db/schema';
+
+import { mapDishListRows } from '../mappers/mapDishListRows';
 
 export const useDishesByRestaurant = (restaurantId: number | undefined, includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
@@ -53,43 +54,5 @@ export const useDishesByRestaurant = (restaurantId: number | undefined, includeD
     [restaurantId, includeDeleted]
   );
 
-  // @ts-ignore - Ignorar errores de tipo en el resultado de la consulta
-  const dishes = rawData?.reduce<DishListDTO[]>((acc, row: any) => {
-    if (!row.dishId) return acc;
-
-    let dish = acc.find((r: any) => r.id === row.dishId);
-    if (!dish) {
-      dish = {
-        id: row.dishId,
-        name: row.dishName || "",
-        comments: row.dishComments || null,
-        rating: row.dishRating || null,
-        deleted: row.dishDeleted,
-        tags: [],
-        images: [],
-      };
-      acc.push(dish);
-    }
-
-    if (row.tagId && row.tagName && row.tagColor && !dish.tags.some((t: any) => t.id === row.tagId)) {
-      dish.tags.push({
-        id: row.tagId,
-        name: row.tagName,
-        color: row.tagColor,
-        deleted: row.tagDeleted,
-      });
-    }
-
-    // Agregar imágenes
-    if (row.imageId && row.imagePath && !dish.images.some((i: any) => i.id === row.imageId)) {
-      dish.images.push({
-        id: row.imageId,
-        uri: imagePathToUri(row.imagePath),
-      });
-    }
-
-    return acc;
-  }, []);
-
-  return dishes ?? [];
+  return mapDishListRows(rawData ?? []);
 };

@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Text, View } from 'react-native';
-import PeekablePressable from '@/components/PeekablePressable';
-import { Ionicons } from '@expo/vector-icons';
+
 import { PeekPreviewData } from '@/components/peek/types';
+import PeekablePressable from '@/components/PeekablePressable';
 
 interface VisitItemProps {
   imageUrl: string | null;

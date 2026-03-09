@@ -1,12 +1,15 @@
-import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Controller, Control, UseFormSetValue } from 'react-hook-form';
 import { Picker } from '@react-native-picker/picker';
-import { router } from 'expo-router';
-import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
-import { useRestaurantList } from '../hooks/useRestaurantList';
 import { clsx } from 'clsx';
+import { router } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Controller, Control, UseFormSetValue } from 'react-hook-form';
+import { View, Text, TouchableOpacity } from 'react-native';
+
+import { useNewRestaurant } from '@/features/restaurants/hooks/useNewRestaurant';
 import { useTheme } from '@/lib/context/ThemeContext';
+
+import { useRestaurantList } from '../hooks/useRestaurantList';
+
 
 interface RestaurantPickerProps {
   control: Control<any>;
@@ -32,7 +35,7 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
       });
       setNewRestaurantId(null);
     }
-  }, [newRestaurantId]);
+  }, [name, newRestaurantId, setNewRestaurantId, setValue]);
 
   return (
     <View>

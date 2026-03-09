@@ -2,12 +2,14 @@
  * Export service for creating shareable files
  */
 
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { eq } from 'drizzle-orm';
-import * as schema from '@/services/db/schema';
+
 import { imagePathToUri } from '@/lib/helpers/image-paths';
+import * as schema from '@/services/db/schema';
+
 import {
   ShareFileData,
   ShareableRestaurant,
@@ -38,7 +40,7 @@ async function imageToBase64(imagePath: string): Promise<ShareableImage | null> 
     
     const filename = imagePath.split('/').pop() || 'image.jpg';
     return { base64, filename };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -74,7 +76,7 @@ async function fetchRestaurantData(db: DrizzleDb, restaurantId: number): Promise
       tags,
       images,
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -102,7 +104,7 @@ async function fetchDishData(db: DrizzleDb, dishId: number): Promise<ShareableDi
     }
 
     return { name: dish.name, price: dish.price, rating: dish.rating, comments: dish.comments, tags, images };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -122,7 +124,7 @@ async function fetchVisitData(db: DrizzleDb, visitId: number): Promise<Shareable
     }
 
     return { visitedAt: visit.visitedAt, comments: visit.comments, images };
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -139,7 +141,7 @@ async function fetchVisitDishes(db: DrizzleDb, visitId: number): Promise<Shareab
       }
     }
     return dishes;
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -162,7 +164,7 @@ async function createAndShareFile(data: ShareFileData, filename: string): Promis
 
     await Sharing.shareAsync(filePath, { mimeType: 'application/octet-stream', dialogTitle: 'Compartir' });
     return filePath;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -181,7 +183,7 @@ export async function exportRestaurant(db: DrizzleDb, restaurantId: number): Pro
     };
 
     return await createAndShareFile(shareData, `restaurant_${sanitizeFilename(restaurant.name)}`);
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -206,7 +208,7 @@ export async function exportDish(db: DrizzleDb, dishId: number): Promise<string 
     };
 
     return await createAndShareFile(shareData, `dish_${sanitizeFilename(dish.name)}`);
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -233,7 +235,7 @@ export async function exportVisit(db: DrizzleDb, visitId: number): Promise<strin
     };
 
     return await createAndShareFile(shareData, `visit_${visit.visitedAt}`);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

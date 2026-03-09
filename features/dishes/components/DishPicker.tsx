@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList } from 'react-native';
-import { Control, UseFormSetValue } from 'react-hook-form';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
-import { useNewDish } from '@/features/dishes/hooks/useNewDish';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Control, UseFormSetValue } from 'react-hook-form';
+import { View, Text, TouchableOpacity, ActivityIndicator, Modal, FlatList } from 'react-native';
+
 import { useDishesByRestaurant } from '@/features/dishes/hooks/useDishesByRestaurant';
+import { useNewDish } from '@/features/dishes/hooks/useNewDish';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface DishPickerProps {
@@ -35,21 +36,21 @@ const DishPicker: React.FC<DishPickerProps> = ({
   const dishes = useDishesByRestaurant(restaurantId);
   const isLoading = false;
 
-  useEffect(() => {
-    if (newDish) {
-      handleAddDish(newDish);
-      setNewDish(null);
-    }
-  }, [newDish, dishes]);
-
-  const handleAddDish = (dish: DishListDTO) => {
+  const handleAddDish = useCallback((dish: DishListDTO) => {
     if (!selectedDishes.some(d => d.id === dish.id)) {
       const newSelectedDishes = [...selectedDishes, dish];
       setSelectedDishes(newSelectedDishes);
       setValue(name, newSelectedDishes.map(d => d.id), { shouldValidate: true });
     }
     setIsModalVisible(false);
-  };
+  }, [name, selectedDishes, setSelectedDishes, setValue]);
+
+  useEffect(() => {
+    if (newDish) {
+      handleAddDish(newDish);
+      setNewDish(null);
+    }
+  }, [handleAddDish, newDish, setNewDish]);
 
   const handleRemoveDish = (dishId: number) => {
     const updatedDishes = selectedDishes.filter(dish => dish.id !== dishId);

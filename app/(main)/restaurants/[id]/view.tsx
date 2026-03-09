@@ -1,3 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { eq } from 'drizzle-orm/sql';
+import { useRouter, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import React, { useState } from 'react';
 import {
   View,
@@ -6,20 +12,15 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter, useGlobalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import RestaurantDetails from '@/features/restaurants/components/RestaurantDetails';
-import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits';
-import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
 import { ImageDisplay } from '@/features/images/components/ImageDisplay';
+import RestaurantDetails from '@/features/restaurants/components/RestaurantDetails';
+import RestaurantDishes from '@/features/restaurants/components/RestaurantDishes';
+import RestaurantVisits from '@/features/restaurants/components/RestaurantVisits';
 import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { eq } from 'drizzle-orm/sql';
-import { canDeleteRestaurantPermanently, softDeleteRestaurant } from '@/lib/helpers/soft-delete';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { canDeleteRestaurantPermanently, softDeleteRestaurant } from '@/lib/helpers/soft-delete';
+import * as schema from '@/services/db/schema';
 import { exportRestaurant } from '@/services/share/exportService';
 
 const Tab = createMaterialTopTabNavigator();
@@ -44,7 +45,7 @@ export default function RestaurantDetailScreen() {
     try {
       setIsSharing(true);
       await exportRestaurant(drizzleDb, Number(id));
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo compartir el restaurante');
     } finally {
       setIsSharing(false);
@@ -80,7 +81,7 @@ export default function RestaurantDetailScreen() {
 
                 Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
                 router.back();
-              } catch (error) {
+              } catch {
                 Alert.alert('Error', 'No se pudo eliminar el restaurante');
               }
             },
@@ -88,7 +89,7 @@ export default function RestaurantDetailScreen() {
         ],
         { cancelable: true }
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo verificar las referencias del restaurante');
     }
   }

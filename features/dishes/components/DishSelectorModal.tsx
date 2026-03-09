@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, Modal, TouchableOpacity, FlatList } from 'react-native';
 
 interface Dish {
@@ -14,10 +14,7 @@ interface DishSelectorModalProps {
 }
 
 const DishSelectorModal: React.FC<DishSelectorModalProps> = ({ visible, dishes, onSelect, onClose }) => {
-  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
-
   const handleSelect = (dish: Dish) => {
-    setSelectedDish(dish);
     onSelect(dish);
     onClose();
   };

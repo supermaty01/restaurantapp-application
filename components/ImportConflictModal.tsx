@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
 import { useTheme } from '@/lib/context/ThemeContext';
 import { ShareFileData, ConflictResult, ConflictResolution } from '@/services/share/types';
 

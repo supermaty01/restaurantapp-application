@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Image, useWindowDimensions, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Image, useWindowDimensions, TextInput } from 'react-native';
+
+import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
+import GridPeekItem from '@/components/GridPeekItem';
+import RatingStars from '@/components/RatingStars';
 import DishItem from '@/features/dishes/components/DishItem';
 import { useDishList } from '@/features/dishes/hooks/useDishList';
-import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
-import { useTheme } from '@/lib/context/ThemeContext';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
-import RatingStars from '@/components/RatingStars';
-import GridPeekItem from '@/components/GridPeekItem';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function DishesScreen() {
   const router = useRouter();

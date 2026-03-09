@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { useRouter, useSegments } from 'expo-router';
 import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef } from 'react';
+
 import { SHARE_FILE_EXTENSION } from '@/services/share/types';
 
 /**
@@ -9,7 +10,6 @@ import { SHARE_FILE_EXTENSION } from '@/services/share/types';
  */
 export function IntentHandler() {
   const router = useRouter();
-  const segments = useSegments();
   const hasHandledInitialUrl = useRef(false);
 
   useEffect(() => {

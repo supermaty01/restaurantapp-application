@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system';
+
 import { IMAGES_DIR, SQLITE_DIR } from '@/lib/helpers/fs-paths';
 
 export async function ensureAppDirectories(): Promise<void> {
@@ -14,7 +15,7 @@ export async function ensureAppDirectories(): Promise<void> {
     if (!dbInfo.exists) {
       await FileSystem.makeDirectoryAsync(SQLITE_DIR, { intermediates: true });
     }
-  } catch (error) {
+  } catch {
     // Silently handle directory creation errors
   }
 }

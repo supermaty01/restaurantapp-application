@@ -1,14 +1,15 @@
-import React, { FC, useContext, useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
+import React, { FC, useContext, useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator , NativeModules } from 'react-native';
+
+
 import FormInput from '@/components/FormInput';
 import { LoginFormData, loginSchema } from '@/features/auth/schemas/login';
-import { NativeModules } from "react-native";
 import { AuthContext } from '@/lib/context/AuthContext';
-import { useTheme } from '@/lib/context/ThemeContext';
-import Constants from 'expo-constants';
+
 
 const LoginScreen: FC = () => {
   const { login, continueOffline } = useContext(AuthContext);
@@ -17,8 +18,6 @@ const LoginScreen: FC = () => {
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const DeviceInfo = NativeModules.DeviceInfo;
   const deviceName = DeviceInfo ? DeviceInfo.deviceName : 'Unknown';
-  const { isDarkMode } = useTheme();
-
   // Check if OFFLINE_MODE environment variable is set to "true"
   useEffect(() => {
     const offlineMode = Constants.expoConfig?.extra?.OFFLINE_MODE === "true";

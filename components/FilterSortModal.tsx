@@ -1,11 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
 import Tag from '@/features/tags/components/Tag';
+import { useTagsList } from '@/features/tags/hooks/useTagsList';
 import { TagDTO } from '@/features/tags/types/tag-dto';
-import { useTagList } from '@/features/tags/hooks/useTagList';
 import { useTheme } from '@/lib/context/ThemeContext';
-import RatingStars from '@/components/RatingStars';
 
 export type SortField = 'name' | 'rating' | 'date' | 'restaurant' | 'created';
 export type SortOrder = 'asc' | 'desc';
@@ -47,7 +47,7 @@ export default function FilterSortModal({
   entityType,
   restaurants = [],
 }: FilterSortModalProps) {
-  const tags = useTagList();
+  const tags = useTagsList();
   const { isDarkMode } = useTheme();
 
   const [localOptions, setLocalOptions] = useState<FilterSortOptions>(options);

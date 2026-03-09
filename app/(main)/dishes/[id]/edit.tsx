@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { and, eq } from 'drizzle-orm/sql';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState, useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
-import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
-import { TagDTO } from '@/features/tags/types/tag-dto';
-import { Ionicons } from '@expo/vector-icons';
+import { useDishById } from '@/features/dishes/hooks/useDishById';
 import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
-import { router, useGlobalSearchParams } from 'expo-router';
+import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
-import { uploadImages } from '@/lib/helpers/upload-images';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { and, eq } from 'drizzle-orm/sql';
-import { useDishById } from '@/features/dishes/hooks/useDishById';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import * as schema from '@/services/db/schema';
 
 export default function DishEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
@@ -64,7 +65,7 @@ export default function DishEditScreen() {
       setSelectedTags(dish.tags);
       setSelectedImages(dish.images);
     }
-  }, [dish?.id, reset]);
+  }, [dish, reset]);
 
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);

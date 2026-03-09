@@ -1,9 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { VisitDetailsDTO } from '@/features/visits/types/visit-dto'
+
 import { useDishesDetails } from '@/features/dishes/hooks/useDishesDetails';
+import { VisitDetailsDTO } from '@/features/visits/types/visit-dto'
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface VisitDishesProps {

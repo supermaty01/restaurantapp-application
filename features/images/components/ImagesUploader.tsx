@@ -1,8 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, Linking } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/lib/context/ThemeContext';
 
 interface ImagesUploaderBaseProps {
   disabled?: boolean;
@@ -39,7 +38,6 @@ const openAppSettings = () => {
 };
 
 export default function ImagesUploader({ disabled, isEdit, images, onChangeImages, onRemoveExistingImage }: ImagesUploaderProps) {
-  const { isDarkMode } = useTheme();
   const pickFromGallery = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {

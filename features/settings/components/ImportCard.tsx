@@ -1,8 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import ProgressBar from './ProgressBar';
+
 import { useTheme } from '@/lib/context/ThemeContext';
+
+import ProgressBar from './ProgressBar';
+
 
 interface ImportCardProps {
   onPress: () => void;

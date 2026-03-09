@@ -1,4 +1,3 @@
-import * as FileSystem from 'expo-file-system';
 import { IMAGES_DIR } from '@/lib/helpers/fs-paths';
 
 /**

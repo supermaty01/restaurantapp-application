@@ -1,8 +1,9 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { VisitDetailsDTO } from '@/features/visits/types/visit-dto'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+
+import { VisitDetailsDTO } from '@/features/visits/types/visit-dto'
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface VisitDetailsProps {

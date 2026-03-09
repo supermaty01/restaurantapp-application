@@ -1,9 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/lib/context/ThemeContext';
+
 import RatingStars from '@/components/RatingStars';
 import Tag from '@/features/tags/components/Tag';
+import { useTheme } from '@/lib/context/ThemeContext';
+
 import { PeekPreviewData } from './types';
 
 interface PeekContentProps {

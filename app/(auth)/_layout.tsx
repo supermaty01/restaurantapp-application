@@ -1,8 +1,9 @@
-import { View, Image } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { Slot } from 'expo-router';
-import { useTheme } from '@/lib/context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
+import { View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function AuthLayout() {
   const { isDarkMode } = useTheme();

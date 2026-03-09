@@ -1,84 +1,72 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
+import { usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { useRouter, usePathname, useGlobalSearchParams } from 'expo-router';
-import * as Linking from 'expo-linking';
-import { Ionicons } from '@expo/vector-icons';
+
 import { useTheme } from '@/lib/context/ThemeContext';
 import { SHARE_FILE_EXTENSION } from '@/services/share/types';
 
 export default function NotFoundScreen() {
   const router = useRouter();
   const pathname = usePathname();
-  const params = useGlobalSearchParams();
   const { isDarkMode } = useTheme();
   const [checking, setChecking] = useState(true);
   const [isFileImport, setIsFileImport] = useState(false);
 
   useEffect(() => {
-    checkIfFileImport();
-  }, []);
+    const checkIfFileImport = async () => {
+      try {
+        const initialUrl = await Linking.getInitialURL();
+        const urlToCheck = initialUrl || pathname || '';
 
-  const checkIfFileImport = async () => {
-    try {
-      // Get the initial URL that opened the app
-      const initialUrl = await Linking.getInitialURL();
-      // Check if this looks like a file import (content:// or file:// URI, or contains .restoshare)
-      const urlToCheck = initialUrl || pathname || '';
+        const isFileRelated =
+          urlToCheck.includes(SHARE_FILE_EXTENSION) ||
+          urlToCheck.includes('restoshare') ||
+          urlToCheck.includes('content://') ||
+          urlToCheck.includes('file://') ||
+          urlToCheck.includes('provider') ||
+          urlToCheck.includes('media/item');
 
-      // Check for various patterns that indicate a file import
-      const isFileRelated =
-        urlToCheck.includes(SHARE_FILE_EXTENSION) ||
-        urlToCheck.includes('restoshare') ||
-        urlToCheck.includes('content://') ||
-        urlToCheck.includes('file://') ||
-        urlToCheck.includes('provider') ||
-        urlToCheck.includes('media/item');
+        if (isFileRelated) {
+          setIsFileImport(true);
 
-      if (isFileRelated) {
-        setIsFileImport(true);
+          let fileUri = '';
 
-        // Extract the content URI from the URL
-        let fileUri = '';
+          if (urlToCheck.startsWith('content://') || urlToCheck.startsWith('file://')) {
+            fileUri = urlToCheck;
+          } else {
+            let pathPart = pathname;
+            if (pathPart.startsWith('/')) {
+              pathPart = pathPart.substring(1);
+            }
 
-        // Check if the URL is already a content:// URI
-        if (urlToCheck.startsWith('content://')) {
-          fileUri = urlToCheck;
-        } else if (urlToCheck.startsWith('file://')) {
-          fileUri = urlToCheck;
-        } else {
-          // Try to reconstruct the content:// URI from the path
-          // The pathname often looks like: /com.whatsapp.provider.media/item/xxx
-          let pathPart = pathname;
-          if (pathPart.startsWith('/')) {
-            pathPart = pathPart.substring(1);
+            if (pathPart.includes('provider') || pathPart.includes('.')) {
+              fileUri = 'content://' + pathPart;
+            } else if (initialUrl) {
+              fileUri = initialUrl;
+            }
           }
 
-          // If the path looks like a content provider path, construct the content:// URI
-          if (pathPart.includes('provider') || pathPart.includes('.')) {
-            fileUri = 'content://' + pathPart;
-          } else if (initialUrl) {
-            // Try to use the initial URL directly
-            fileUri = initialUrl;
+          if (fileUri) {
+            setTimeout(() => {
+              router.replace({
+                pathname: '/import',
+                params: { uri: encodeURIComponent(fileUri) },
+              });
+            }, 100);
+            return;
           }
         }
 
-        if (fileUri) {
-          // Navigate to import screen with the file URI
-          setTimeout(() => {
-            router.replace({
-              pathname: '/import',
-              params: { uri: encodeURIComponent(fileUri) }
-            });
-          }, 100);
-          return;
-        }
+        setChecking(false);
+      } catch {
+        setChecking(false);
       }
+    };
 
-      setChecking(false);
-    } catch (error) {
-      setChecking(false);
-    }
-  };
+    checkIfFileImport();
+  }, [pathname, router]);
 
   if (checking || isFileImport) {
     return (

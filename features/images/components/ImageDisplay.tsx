@@ -1,7 +1,8 @@
-import { ImageDTO } from "@/features/images/types/image-dto";
 import React, { useState } from "react";
 import { View, ScrollView, TouchableOpacity, Modal, Dimensions, Image, Text } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
+
+import { ImageDTO } from "@/features/images/types/image-dto";
 import { useTheme } from "@/lib/context/ThemeContext";
 
 const screenWidth = Dimensions.get('window').width;

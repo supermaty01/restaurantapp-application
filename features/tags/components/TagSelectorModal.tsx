@@ -1,11 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import clsx from 'clsx';
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
-import clsx from 'clsx';
-import { Ionicons } from '@expo/vector-icons';
+
 import Tag from '@/features/tags/components/Tag';
 import { TagDTO } from '@/features/tags/types/tag-dto';
+
 import { useTagsList } from '../hooks/useTagsList';
-import { useTheme } from '@/lib/context/ThemeContext';
 
 interface TagSelectorModalProps {
   visible: boolean;
@@ -20,8 +21,7 @@ export default function TagSelectorModal({
   selectedTags,
   onChangeSelected,
 }: TagSelectorModalProps) {
-  const { data: tags } = useTagsList();
-  const { isDarkMode } = useTheme();
+  const tags = useTagsList();
 
   const handleToggle = (selectedTag: TagDTO) => {
     if (selectedTags.find((tag) => tag.id === selectedTag.id)) {

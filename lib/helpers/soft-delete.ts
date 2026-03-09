@@ -1,6 +1,7 @@
-import { DrizzleDatabase } from '@/services/db/types';
+import { eq, count } from 'drizzle-orm';
+
 import * as schema from '@/services/db/schema';
-import { and, eq, count } from 'drizzle-orm';
+import { DrizzleDatabase } from '@/services/db/types';
 
 /**
  * Verifica si un restaurante puede ser eliminado permanentemente
@@ -43,35 +44,12 @@ export async function canDeleteDishPermanently(db: DrizzleDatabase, dishId: numb
 }
 
 /**
- * Verifica si una etiqueta puede ser eliminada permanentemente
- * @param db Instancia de la base de datos
- * @param tagId ID de la etiqueta
- * @returns true si puede ser eliminada permanentemente, false si debe ser soft delete
- */
-export async function canDeleteTagPermanently(db: DrizzleDatabase, tagId: number): Promise<boolean> {
-  // Verificar si hay restaurantes asociados a la etiqueta
-  const restaurantTagsCount = await db
-    .select({ count: count() })
-    .from(schema.restaurantTags)
-    .where(eq(schema.restaurantTags.tagId, tagId));
-
-  // Verificar si hay platos asociados a la etiqueta
-  const dishTagsCount = await db
-    .select({ count: count() })
-    .from(schema.dishTags)
-    .where(eq(schema.dishTags.tagId, tagId));
-
-  // Si no hay restaurantes ni platos, se puede eliminar permanentemente
-  return restaurantTagsCount[0].count === 0 && dishTagsCount[0].count === 0;
-}
-
-/**
  * Verifica si una visita puede ser eliminada permanentemente
  * @param db Instancia de la base de datos
  * @param visitId ID de la visita
  * @returns true si puede ser eliminada permanentemente, false si debe ser soft delete
  */
-export async function canDeleteVisitPermanently(db: DrizzleDatabase, visitId: number): Promise<boolean> {
+export async function canDeleteVisitPermanently(_db: DrizzleDatabase, _visitId: number): Promise<boolean> {
   // Las visitas siempre se pueden eliminar permanentemente ya que no son referenciadas por otras entidades
   return true;
 }
@@ -98,18 +76,6 @@ export async function softDeleteDish(db: DrizzleDatabase, dishId: number): Promi
     .update(schema.dishes)
     .set({ deleted: true })
     .where(eq(schema.dishes.id, dishId));
-}
-
-/**
- * Realiza un soft delete de una etiqueta
- * @param db Instancia de la base de datos
- * @param tagId ID de la etiqueta
- */
-export async function softDeleteTag(db: DrizzleDatabase, tagId: number): Promise<void> {
-  await db
-    .update(schema.tags)
-    .set({ deleted: true })
-    .where(eq(schema.tags.id, tagId));
 }
 
 /**

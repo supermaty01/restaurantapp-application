@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import * as FileSystem from 'expo-file-system';
 import * as Application from 'expo-application';
+import * as FileSystem from 'expo-file-system';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
+
 import { BackupService, BackupInfo, ImportInfo } from '@/services/backup/backupService';
+import * as schema from '@/services/db/schema';
 
 interface StorageInfo {
   total: number;
@@ -27,25 +28,29 @@ export const useAppSettings = () => {
   const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
-    getAppVersion();
     getStorageInfo();
-    initBackupService();
   }, []);
 
-  const getAppVersion = async () => {
+  const getAppVersion = useCallback(() => {
     try {
       const name = Application.applicationName || '';
       const version = Application.nativeApplicationVersion || '';
       const build = Application.nativeBuildVersion || '';
       if (Platform.OS === 'ios') {
-        setAppVersion(`${name} v${version}`);
+        return `${name} v${version}`;
       } else {
-        setAppVersion(`${name} v${version} (${build})`);
+        return `${name} v${version} (${build})`;
       }
     } catch (error) {
       console.error('Error al obtener versión de la app:', error);
+      return '';
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const version = getAppVersion();
+    setAppVersion(version);
+  }, [getAppVersion]);
 
   const getStorageInfo = async () => {
     try {
@@ -61,10 +66,9 @@ export const useAppSettings = () => {
     }
   };
 
-  const initBackupService = async () => {
+  const initBackupService = useCallback(async (version: string) => {
     try {
-      // Ahora BackupService solo recibe drizzleDb y appVersion
-      const service = new BackupService(drizzleDb, appVersion);
+      const service = new BackupService(drizzleDb, version);
       setBackupService(service);
       
       const exportInfo = await service.getLastExportInfo();
@@ -75,7 +79,11 @@ export const useAppSettings = () => {
     } catch (error) {
       console.error('Error al inicializar el servicio de backup:', error);
     }
-  };
+  }, [drizzleDb]);
+
+  useEffect(() => {
+    initBackupService(appVersion);
+  }, [appVersion, initBackupService]);
 
   return {
     db,

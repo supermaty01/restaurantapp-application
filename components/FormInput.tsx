@@ -1,7 +1,8 @@
-import { View, Text, TextInput, TextInputProps } from 'react-native';
-import { Controller, Control } from 'react-hook-form';
 import clsx from 'clsx';
 import { FC } from 'react';
+import { Controller, Control } from 'react-hook-form';
+import { View, Text, TextInput, TextInputProps } from 'react-native';
+
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface FormInputProps extends TextInputProps {

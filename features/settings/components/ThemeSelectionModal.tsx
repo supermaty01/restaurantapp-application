@@ -1,8 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
+import { colorScheme } from "nativewind";
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
 import { useTheme } from '@/lib/context/ThemeContext';
-import { colorScheme } from "nativewind";
+
 
 interface ThemeSelectionModalProps {
   visible: boolean;

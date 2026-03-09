@@ -1,29 +1,32 @@
-import React, { useContext, useEffect } from 'react';
-import { TouchableOpacity, Image, View, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import RestaurantsScreen from './restaurants';
-import DishesScreen from './dishes';
-import VisitsScreen from './visits';
-import TagsScreen from './tags';
-import SettingsScreen from './settings';
-import RestaurantCreateScreen from './restaurants/new';
-import RestaurantDetailScreen from './restaurants/[id]/view';
-import RestaurantEditScreen from './restaurants/[id]/edit';
-import DishCreateScreen from './dishes/new';
-import DishDetailScreen from './dishes/[id]/view';
-import DishEditScreen from './dishes/[id]/edit';
-import MapScreen from './map';
-import VisitCreateScreen from './visits/new';
-import VisitDetailScreen from './visits/[id]/view';
-import VisitEditScreen from './visits/[id]/edit';
+import { StatusBar } from 'expo-status-bar';
+import React, { useContext, useEffect } from 'react';
+import { TouchableOpacity, Image, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { AuthContext } from '@/lib/context/AuthContext';
-import { useTheme } from '@/lib/context/ThemeContext';
 import { PeekProvider, usePeek } from '@/lib/context/PeekContext';
+import { useTheme } from '@/lib/context/ThemeContext';
+
+import DishesScreen from './dishes';
+import DishEditScreen from './dishes/[id]/edit';
+import DishDetailScreen from './dishes/[id]/view';
+import DishCreateScreen from './dishes/new';
+import MapScreen from './map';
+import RestaurantsScreen from './restaurants';
+import RestaurantEditScreen from './restaurants/[id]/edit';
+import RestaurantDetailScreen from './restaurants/[id]/view';
+import RestaurantCreateScreen from './restaurants/new';
+import SettingsScreen from './settings';
+import TagsScreen from './tags';
+import VisitsScreen from './visits';
+import VisitEditScreen from './visits/[id]/edit';
+import VisitDetailScreen from './visits/[id]/view';
+import VisitCreateScreen from './visits/new';
+
 
 const TopTab = createMaterialTopTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -122,20 +125,16 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ navigation, route }) => {
   );
 };
 
-let logout: () => Promise<void>;
-let router: ReturnType<typeof useRouter>;
-
 export default function MainLayout() {
-  const { userToken, loading, logout: contextLogout, isOfflineMode } = useContext(AuthContext);
+  const { userToken, loading, isOfflineMode } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
-  router = useRouter();
-  logout = contextLogout;
+  const router = useRouter();
 
   useEffect(() => {
     if (!loading && (!userToken && !isOfflineMode)) {
       router.replace('/login');
     }
-  }, [userToken, loading, router]);
+  }, [userToken, loading, isOfflineMode, router]);
 
   if (loading || (!userToken && !isOfflineMode)) return null;
 

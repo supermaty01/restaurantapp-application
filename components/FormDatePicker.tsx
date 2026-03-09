@@ -1,9 +1,8 @@
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
-import { Controller, Control } from 'react-hook-form';
-import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, parse } from 'date-fns';
-import { useTheme } from '@/lib/context/ThemeContext';
+import { useState } from 'react';
+import { Controller, Control } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 
 interface FormDatePickerProps {
   control: Control<any>;
@@ -13,7 +12,6 @@ interface FormDatePickerProps {
 
 const FormDatePicker: React.FC<FormDatePickerProps> = ({ control, name, label }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const { isDarkMode } = useTheme();
 
   return (
     <Controller

@@ -1,9 +1,11 @@
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
-import { eq, inArray } from "drizzle-orm";
-import { DishListDTO } from "../types/dish-dto";
-import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import { eq, inArray } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+
+import { useLiveTablesQuery } from '@/lib/hooks/useLiveTablesQuery';
+import * as schema from '@/services/db/schema';
+
+import { DishListRow, mapDishListRows } from '../mappers/mapDishListRows';
 
 export const useDishesDetails = (dishIds: number[]) => {
   const db = useSQLiteContext();
@@ -33,41 +35,5 @@ export const useDishesDetails = (dishIds: number[]) => {
     [dishIds.join(",")]
   );
 
-  // @ts-ignore - Ignorar errores de tipo en el resultado de la consulta
-  const dishes = rawData?.reduce<DishListDTO[]>((acc, row: any) => {
-    if (!row.dishId) return acc;
-
-    let dish = acc.find((r) => r.id === row.dishId);
-    if (!dish) {
-      dish = {
-        id: row.dishId,
-        name: row.dishName || "",
-        comments: row.dishComments || null,
-        rating: row.dishRating || null,
-        tags: [],
-        images: [],
-      };
-      acc.push(dish);
-    }
-
-    if (row.tagId && row.tagName && row.tagColor && !dish.tags.some((t) => t.id === row.tagId)) {
-      dish.tags.push({
-        id: row.tagId,
-        name: row.tagName,
-        color: row.tagColor,
-      });
-    }
-
-    // Agregar imágenes
-    if (row.imageId && row.imagePath && !dish.images.some((i) => i.id === row.imageId)) {
-      dish.images.push({
-        id: row.imageId,
-        uri: row.imagePath,
-      });
-    }
-
-    return acc;
-  }, []);
-
-  return dishes ?? [];
+  return mapDishListRows((rawData ?? []) as DishListRow[]);
 };

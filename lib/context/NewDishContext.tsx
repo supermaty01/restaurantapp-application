@@ -1,5 +1,6 @@
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import React, { createContext, useState } from 'react';
+
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 
 interface NewDishContextData {
   newDish: DishListDTO | null;

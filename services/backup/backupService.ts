@@ -1,11 +1,12 @@
+import { eq } from "drizzle-orm";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { zip, unzip } from "react-native-zip-archive";
-import { DrizzleDatabase } from "@/services/db/types";
-import * as schema from "@/services/db/schema";
-import { eq } from "drizzle-orm";
+
 import { IMAGES_DIR, SQLITE_DIR } from "@/lib/helpers/fs-paths";
-import { DATABASE_NAME } from "@/app/_layout";
+import { DATABASE_NAME } from "@/services/db/constants";
+import * as schema from "@/services/db/schema";
+import { DrizzleDatabase } from "@/services/db/types";
 
 export interface BackupInfo {
   date: Date;
@@ -159,7 +160,7 @@ export class BackupService {
 
     try {
       await unzip(fileUri, extractDir);
-    } catch (error) {
+    } catch {
       throw new Error("Failed to extract backup file. Invalid format.");
     }
     progressCallback(50);

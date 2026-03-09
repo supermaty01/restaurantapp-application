@@ -1,10 +1,11 @@
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
-import { and, eq } from "drizzle-orm";
-import { DishListDTO } from "../types/dish-dto";
-import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
-import { imagePathToUri } from "@/lib/helpers/image-paths";
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+
+import { useLiveTablesQuery } from '@/lib/hooks/useLiveTablesQuery';
+import * as schema from '@/services/db/schema';
+
+import { mapDishListRows } from '../mappers/mapDishListRows';
 
 export const useDishList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
@@ -34,42 +35,11 @@ export const useDishList = (includeDeleted: boolean = false) => {
       .leftJoin(schema.tags, eq(schema.dishTags.tagId, schema.tags.id))
       .leftJoin(schema.images, eq(schema.dishes.id, schema.images.dishId));
 
-  const { data: rawData } = useLiveTablesQuery(query
-  , ["dishes", "dishTags", "tags", "images"]);
+  const { data: rawData } = useLiveTablesQuery(
+    query,
+    ['dishes', 'dishTags', 'tags', 'images'],
+    [includeDeleted]
+  );
 
-  const dishes = rawData?.reduce<DishListDTO[]>((acc, row) => {
-    let dish = acc.find((r) => r.id === row.dishId);
-    if (!dish) {
-      dish = {
-        id: row.dishId,
-        name: row.dishName,
-        comments: row.dishComments,
-        rating: row.dishRating,
-        deleted: row.dishDeleted,
-        tags: [],
-        images: [],
-      };
-      acc.push(dish);
-    }
-
-    if (row.tagId && !dish.tags.some((t) => t.id === row.tagId)) {
-      dish.tags.push({
-        id: row.tagId,
-        name: row.tagName!,
-        color: row.tagColor!,
-      });
-    }
-
-    // Agregar imágenes
-    if (row.imageId && !dish.images.some((i) => i.id === row.imageId)) {
-      dish.images.push({
-        id: row.imageId,
-        uri: imagePathToUri(row.imagePath!),
-      });
-    }
-
-    return acc;
-  }, []);
-
-  return dishes ?? [];
+  return mapDishListRows(rawData ?? []);
 };

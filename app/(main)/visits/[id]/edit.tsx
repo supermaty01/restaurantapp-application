@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { eq } from 'drizzle-orm/sql';
 import { useRouter, useGlobalSearchParams } from 'expo-router';
-import FormInput from '@/components/FormInput';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useEffect, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormDatePicker from '@/components/FormDatePicker';
+import FormInput from '@/components/FormInput';
+import DishPicker from '@/features/dishes/components/DishPicker';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
-import DishPicker from '@/features/dishes/components/DishPicker';
-import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
-import { parse, format } from 'date-fns';
-import { uploadImages } from '@/lib/helpers/upload-images';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
 import { useVisitById } from '@/features/visits/hooks/useVisitById';
-import { eq } from 'drizzle-orm/sql';
-import { useTheme } from '@/lib/context/ThemeContext';
+import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import * as schema from '@/services/db/schema';
+
+
 
 export default function VisitEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isDarkMode } = useTheme();
 
   const {
     control,
@@ -64,14 +64,14 @@ export default function VisitEditScreen() {
         images: [],
       })));
     }
-  }, [visit?.id, reset]);
+  }, [visit, reset]);
 
   useEffect(() => {
     if (restaurantId && visit && (restaurantId !== visit?.restaurant.id)) {
       setSelectedDishes([]);
       setValue("dishes", []);
     }
-  }, [restaurantId, visit?.restaurant.id]);
+  }, [restaurantId, setValue, visit]);
 
   const onSubmit: SubmitHandler<VisitFormData> = async (data) => {
     try {

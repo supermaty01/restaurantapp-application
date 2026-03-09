@@ -1,8 +1,9 @@
-import React, { FC, useContext, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
+import React, { FC, useContext, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+
 import FormInput from '@/components/FormInput';
 import { RegisterFormData, registerSchema } from '@/features/auth/schemas/register';
 import { AuthContext } from '@/lib/context/AuthContext';

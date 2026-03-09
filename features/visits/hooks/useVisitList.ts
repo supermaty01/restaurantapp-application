@@ -1,10 +1,11 @@
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
-import { VisitListDTO } from "../types/visit-dto";
-import { and, eq } from "drizzle-orm";
-import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
-import { imagePathToUri } from "@/lib/helpers/image-paths";
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+
+import { useLiveTablesQuery } from '@/lib/hooks/useLiveTablesQuery';
+import * as schema from '@/services/db/schema';
+
+import { mapVisitListRows } from '../mappers/mapVisitListRows';
 
 export const useVisitList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
@@ -32,37 +33,11 @@ export const useVisitList = (includeDeleted: boolean = false) => {
   query.leftJoin(schema.restaurants, eq(schema.visits.restaurantId, schema.restaurants.id))
       .leftJoin(schema.images, eq(schema.visits.id, schema.images.visitId));
 
-  const { data: rawData } = useLiveTablesQuery(query
-  , ["visits", "restaurants", "images"]);
+  const { data: rawData } = useLiveTablesQuery(
+    query,
+    ['visits', 'restaurants', 'images'],
+    [includeDeleted]
+  );
 
-  const visits = rawData?.reduce<VisitListDTO[]>((acc, row) => {
-    let visit = acc.find((v) => v.id === row.visitId);
-    if (!visit) {
-      visit = {
-        id: row.visitId,
-        visited_at: row.visitedAt,
-        comments: row.visitComments,
-        deleted: row.visitDeleted,
-        restaurant: {
-          id: row.restaurantId!,
-          name: row.restaurantName!,
-          deleted: row.restaurantDeleted,
-        },
-        images: [],
-      };
-      acc.push(visit);
-    }
-
-    // Agregar imágenes
-    if (row.imageId && !visit.images.some((i) => i.id === row.imageId)) {
-      visit.images.push({
-        id: row.imageId,
-        uri: imagePathToUri(row.imagePath!),
-      });
-    }
-
-    return acc;
-  }, []);
-
-  return visits || [];
+  return mapVisitListRows(rawData ?? []);
 };

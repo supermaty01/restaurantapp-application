@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,8 +16,7 @@ import MapView, {
   MapPressEvent,
   Region,
 } from 'react-native-maps';
-import * as Location from 'expo-location';
-import { Ionicons } from '@expo/vector-icons';
+
 import { useTheme } from '@/lib/context/ThemeContext';
 
 interface MapLocationPickerProps {
@@ -126,14 +127,6 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     loadSearchBiasLocation();
   }, []);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      searchPlaces(searchQuery);
-    }, 350);
-
-    return () => clearTimeout(timeout);
-  }, [searchQuery, mapRegion, searchBiasLocation]);
-
   const fetchAddress = async (latitude: number, longitude: number) => {
     setLoadingAddress(true);
 
@@ -166,7 +159,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     }
   };
 
-  const searchPlaces = async (input: string) => {
+  const searchPlaces = useCallback(async (input: string) => {
     const trimmed = input.trim();
 
     if (!trimmed || trimmed.length < 2) {
@@ -228,7 +221,15 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     } finally {
       setLoadingSuggestions(false);
     }
-  };
+  }, [mapRegion, searchBiasLocation, selectedLocation]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      searchPlaces(searchQuery);
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [searchPlaces, searchQuery]);
 
   const selectPlace = async (placeId: string, description: string) => {
     if (!GOOGLE_PLACES_API_KEY) {

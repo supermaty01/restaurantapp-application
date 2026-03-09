@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, GestureResponderEvent, StyleProp, View, ViewStyle } from 'react-native';
-import { usePeek } from '@/lib/context/PeekContext';
+
 import { PeekPreviewData } from '@/components/peek/types';
+import { usePeek } from '@/lib/context/PeekContext';
 
 const LONG_PRESS_DELAY = 220;
 const MOVE_CANCEL_THRESHOLD = 12;

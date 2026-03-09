@@ -2,11 +2,13 @@
  * Import service for handling shared files
  */
 
-import * as FileSystem from 'expo-file-system';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { eq, like } from 'drizzle-orm';
-import * as schema from '@/services/db/schema';
+import * as FileSystem from 'expo-file-system';
+
 import { IMAGES_DIR } from '@/lib/helpers/fs-paths';
+import * as schema from '@/services/db/schema';
+
 import {
   ShareFileData,
   ShareableRestaurant,
@@ -36,7 +38,7 @@ async function copyToLocalFile(uri: string): Promise<string | null> {
     });
 
     return localPath;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -70,7 +72,7 @@ export async function parseShareFile(fileUri: string): Promise<ShareFileData | n
     }
 
     return data;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -84,13 +86,13 @@ export async function findSimilarRestaurants(db: DrizzleDb, name: string): Promi
       .where(eq(schema.restaurants.deleted, false));
     
     return allRestaurants.filter(r => r.name.toLowerCase().trim() === normalizedName);
-  } catch (error) {
+  } catch {
     return [];
   }
 }
 
 // Find similar dishes by name (case-insensitive)
-export async function findSimilarDishes(db: DrizzleDb, name: string, restaurantId?: number): Promise<{ id: number; name: string }[]> {
+export async function findSimilarDishes(db: DrizzleDb, name: string, _restaurantId?: number): Promise<{ id: number; name: string }[]> {
   try {
     const normalizedName = name.toLowerCase().trim();
     let query = db.select({ id: schema.dishes.id, name: schema.dishes.name })
@@ -99,7 +101,7 @@ export async function findSimilarDishes(db: DrizzleDb, name: string, restaurantI
     
     const allDishes = await query;
     return allDishes.filter(d => d.name.toLowerCase().trim() === normalizedName);
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -123,7 +125,7 @@ async function saveBase64Image(image: ShareableImage): Promise<string | null> {
     
     await FileSystem.writeAsStringAsync(filePath, image.base64, { encoding: FileSystem.EncodingType.Base64 });
     return filePath;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -176,7 +178,7 @@ export async function importRestaurant(
     }
 
     return restaurantId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -212,7 +214,7 @@ export async function importDish(
     }
 
     return dishId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -244,7 +246,7 @@ export async function importVisit(
     }
 
     return visitId;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

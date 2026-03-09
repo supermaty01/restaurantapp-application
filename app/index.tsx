@@ -1,5 +1,6 @@
-import { useEffect, useContext } from 'react';
 import { useRouter } from 'expo-router';
+import { useEffect, useContext } from 'react';
+
 import { AuthContext } from '@/lib/context/AuthContext';
 
 export default function Index() {
@@ -14,7 +15,7 @@ export default function Index() {
         router.replace('/login');
       }
     }
-  }, [userToken, loading]);
+  }, [userToken, loading, isOfflineMode, router]);
 
   return null;
 }

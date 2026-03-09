@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useSQLiteContext } from 'expo-sqlite';
-import * as schema from '@/services/db/schema';
+import React, { useState } from 'react';
+import { FlatList, TouchableOpacity, View, Text, Alert } from 'react-native';
+
 import CreateTagModal from '@/features/tags/components/CreateTagModal';
 import TagItem from '@/features/tags/components/TagItem';
-import { eq } from 'drizzle-orm';
-import { TagDTO } from '@/features/tags/types/tag-dto';
 import { useTagsList } from '@/features/tags/hooks/useTagsList';
+import { TagDTO } from '@/features/tags/types/tag-dto';
+import * as schema from '@/services/db/schema';
+
+
 
 export default function TagsScreen() {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
   // Solo mostrar etiquetas no eliminadas en la lista principal
-  const { data: tags } = useTagsList(false);
+  const tags = useTagsList(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedTag, setSelectedTag] = useState<TagDTO | null>(null);
 

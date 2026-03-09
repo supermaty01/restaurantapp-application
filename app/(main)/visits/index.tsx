@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { FlatList, Text, TouchableOpacity, View, Image, useWindowDimensions, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useState, useMemo } from 'react';
+import { FlatList, Text, TouchableOpacity, View, Image, useWindowDimensions, TextInput } from 'react-native';
+
+import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
+import GridPeekItem from '@/components/GridPeekItem';
 import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
-import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
-import { useTheme } from '@/lib/context/ThemeContext';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
-import GridPeekItem from '@/components/GridPeekItem';
+import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitsScreen() {
   const router = useRouter();

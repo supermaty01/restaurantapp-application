@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+
 import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
-import { Ionicons } from '@expo/vector-icons';
 import { useVisitsByRestaurant } from '@/features/visits/hooks/useVisitsByRestaurant';
 
 interface RestaurantVisitsProps {

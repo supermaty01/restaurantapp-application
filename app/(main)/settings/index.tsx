@@ -1,23 +1,22 @@
+import * as DocumentPicker from 'expo-document-picker';
+import { useRouter } from 'expo-router';
 import React, { useContext, useState } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { AuthContext } from '@/lib/context/AuthContext';
-import * as DocumentPicker from 'expo-document-picker';
-import { useAppSettings } from '@/features/settings/hooks/useAppSettings';
-import InfoCard from '@/features/settings/components/InfoCard';
+
+import { DBVersionContext } from '@/app/_layout';
 import ExportCard from '@/features/settings/components/ExportCard';
 import ImportCard from '@/features/settings/components/ImportCard';
+import InfoCard from '@/features/settings/components/InfoCard';
 import LogoutCard from '@/features/settings/components/LogoutCard';
 import ThemeCard from '@/features/settings/components/ThemeCard';
 import ThemeSelectionModal from '@/features/settings/components/ThemeSelectionModal';
-import { DBVersionContext } from '@/app/_layout';
-import { useTheme } from '@/lib/context/ThemeContext';
+import { useAppSettings } from '@/features/settings/hooks/useAppSettings';
+import { AuthContext } from '@/lib/context/AuthContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { logout } = useContext(AuthContext);
   const bumpDb = useContext(DBVersionContext);
-  const { isDarkMode } = useTheme();
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const {
     isExporting,

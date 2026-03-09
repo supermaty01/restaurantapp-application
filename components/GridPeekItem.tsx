@@ -1,7 +1,9 @@
 import React from 'react';
 import { ViewStyle, StyleProp } from 'react-native';
-import PeekablePressable from './PeekablePressable';
+
 import { PeekPreviewData } from '@/components/peek/types';
+
+import PeekablePressable from './PeekablePressable';
 
 interface GridPeekItemProps {
   children: React.ReactNode;

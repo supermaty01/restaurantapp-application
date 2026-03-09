@@ -1,8 +1,9 @@
-import { createContext, useState, useEffect, ReactNode, FC } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '@/services/api';
-import { RegisterFormData } from '@/features/auth/schemas/register';
+import { createContext, useState, useEffect, ReactNode, FC } from 'react';
+
 import { LoginFormData } from '@/features/auth/schemas/login';
+import { RegisterFormData } from '@/features/auth/schemas/register';
+import api from '@/services/api';
 
 interface AuthContextData {
   userToken: string | null;

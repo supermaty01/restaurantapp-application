@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+
+import ImportConflictModal from '@/components/ImportConflictModal';
 import { useTheme } from '@/lib/context/ThemeContext';
-import { ShareFileData, ConflictResult, ConflictResolution } from '@/services/share/types';
+import * as schema from '@/services/db/schema';
 import {
   parseShareFile,
   checkRestaurantConflict,
@@ -14,7 +15,7 @@ import {
   importDishFile,
   importVisitFile,
 } from '@/services/share/importService';
-import ImportConflictModal from '@/components/ImportConflictModal';
+import { ShareFileData, ConflictResult, ConflictResolution } from '@/services/share/types';
 
 export default function ImportScreen() {
   const router = useRouter();
@@ -29,54 +30,23 @@ export default function ImportScreen() {
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (uri) {
-      handleImport(decodeURIComponent(uri));
-    } else {
-      setError('No se recibió ningún archivo');
-      setLoading(false);
+  const navigateToEntity = useCallback((type: string, id: number) => {
+    switch (type) {
+      case 'restaurant':
+        router.replace({ pathname: '/restaurants/[id]/view', params: { id: id.toString() } });
+        break;
+      case 'dish':
+        router.replace({ pathname: '/dishes/[id]/view', params: { id: id.toString() } });
+        break;
+      case 'visit':
+        router.replace({ pathname: '/visits/[id]/view', params: { id: id.toString() } });
+        break;
+      default:
+        router.replace('/');
     }
-  }, [uri]);
+  }, [router]);
 
-  const handleImport = async (fileUri: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Parse the file
-      const data = await parseShareFile(fileUri);
-      if (!data) {
-        setError('No se pudo leer el archivo. Puede estar corrupto o ser de una versión incompatible.');
-        setLoading(false);
-        return;
-      }
-
-      setShareData(data);
-
-      // Check for restaurant conflicts
-      const restaurantName = data.type === 'restaurant'
-        ? data.restaurant?.name
-        : data.includedRestaurant?.name;
-
-      if (restaurantName) {
-        const conflictResult = await checkRestaurantConflict(drizzleDb, restaurantName);
-        if (conflictResult.hasConflict) {
-          setConflict(conflictResult);
-          setShowConflictModal(true);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // No conflict, proceed with import
-      await performImport(data);
-    } catch (err) {
-      setError('Error al importar el archivo');
-      setLoading(false);
-    }
-  };
-
-  const performImport = async (data: ShareFileData, resolution?: ConflictResolution) => {
+  const performImport = useCallback(async (data: ShareFileData, resolution?: ConflictResolution) => {
     setLoading(true);
     try {
       let result;
@@ -101,27 +71,56 @@ export default function ImportScreen() {
       } else {
         setError(result?.error || 'Error desconocido al importar');
       }
-    } catch (err) {
+    } catch {
       setError('Error al importar el archivo');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [drizzleDb, navigateToEntity]);
 
-  const navigateToEntity = (type: string, id: number) => {
-    switch (type) {
-      case 'restaurant':
-        router.replace({ pathname: '/restaurants/[id]/view', params: { id: id.toString() } });
-        break;
-      case 'dish':
-        router.replace({ pathname: '/dishes/[id]/view', params: { id: id.toString() } });
-        break;
-      case 'visit':
-        router.replace({ pathname: '/visits/[id]/view', params: { id: id.toString() } });
-        break;
-      default:
-        router.replace('/');
+  const handleImport = useCallback(async (fileUri: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await parseShareFile(fileUri);
+      if (!data) {
+        setError('No se pudo leer el archivo. Puede estar corrupto o ser de una versión incompatible.');
+        setLoading(false);
+        return;
+      }
+
+      setShareData(data);
+
+      const restaurantName = data.type === 'restaurant'
+        ? data.restaurant?.name
+        : data.includedRestaurant?.name;
+
+      if (restaurantName) {
+        const conflictResult = await checkRestaurantConflict(drizzleDb, restaurantName);
+        if (conflictResult.hasConflict) {
+          setConflict(conflictResult);
+          setShowConflictModal(true);
+          setLoading(false);
+          return;
+        }
+      }
+
+      await performImport(data);
+    } catch {
+      setError('Error al importar el archivo');
+      setLoading(false);
     }
-  };
+  }, [drizzleDb, performImport]);
+
+  useEffect(() => {
+    if (uri) {
+      handleImport(decodeURIComponent(uri));
+    } else {
+      setError('No se recibió ningún archivo');
+      setLoading(false);
+    }
+  }, [handleImport, uri]);
 
   const handleConflictResolve = (resolution: ConflictResolution) => {
     setShowConflictModal(false);

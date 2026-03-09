@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
-import Tag from '@/features/tags/components/Tag';
+
+import MapLocationPicker from '@/components/MapLocationPicker';
 import RatingStars from '@/components/RatingStars';
 import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
-import MapLocationPicker from '@/components/MapLocationPicker';
+import Tag from '@/features/tags/components/Tag';
 
 interface RestaurantDetailsProps {
   restaurant: RestaurantDetailsDTO;

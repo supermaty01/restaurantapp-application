@@ -1,12 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Image } from 'react-native';
-import PeekablePressable from '@/components/PeekablePressable';
-import { Ionicons } from '@expo/vector-icons';
-import { TagDTO } from '@/features/tags/types/tag-dto';
-import { ImageDTO } from '@/features/images/types/image-dto';
-import RatingStars from '@/components/RatingStars';
-import Tag from '@/features/tags/components/Tag';
+
 import { PeekPreviewData } from '@/components/peek/types';
+import PeekablePressable from '@/components/PeekablePressable';
+import RatingStars from '@/components/RatingStars';
+import { ImageDTO } from '@/features/images/types/image-dto';
+import Tag from '@/features/tags/components/Tag';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 
 interface DishItemProps {
   name: string;

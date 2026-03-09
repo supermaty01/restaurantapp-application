@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormInput from '@/components/FormInput';
 import RatingStars from '@/components/RatingStars';
+import { useNewDish } from '@/features/dishes/hooks/useNewDish';
+import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
-import { TagDTO } from '@/features/tags/types/tag-dto';
-import { Ionicons } from '@expo/vector-icons';
-import { DishFormData, dishSchema } from '@/features/dishes/schemas/dish-schema';
-import { router, useGlobalSearchParams } from 'expo-router';
-import { useNewDish } from '@/features/dishes/hooks/useNewDish';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { uploadImages } from '@/lib/helpers/upload-images';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
-import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function DishCreateScreen() {
   const { useBackRedirect, restaurantId } = useGlobalSearchParams();
@@ -44,8 +44,6 @@ export default function DishCreateScreen() {
   const [loading, setLoading] = useState(false);
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
-  const { isDarkMode } = useTheme();
-
   const onSubmit: SubmitHandler<DishFormData> = async (data) => {
     setLoading(true);
     try {

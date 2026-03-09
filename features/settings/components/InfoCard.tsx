@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { formatBytes, formatDate } from '../utils/formatters';
+
 import { BackupInfo } from '@/services/backup/backupService';
+
+import { formatBytes, formatDate } from '../utils/formatters';
 
 interface InfoCardProps {
   appVersion: string;

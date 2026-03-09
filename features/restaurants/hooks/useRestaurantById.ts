@@ -1,10 +1,13 @@
-import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
 import { and, eq } from "drizzle-orm";
-import { RestaurantDetailsDTO } from "../types/restaurant-dto";
-import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useSQLiteContext } from "expo-sqlite";
+
 import { imagePathToUri } from "@/lib/helpers/image-paths";
+import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import * as schema from "@/services/db/schema";
+
+import { RestaurantDetailsDTO } from "../types/restaurant-dto";
+
 
 export const useRestaurantById = (id: number, includeDeleted: boolean = true) => {
   const db = useSQLiteContext();
@@ -38,8 +41,11 @@ export const useRestaurantById = (id: number, includeDeleted: boolean = true) =>
       .leftJoin(schema.tags, eq(schema.restaurantTags.tagId, schema.tags.id))
       .leftJoin(schema.images, eq(schema.restaurants.id, schema.images.restaurantId));
 
-  const { data: rawData } = useLiveTablesQuery(query
-  , ["restaurants", "restaurantTags", "tags", "images"]);
+  const { data: rawData } = useLiveTablesQuery(
+    query,
+    ["restaurants", "restaurantTags", "tags", "images"],
+    [id, includeDeleted]
+  );
 
   const restaurant = rawData?.reduce<RestaurantDetailsDTO[]>((acc, row) => {
     let restaurant = acc.find((r) => r.id === row.restaurantId);

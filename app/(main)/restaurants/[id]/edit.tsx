@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { and, eq } from 'drizzle-orm/sql';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState, useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormInput from '@/components/FormInput';
+import MapLocationPicker from '@/components/MapLocationPicker';
 import RatingStars from '@/components/RatingStars';
 import ImagesUploader, { ImageItem } from '@/features/images/components/ImagesUploader';
-import { TagDTO } from '@/features/tags/types/tag-dto';
-import { Ionicons } from '@expo/vector-icons';
+import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
 import { RestaurantFormData, restaurantSchema } from '@/features/restaurants/schemas/restaurant-schema';
-import { router, useGlobalSearchParams } from 'expo-router';
-import MapLocationPicker from '@/components/MapLocationPicker';
 import Tag from '@/features/tags/components/Tag';
 import TagSelectorModal from '@/features/tags/components/TagSelectorModal';
-import { uploadImages } from '@/lib/helpers/upload-images';
-import { useRestaurantById } from '@/features/restaurants/hooks/useRestaurantById';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { and, eq } from 'drizzle-orm/sql';
+import { TagDTO } from '@/features/tags/types/tag-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { uploadImages } from '@/lib/helpers/upload-images';
+import * as schema from '@/services/db/schema';
+
 
 export default function RestaurantEditScreen() {
   const { id } = useGlobalSearchParams<{ id: string }>();
@@ -61,7 +63,7 @@ export default function RestaurantEditScreen() {
       setSelectedImages(restaurant.images);
       setLocation(l);
     }
-  }, [restaurant?.id, reset]);
+  }, [restaurant, reset]);
 
   const onSubmit: SubmitHandler<RestaurantFormData> = async (data) => {
     setLoading(true);
@@ -111,7 +113,7 @@ export default function RestaurantEditScreen() {
 
       Alert.alert('Éxito', 'Restaurante actualizado correctamente.');
       router.back();
-    } catch (error: any) {
+    } catch {
       Alert.alert('Error', 'No se pudo actualizar el restaurante');
     } finally {
       setLoading(false);

@@ -1,8 +1,9 @@
+import { eq, and, isNotNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
-import * as schema from "@/services/db/schema";
-import { eq, and, isNotNull } from "drizzle-orm";
+
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
+import * as schema from "@/services/db/schema";
 
 export interface RestaurantMapDTO {
   id: number;

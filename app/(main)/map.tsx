@@ -1,11 +1,13 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { useRouter } from 'expo-router';
-import { useRestaurantMapList } from '@/features/restaurants/hooks/useRestaurantMapList';
-import { useTheme } from '@/lib/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useRef, useState } from 'react';
+import { View, TouchableOpacity, Alert, Linking } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+import { useRestaurantMapList } from '@/features/restaurants/hooks/useRestaurantMapList';
+import { useTheme } from '@/lib/context/ThemeContext';
+
 
 export default function MapScreen() {
   const restaurants = useRestaurantMapList();

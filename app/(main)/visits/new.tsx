@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import FormInput from '@/components/FormInput';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState, useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+
 import FormDatePicker from '@/components/FormDatePicker';
+import FormInput from '@/components/FormInput';
+import DishPicker from '@/features/dishes/components/DishPicker';
+import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import ImagesUploader from '@/features/images/components/ImagesUploader';
 import RestaurantPicker from '@/features/restaurants/components/RestaurantPicker';
-import DishPicker from '@/features/dishes/components/DishPicker';
 import { VisitFormData, visitSchema } from '@/features/visits/schemas/visit-schema';
-import { DishListDTO } from '@/features/dishes/types/dish-dto';
-import { router, useGlobalSearchParams } from 'expo-router';
 import { uploadImages } from '@/lib/helpers/upload-images';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as schema from '@/services/db/schema';
-import { useTheme } from '@/lib/context/ThemeContext';
 
 export default function VisitCreateScreen() {
   const { restaurantId: routeRestaurantId } = useGlobalSearchParams();
@@ -40,8 +40,6 @@ export default function VisitCreateScreen() {
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
-  const { isDarkMode } = useTheme();
-
   const restaurantId = watch('restaurantId');
 
   useEffect(() => {

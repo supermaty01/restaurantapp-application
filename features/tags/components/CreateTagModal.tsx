@@ -1,4 +1,7 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import clsx from 'clsx';
 import React, { useRef, useState, useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import {
   Modal,
   View,
@@ -10,11 +13,9 @@ import {
   NativeScrollEvent,
   Alert,
 } from 'react-native';
-import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+
 import FormInput from '@/components/FormInput';
-import clsx from 'clsx';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -41,7 +42,7 @@ const ALL_COLORS = [
 ];
 
 const chunkSize = 12;
-const colorPages: Array<string[]> = [];
+const colorPages: string[][] = [];
 for (let i = 0; i < ALL_COLORS.length; i += chunkSize) {
   colorPages.push(ALL_COLORS.slice(i, i + chunkSize));
 }

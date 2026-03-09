@@ -1,7 +1,8 @@
-import { images } from '@/services/db/schema';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as FileSystem from 'expo-file-system';
+
 import { IMAGES_DIR } from '@/lib/helpers/fs-paths';
+import { images } from '@/services/db/schema';
 
 export async function uploadImages(
   db: ReturnType<typeof drizzle>,

@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { eq } from 'drizzle-orm/sql';
+import { useGlobalSearchParams, useRouter } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -8,19 +14,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useGlobalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+import { ImageDisplay } from '@/features/images/components/ImageDisplay';
 import VisitDetails from '@/features/visits/components/VisitDetails'
 import VisitDishes from '@/features/visits/components/VisitDishes'
-import { ImageDisplay } from '@/features/images/components/ImageDisplay';
-import { useSQLiteContext } from 'expo-sqlite';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import * as schema from '@/services/db/schema';
-import { eq } from 'drizzle-orm/sql';
-import { canDeleteVisitPermanently, softDeleteVisit } from '@/lib/helpers/soft-delete';
 import { useVisitById } from '@/features/visits/hooks/useVisitById';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { canDeleteVisitPermanently, softDeleteVisit } from '@/lib/helpers/soft-delete';
+import * as schema from '@/services/db/schema';
 import { exportVisit } from '@/services/share/exportService';
 
 const Tab = createMaterialTopTabNavigator();
@@ -45,7 +46,7 @@ export default function VisitDetailScreen() {
     try {
       setIsSharing(true);
       await exportVisit(drizzleDb, Number(id));
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo compartir la visita');
     } finally {
       setIsSharing(false);
@@ -81,7 +82,7 @@ export default function VisitDetailScreen() {
 
                 Alert.alert('Eliminada', 'Visita eliminada correctamente');
                 router.back();
-              } catch (error) {
+              } catch {
                 Alert.alert('Error', 'No se pudo eliminar la visita');
               }
             },
@@ -89,7 +90,7 @@ export default function VisitDetailScreen() {
         ],
         { cancelable: true }
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'No se pudo verificar las referencias de la visita');
     }
   }
