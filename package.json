@@ -1,7 +1,7 @@
 {
   "name": "restaurantapp",
   "main": "expo-router/entry",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -80,7 +80,9 @@
     "jest-expo": "~52.0.6",
     "metro": "^0.81.0",
     "react-test-renderer": "18.3.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "eslint": "^8.57.0",
+    "eslint-config-expo": "~8.0.1"
   },
   "private": true
 }

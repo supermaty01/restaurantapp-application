@@ -1,5 +1,6 @@
-import React, { useRef, useState, useCallback } from 'react';
-import { Image, Text, Pressable, View, Animated } from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { Image, Text, View, Animated } from 'react-native';
+import PeekablePressable from '@/components/PeekablePressable';
 import { Ionicons } from '@expo/vector-icons';
 
 interface VisitItemProps {
@@ -26,52 +27,28 @@ const VisitItem: React.FC<VisitItemProps> = ({
   restaurantDeleted,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const [isPeeking, setIsPeeking] = useState(false);
-  const isPeekingRef = useRef(false);
 
-  const handleLongPress = useCallback(() => {
-    isPeekingRef.current = true;
-    setIsPeeking(true);
-    Animated.spring(scaleAnim, {
-      toValue: 1.03,
-      friction: 8,
-      tension: 100,
-      useNativeDriver: true,
-    }).start();
-    onPeek?.();
-  }, [onPeek, scaleAnim]);
-
-  const handlePressOut = useCallback(() => {
-    if (isPeekingRef.current) {
+  const handleScaleChange = useCallback(
+    (scale: number) => {
       Animated.spring(scaleAnim, {
-        toValue: 1,
+        toValue: scale,
         friction: 8,
         tension: 100,
         useNativeDriver: true,
       }).start();
-      setIsPeeking(false);
-      isPeekingRef.current = false;
-      onPeekEnd?.();
-    }
-  }, [onPeekEnd, scaleAnim]);
-
-  const handlePress = useCallback(() => {
-    if (!isPeekingRef.current) {
-      onPress?.();
-    }
-  }, [onPress]);
+    },
+    [scaleAnim]
+  );
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <Pressable
-        onPress={handlePress}
-        onLongPress={handleLongPress}
-        delayLongPress={150}
-        onPressOut={handlePressOut}
-        pressRetentionOffset={{ top: 2000, bottom: 2000, left: 2000, right: 2000 }}
-        style={({ pressed }) => ({
-          opacity: (pressed && !isPeeking ? 0.8 : 1) * (deleted || restaurantDeleted ? 0.7 : 1),
-        })}
+      <PeekablePressable
+        onPress={onPress}
+        onPeek={onPeek}
+        onPeekEnd={onPeekEnd}
+        onScaleChange={handleScaleChange}
+        scaleValue={1.03}
+        baseOpacity={deleted || restaurantDeleted ? 0.7 : 1}
         className="bg-card dark:bg-dark-card p-4 rounded-xl mb-3 shadow-sm flex-row items-center justify-between"
       >
         {imageUrl ? (
@@ -111,7 +88,7 @@ const VisitItem: React.FC<VisitItemProps> = ({
         </View>
 
         <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" className="dark:text-gray-400" />
-      </Pressable>
+      </PeekablePressable>
     </Animated.View>
   );
 };
