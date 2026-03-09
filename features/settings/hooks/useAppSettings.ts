@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/expo-sqlite';
 import * as Application from 'expo-application';
 import * as FileSystem from 'expo-file-system';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Platform } from 'react-native';
 
 import { BackupService, BackupInfo, ImportInfo } from '@/services/backup/backupService';
@@ -15,7 +15,7 @@ interface StorageInfo {
 
 export const useAppSettings = () => {
   const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, { schema });
+  const drizzleDb = useMemo(() => drizzle(db, { schema }), [db]);
   
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -25,22 +25,15 @@ export const useAppSettings = () => {
   const [lastBackup, setLastBackup] = useState<ImportInfo | null>(null);
   const [backupService, setBackupService] = useState<BackupService | null>(null);
   const [storageInfo, setStorageInfo] = useState<StorageInfo>({ total: 0, used: 0 });
-  const [appVersion, setAppVersion] = useState('');
-
-  useEffect(() => {
-    getStorageInfo();
-  }, []);
-
-  const getAppVersion = useCallback(() => {
+  const appVersion = useMemo(() => {
     try {
       const name = Application.applicationName || '';
       const version = Application.nativeApplicationVersion || '';
       const build = Application.nativeBuildVersion || '';
-      if (Platform.OS === 'ios') {
-        return `${name} v${version}`;
-      } else {
-        return `${name} v${version} (${build})`;
-      }
+
+      return Platform.OS === 'ios'
+        ? `${name} v${version}`
+        : `${name} v${version} (${build})`;
     } catch (error) {
       console.error('Error al obtener versión de la app:', error);
       return '';
@@ -48,9 +41,8 @@ export const useAppSettings = () => {
   }, []);
 
   useEffect(() => {
-    const version = getAppVersion();
-    setAppVersion(version);
-  }, [getAppVersion]);
+    getStorageInfo();
+  }, []);
 
   const getStorageInfo = async () => {
     try {
