@@ -45,7 +45,6 @@ export default function RestaurantDetailScreen() {
       setIsSharing(true);
       await exportRestaurant(drizzleDb, Number(id));
     } catch (error) {
-      console.error('Error sharing restaurant:', error);
       Alert.alert('Error', 'No se pudo compartir el restaurante');
     } finally {
       setIsSharing(false);
@@ -82,7 +81,6 @@ export default function RestaurantDetailScreen() {
                 Alert.alert('Eliminado', 'Restaurante eliminado correctamente');
                 router.back();
               } catch (error) {
-                console.log('Error deleting restaurant:', error);
                 Alert.alert('Error', 'No se pudo eliminar el restaurante');
               }
             },
@@ -91,7 +89,6 @@ export default function RestaurantDetailScreen() {
         { cancelable: true }
       );
     } catch (error) {
-      console.log('Error checking restaurant references:', error);
       Alert.alert('Error', 'No se pudo verificar las referencias del restaurante');
     }
   }
