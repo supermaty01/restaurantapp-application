@@ -1,50 +1,106 @@
-# Welcome to your Expo app 👋
+# RestaurantApp 🍔
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para gestionar restaurantes, platos y visitas. Permite llevar un registro personal de experiencias gastronómicas con fotos, valoraciones, etiquetas y ubicaciones en mapa.
 
-## Get started
+Desarrollada con [Expo](https://expo.dev) y React Native.
 
-1. Install dependencies
+## Características
 
-   ```bash
-   npm install
-   ```
+- **Restaurantes** — Crear, editar y eliminar restaurantes con nombre, dirección, comentarios, etiquetas, imágenes y ubicación en mapa.
+- **Platos** — Registrar platos asociados a restaurantes con valoración por estrellas, comentarios, etiquetas e imágenes.
+- **Visitas** — Registrar visitas a restaurantes con fecha, comentarios e imágenes.
+- **Mapa** — Vista global de todos los restaurantes con marcadores en Google Maps.
+- **Búsqueda y filtros** — Barra de búsqueda por nombre y modal de filtros avanzados (etiquetas, valoración mínima, restaurante, ordenamiento).
+- **Vista de cuadrícula** — Alternar entre vista de lista y cuadrícula responsiva (2 columnas en móvil, 3 en pantallas grandes).
+- **Previsualización rápida** — Mantener presionado un elemento para ver una previsualización sin navegar.
+- **Etiquetas** — Sistema de etiquetas con colores personalizables para organizar restaurantes y platos.
+- **Google Places** — Autocompletado de direcciones al crear o editar restaurantes.
+- **Exportar / Importar** — Compartir datos mediante archivos `.restoshare` entre dispositivos.
+- **Modo oscuro** — Soporte completo de tema claro y oscuro.
+- **Modo offline** — Funciona sin conexión a internet utilizando base de datos local (SQLite).
 
-2. Start the app
+## Requisitos previos
 
-   ```bash
-    npx expo start
-   ```
+- [Node.js](https://nodejs.org/) (v18 o superior)
+- [EAS CLI](https://docs.expo.dev/eas/) instalado globalmente: `npm install -g eas-cli`
+- Cuenta en [Expo](https://expo.dev) (para compilar y publicar)
 
-In the output, you'll find options to open the app in a
+## Variables de entorno
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```env
+GOOGLE_MAPS_API_KEY=tu_api_key_de_google_maps
+OFFLINE_MODE=false
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Instalación
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Desarrollo
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Iniciar el servidor de desarrollo:
 
-## Join the community
+```bash
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+Opciones disponibles tras iniciar:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Abrir en [build de desarrollo](https://docs.expo.dev/develop/development-builds/introduction/)
+- Abrir en [emulador Android](https://docs.expo.dev/workflow/android-studio-emulator/)
+- Abrir en [simulador iOS](https://docs.expo.dev/workflow/ios-simulator/)
+
+## Compilación y publicación
+
+### Generar APK de prueba (preview)
+
+```bash
+eas build -p android --profile preview
+```
+
+Esto genera un archivo `.apk` para distribución interna, ideal para pruebas en dispositivos físicos.
+
+### Generar build de producción
+
+```bash
+eas build -p android --profile production
+```
+
+### Enviar a Google Play Store
+
+```bash
+eas submit -p android --profile production
+```
+
+## Estructura del proyecto
+
+```
+app/                  # Pantallas (file-based routing)
+├── (main)/           # Pantallas principales (autenticadas)
+│   ├── restaurants/  # CRUD de restaurantes
+│   ├── dishes/       # CRUD de platos
+│   ├── visits/       # CRUD de visitas
+│   ├── tags/         # Gestión de etiquetas
+│   ├── settings/     # Configuración
+│   └── map.tsx       # Mapa global
+├── login.tsx         # Inicio de sesión
+└── import.tsx        # Importación de archivos .restoshare
+components/           # Componentes reutilizables
+features/             # Lógica de negocio por dominio (hooks, componentes, tipos)
+lib/                  # Contextos, helpers, base de datos
+services/             # Servicios (API, exportación, importación)
+```
+
+## Tecnologías
+
+- **React Native** + **Expo** (SDK)
+- **Expo Router** — Navegación basada en archivos
+- **Drizzle ORM** + **SQLite** — Base de datos local
+- **NativeWind** — Estilos con Tailwind CSS
+- **React Native Maps** — Visualización de mapas
+- **Google Places API** — Autocompletado de direcciones
+- **EAS Build** — Compilación en la nube
