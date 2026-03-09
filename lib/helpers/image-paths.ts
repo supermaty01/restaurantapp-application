@@ -7,7 +7,6 @@ import { IMAGES_DIR } from '@/lib/helpers/fs-paths';
  */
 export function normalizeImagePath(rawPath: string): string {
   if (!rawPath) {
-    console.warn('Se recibió una ruta nula o indefinida');
     return '';
   }
 
@@ -22,7 +21,6 @@ export function normalizeImagePath(rawPath: string): string {
   // Sacar sólo el nombre de fichero
   const filename = localPath.split('/').pop();
   if (!filename) {
-    console.warn('normalizeImagePath: no se pudo extraer filename de', rawPath);
     return rawPath;
   }
 

@@ -54,6 +54,15 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
           </View>
         }
       />
+      <TouchableOpacity
+        className="bg-primary dark:bg-dark-primary py-3 rounded-lg mt-2 flex-row items-center justify-center"
+        onPress={() =>
+          router.push({ pathname: '/visits/new', params: { restaurantId: restaurant.id } })
+        }
+      >
+        <Ionicons name="add-circle-outline" size={20} color="#fff" />
+        <Text className="text-white font-bold ml-2">Añadir Visita</Text>
+      </TouchableOpacity>
     </View>
   );
 }

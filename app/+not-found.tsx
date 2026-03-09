@@ -22,9 +22,6 @@ export default function NotFoundScreen() {
     try {
       // Get the initial URL that opened the app
       const initialUrl = await Linking.getInitialURL();
-      console.log('NotFound - Initial URL:', initialUrl);
-      console.log('NotFound - Pathname:', pathname);
-
       // Check if this looks like a file import (content:// or file:// URI, or contains .restoshare)
       const urlToCheck = initialUrl || pathname || '';
 
@@ -65,8 +62,6 @@ export default function NotFoundScreen() {
           }
         }
 
-        console.log('NotFound - Extracted file URI:', fileUri);
-
         if (fileUri) {
           // Navigate to import screen with the file URI
           setTimeout(() => {
@@ -81,7 +76,6 @@ export default function NotFoundScreen() {
 
       setChecking(false);
     } catch (error) {
-      console.error('Error checking file import:', error);
       setChecking(false);
     }
   };

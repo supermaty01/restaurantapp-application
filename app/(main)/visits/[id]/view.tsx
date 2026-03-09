@@ -46,7 +46,6 @@ export default function VisitDetailScreen() {
       setIsSharing(true);
       await exportVisit(drizzleDb, Number(id));
     } catch (error) {
-      console.error('Error sharing visit:', error);
       Alert.alert('Error', 'No se pudo compartir la visita');
     } finally {
       setIsSharing(false);
@@ -83,7 +82,6 @@ export default function VisitDetailScreen() {
                 Alert.alert('Eliminada', 'Visita eliminada correctamente');
                 router.back();
               } catch (error) {
-                console.log('Error deleting visit:', error);
                 Alert.alert('Error', 'No se pudo eliminar la visita');
               }
             },
@@ -92,7 +90,6 @@ export default function VisitDetailScreen() {
         { cancelable: true }
       );
     } catch (error) {
-      console.log('Error checking visit references:', error);
       Alert.alert('Error', 'No se pudo verificar las referencias de la visita');
     }
   }

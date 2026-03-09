@@ -21,7 +21,8 @@ const RestaurantPicker: React.FC<RestaurantPickerProps> = ({ control, setValue, 
   const { newRestaurantId, setNewRestaurantId } = useNewRestaurant();
   const { isDarkMode } = useTheme();
 
-  const restaurants = useRestaurantList();
+  const unsortedRestaurants = useRestaurantList();
+  const restaurants = [...unsortedRestaurants].sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
     if (newRestaurantId) {

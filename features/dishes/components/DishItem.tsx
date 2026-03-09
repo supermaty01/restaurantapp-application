@@ -28,31 +28,25 @@ const DishItem: React.FC<DishItemProps> = ({
   onPeekEnd,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const peekTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isPeeking, setIsPeeking] = useState(false);
+  const isPeekingRef = useRef(false);
 
   const imageUrl = images.length > 0 ? images[0].uri : null;
 
-  const handlePressIn = useCallback(() => {
-    peekTimeout.current = setTimeout(() => {
-      setIsPeeking(true);
-      Animated.spring(scaleAnim, {
-        toValue: 1.03,
-        friction: 8,
-        tension: 100,
-        useNativeDriver: true,
-      }).start();
-      onPeek?.();
-    }, 150);
+  const handleLongPress = useCallback(() => {
+    isPeekingRef.current = true;
+    setIsPeeking(true);
+    Animated.spring(scaleAnim, {
+      toValue: 1.03,
+      friction: 8,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+    onPeek?.();
   }, [onPeek, scaleAnim]);
 
   const handlePressOut = useCallback(() => {
-    if (peekTimeout.current) {
-      clearTimeout(peekTimeout.current);
-      peekTimeout.current = null;
-    }
-
-    if (isPeeking) {
+    if (isPeekingRef.current) {
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 8,
@@ -60,22 +54,25 @@ const DishItem: React.FC<DishItemProps> = ({
         useNativeDriver: true,
       }).start();
       setIsPeeking(false);
+      isPeekingRef.current = false;
       onPeekEnd?.();
     }
-  }, [isPeeking, onPeekEnd, scaleAnim]);
+  }, [onPeekEnd, scaleAnim]);
 
   const handlePress = useCallback(() => {
-    if (!isPeeking) {
+    if (!isPeekingRef.current) {
       onPress?.();
     }
-  }, [isPeeking, onPress]);
+  }, [onPress]);
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <Pressable
         onPress={handlePress}
-        onPressIn={handlePressIn}
+        onLongPress={handleLongPress}
+        delayLongPress={150}
         onPressOut={handlePressOut}
+        pressRetentionOffset={{ top: 2000, bottom: 2000, left: 2000, right: 2000 }}
         style={({ pressed }) => ({ opacity: pressed && !isPeeking ? 0.8 : 1 })}
         className="bg-card dark:bg-dark-card p-4 rounded-xl mb-4 shadow-sm"
       >
