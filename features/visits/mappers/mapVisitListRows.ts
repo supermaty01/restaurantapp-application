@@ -15,12 +15,12 @@ export interface VisitListRow {
 }
 
 export function mapVisitListRows(rows: VisitListRow[]): VisitListDTO[] {
-  return rows.reduce<VisitListDTO[]>((acc, row) => {
-    if (!row.visitId) {
-      return acc;
-    }
+  const map = new Map<number, VisitListDTO>();
 
-    let visit = acc.find((item) => item.id === row.visitId);
+  for (const row of rows) {
+    if (!row.visitId) continue;
+
+    let visit = map.get(row.visitId);
 
     if (!visit) {
       visit = {
@@ -35,7 +35,7 @@ export function mapVisitListRows(rows: VisitListRow[]): VisitListDTO[] {
         },
         images: [],
       };
-      acc.push(visit);
+      map.set(row.visitId, visit);
     }
 
     if (row.imageId && row.imagePath && !visit.images.some((image) => image.id === row.imageId)) {
@@ -44,7 +44,7 @@ export function mapVisitListRows(rows: VisitListRow[]): VisitListDTO[] {
         uri: imagePathToUri(row.imagePath),
       });
     }
+  }
 
-    return acc;
-  }, []);
+  return Array.from(map.values());
 }

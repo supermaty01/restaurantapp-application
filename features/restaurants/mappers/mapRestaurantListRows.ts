@@ -16,8 +16,10 @@ export interface RestaurantListRow {
 }
 
 export function mapRestaurantListRows(rows: RestaurantListRow[]): RestaurantListDTO[] {
-  return rows.reduce<RestaurantListDTO[]>((acc, row) => {
-    let restaurant = acc.find((item) => item.id === row.restaurantId);
+  const map = new Map<number, RestaurantListDTO>();
+
+  for (const row of rows) {
+    let restaurant = map.get(row.restaurantId);
 
     if (!restaurant) {
       restaurant = {
@@ -29,7 +31,7 @@ export function mapRestaurantListRows(rows: RestaurantListRow[]): RestaurantList
         tags: [],
         images: [],
       };
-      acc.push(restaurant);
+      map.set(row.restaurantId, restaurant);
     }
 
     if (row.tagId && !restaurant.tags.some((tag) => tag.id === row.tagId)) {
@@ -46,7 +48,7 @@ export function mapRestaurantListRows(rows: RestaurantListRow[]): RestaurantList
         uri: imagePathToUri(row.imagePath),
       });
     }
+  }
 
-    return acc;
-  }, []);
+  return Array.from(map.values());
 }

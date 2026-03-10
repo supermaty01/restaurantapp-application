@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import RatingStars from '@/components/RatingStars';
 import Tag from '@/features/tags/components/Tag';
@@ -18,10 +19,10 @@ function RestaurantPeekContent({ data }: { data: Extract<PeekPreviewData, { type
       {data.imageUrl ? (
         <View className="w-full rounded-lg mb-3 overflow-hidden bg-black/10">
           <Image
-            source={{ uri: data.imageUrl }}
-            className="w-full"
-            style={{ aspectRatio: 4 / 3 }}
-            resizeMode="contain"
+            source={data.imageUrl}
+            style={{ width: '100%', aspectRatio: 4 / 3 }}
+            contentFit="contain"
+            cachePolicy="memory-disk"
           />
         </View>
       ) : null}
@@ -55,10 +56,10 @@ function DishPeekContent({ data }: { data: Extract<PeekPreviewData, { type: 'dis
       {data.imageUrl ? (
         <View className="w-full rounded-lg mb-3 overflow-hidden bg-black/10">
           <Image
-            source={{ uri: data.imageUrl }}
-            className="w-full"
-            style={{ aspectRatio: 4 / 3 }}
-            resizeMode="contain"
+            source={data.imageUrl}
+            style={{ width: '100%', aspectRatio: 4 / 3 }}
+            contentFit="contain"
+            cachePolicy="memory-disk"
           />
         </View>
       ) : null}
@@ -94,10 +95,10 @@ function VisitPeekContent({ data }: { data: Extract<PeekPreviewData, { type: 'vi
       {data.imageUrl ? (
         <View className="w-full rounded-lg mb-3 overflow-hidden bg-black/10">
           <Image
-            source={{ uri: data.imageUrl }}
-            className="w-full"
-            style={{ aspectRatio: 4 / 3 }}
-            resizeMode="contain"
+            source={data.imageUrl}
+            style={{ width: '100%', aspectRatio: 4 / 3 }}
+            contentFit="contain"
+            cachePolicy="memory-disk"
           />
         </View>
       ) : null}

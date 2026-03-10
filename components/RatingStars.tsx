@@ -23,14 +23,16 @@ interface RatingStarsDisplayProps {
   gap: number;
 }
 
-function RatingStarsDisplay({
+const NOOP = () => {};
+
+const RatingStarsDisplay = React.memo<RatingStarsDisplayProps>(({
   ratingValue,
   onChange,
   value,
   readOnly,
   size,
   gap,
-}: RatingStarsDisplayProps) {
+}) => {
   const { isDarkMode } = useTheme();
 
   const handlePress = (starIndex: number) => {
@@ -59,7 +61,9 @@ function RatingStarsDisplay({
       ))}
     </View>
   );
-}
+});
+
+RatingStarsDisplay.displayName = 'RatingStarsDisplay';
 
 function ControlledRatingStars({
   control,
@@ -107,7 +111,7 @@ export default function RatingStars({
   return (
     <RatingStarsDisplay
       ratingValue={value || 0}
-      onChange={() => {}}
+      onChange={NOOP}
       value={value}
       readOnly={readOnly}
       size={size}

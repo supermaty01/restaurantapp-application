@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useSQLiteContext } from "expo-sqlite";
+import { useMemo } from 'react';
 
 import { useLiveTablesQuery } from "@/lib/hooks/useLiveTablesQuery";
 import * as schema from "@/services/db/schema";
@@ -9,7 +10,7 @@ import { mapRestaurantListRows } from '../mappers/mapRestaurantListRows';
 
 export const useRestaurantList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, { schema });
+  const drizzleDb = useMemo(() => drizzle(db, { schema }), [db]);
 
   const query = drizzleDb
     .select({
@@ -26,7 +27,6 @@ export const useRestaurantList = (includeDeleted: boolean = false) => {
     })
     .from(schema.restaurants);
 
-  // Si no se incluyen los eliminados, filtrarlos
   if (!includeDeleted) {
     query.where(eq(schema.restaurants.deleted, false));
   }
@@ -41,5 +41,5 @@ export const useRestaurantList = (includeDeleted: boolean = false) => {
     [includeDeleted]
   );
 
-  return mapRestaurantListRows(rawData ?? []);
+  return useMemo(() => mapRestaurantListRows(rawData ?? []), [rawData]);
 };

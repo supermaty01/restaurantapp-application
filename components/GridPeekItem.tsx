@@ -12,7 +12,7 @@ interface GridPeekItemProps {
   onPress?: () => void;
 }
 
-const GridPeekItem: React.FC<GridPeekItemProps> = ({
+const GridPeekItem = React.memo<GridPeekItemProps>(({
   children,
   style,
   previewData,
@@ -30,6 +30,8 @@ const GridPeekItem: React.FC<GridPeekItemProps> = ({
       {children}
     </PeekablePressable>
   );
-};
+});
+
+GridPeekItem.displayName = 'GridPeekItem';
 
 export default GridPeekItem;

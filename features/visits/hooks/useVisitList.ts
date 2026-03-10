@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useMemo } from 'react';
 
 import { useLiveTablesQuery } from '@/lib/hooks/useLiveTablesQuery';
 import * as schema from '@/services/db/schema';
@@ -9,7 +10,7 @@ import { mapVisitListRows } from '../mappers/mapVisitListRows';
 
 export const useVisitList = (includeDeleted: boolean = false) => {
   const db = useSQLiteContext();
-  const drizzleDb = drizzle(db, { schema });
+  const drizzleDb = useMemo(() => drizzle(db, { schema }), [db]);
 
   const query = drizzleDb
     .select({
@@ -25,7 +26,6 @@ export const useVisitList = (includeDeleted: boolean = false) => {
     })
     .from(schema.visits);
 
-  // Si no se incluyen los eliminados, filtrarlos
   if (!includeDeleted) {
     query.where(eq(schema.visits.deleted, false));
   }
@@ -39,5 +39,5 @@ export const useVisitList = (includeDeleted: boolean = false) => {
     [includeDeleted]
   );
 
-  return mapVisitListRows(rawData ?? []);
+  return useMemo(() => mapVisitListRows(rawData ?? []), [rawData]);
 };

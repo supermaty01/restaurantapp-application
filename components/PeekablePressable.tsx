@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, GestureResponderEvent, StyleProp, View, ViewStyle } from 'react-native';
 
 import { PeekPreviewData } from '@/components/peek/types';
-import { usePeek } from '@/lib/context/PeekContext';
+import { usePeekActions } from '@/lib/context/PeekContext';
 
 const LONG_PRESS_DELAY = 150;
 const MOVE_CANCEL_THRESHOLD = 12;
@@ -28,7 +28,7 @@ const PeekablePressable: React.FC<PeekablePressableProps> = ({
   baseOpacity = 1,
   sourceBorderRadius = 16,
 }) => {
-  const { beginPeek, endPeek } = usePeek();
+  const { beginPeek, endPeek } = usePeekActions();
   const containerRef = useRef<View>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const longPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

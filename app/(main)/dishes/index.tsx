@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo } from 'react';
-import { FlatList, TouchableOpacity, View, Text, Image, useWindowDimensions, TextInput } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { FlatList, TouchableOpacity, View, Text, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
@@ -10,6 +11,20 @@ import DishItem from '@/features/dishes/components/DishItem';
 import { useDishList } from '@/features/dishes/hooks/useDishList';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
+
+const keyExtractor = (item: DishListDTO) => item.id.toString();
+
+const buildPreviewData = (item: DishListDTO) => {
+  return {
+    type: 'dish',
+    id: item.id,
+    name: item.name,
+    comments: item.comments,
+    rating: item.rating,
+    tags: item.tags || [],
+    imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
+  } as const;
+};
 
 export default function DishesScreen() {
   const router = useRouter();
@@ -23,18 +38,6 @@ export default function DishesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
-
-  const buildPreviewData = (item: DishListDTO) => {
-    return {
-      type: 'dish',
-      id: item.id,
-      name: item.name,
-      comments: item.comments,
-      rating: item.rating,
-      tags: item.tags || [],
-      imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
-    } as const;
-  };
 
   const hasActiveFilters = filterOptions.selectedTags.length > 0 ||
     filterOptions.minRating !== null ||
@@ -79,6 +82,63 @@ export default function DishesScreen() {
 
     return result;
   }, [dishes, filterOptions, searchQuery]);
+
+  const navigateToDish = useCallback((id: number) => {
+    router.push({ pathname: '/dishes/[id]/view', params: { id } });
+  }, [router]);
+
+  const renderListItem = useCallback(({ item }: { item: DishListDTO }) => {
+    const previewData = buildPreviewData(item);
+
+    return (
+      <DishItem
+        name={item.name}
+        comments={item.comments}
+        rating={item.rating}
+        tags={item.tags}
+        images={item.images}
+        previewData={previewData}
+        onPress={() => navigateToDish(item.id)}
+      />
+    );
+  }, [navigateToDish]);
+
+  const renderGridItem = useCallback(({ item }: { item: DishListDTO }) => {
+    const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : undefined;
+    const previewData = buildPreviewData(item);
+
+    return (
+      <GridPeekItem
+        style={{ flex: 1 / numColumns }}
+        previewData={previewData}
+        onPress={() => navigateToDish(item.id)}
+      >
+        {imageUrl ? (
+          <Image
+            source={imageUrl}
+            style={{ width: '100%', height: 100 }}
+            contentFit="cover"
+            recyclingKey={`grid-dish-${item.id}`}
+            cachePolicy="memory-disk"
+          />
+        ) : (
+          <View style={{ width: '100%', height: 100 }} className="bg-gray-200 dark:bg-gray-700" />
+        )}
+        <View className="p-2">
+          <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.name}</Text>
+          <View className="flex-row mt-1">
+            <RatingStars value={item.rating} size={12} gap={1} readOnly />
+          </View>
+        </View>
+      </GridPeekItem>
+    );
+  }, [navigateToDish, numColumns]);
+
+  const listEmptyComponent = useMemo(() => (
+    <View className="flex-1 justify-center items-center mt-10">
+      <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron platos.</Text>
+    </View>
+  ), []);
 
   return (
     <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
@@ -128,58 +188,16 @@ export default function DishesScreen() {
       <FlatList
         key={isGridView ? `grid-${numColumns}` : 'list'}
         data={filteredAndSortedDishes}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={keyExtractor}
         numColumns={isGridView ? numColumns : 1}
         columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        renderItem={({ item }) => {
-          const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : undefined;
-          const previewData = buildPreviewData(item);
-
-          if (isGridView) {
-            return (
-              <GridPeekItem
-                style={{ flex: 1 / numColumns }}
-                previewData={previewData}
-                onPress={() => router.push({
-                  pathname: '/dishes/[id]/view',
-                  params: { id: item.id },
-                })}
-              >
-                {imageUrl ? (
-                  <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 100 }} resizeMode="cover" />
-                ) : (
-                  <View style={{ width: '100%', height: 100 }} className="bg-gray-200 dark:bg-gray-700" />
-                )}
-                <View className="p-2">
-                  <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.name}</Text>
-                  <View className="flex-row mt-1">
-                    <RatingStars value={item.rating} size={12} gap={1} readOnly />
-                  </View>
-                </View>
-              </GridPeekItem>
-            );
-          }
-          return (
-            <DishItem
-              name={item.name}
-              comments={item.comments}
-              rating={item.rating}
-              tags={item.tags}
-              images={item.images}
-              previewData={previewData}
-              onPress={() => router.push({
-                pathname: '/dishes/[id]/view',
-                params: { id: item.id },
-              })}
-            />
-          );
-        }}
+        renderItem={isGridView ? renderGridItem : renderListItem}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron platos.</Text>
-          </View>
-        }
+        ListEmptyComponent={listEmptyComponent}
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews
       />
       <TouchableOpacity
         onPress={() => router.push('/dishes/new')}
