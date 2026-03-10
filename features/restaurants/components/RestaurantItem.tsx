@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 
 import { PeekPreviewData } from '@/components/peek/types';
 import PeekablePressable from '@/components/PeekablePressable';
@@ -19,7 +20,7 @@ interface RestaurantItemProps {
   onPress?: () => void;
 }
 
-const RestaurantItem: React.FC<RestaurantItemProps> = ({
+const RestaurantItem = React.memo<RestaurantItemProps>(({
   name,
   comments,
   tags,
@@ -40,12 +41,14 @@ const RestaurantItem: React.FC<RestaurantItemProps> = ({
       <View className="flex-row mb-2">
         {normalizedImageUrl ? (
           <Image
-            source={{ uri: normalizedImageUrl }}
-            className="w-16 h-16 rounded-lg mr-3"
-            resizeMode="cover"
+            source={normalizedImageUrl}
+            style={{ width: 64, height: 64, borderRadius: 8 }}
+            contentFit="cover"
+            recyclingKey={`restaurant-${normalizedImageUrl}`}
+            cachePolicy="memory-disk"
           />
         ) : null}
-        <View className="flex-1">
+        <View className={`flex-1 ${normalizedImageUrl ? 'ml-3' : ''}`}>
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-bold text-gray-800 dark:text-gray-200 max-w-[85%]">
               {name}
@@ -74,6 +77,8 @@ const RestaurantItem: React.FC<RestaurantItemProps> = ({
       </View>
     </PeekablePressable>
   );
-};
+});
+
+RestaurantItem.displayName = 'RestaurantItem';
 
 export default RestaurantItem;

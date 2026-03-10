@@ -8,7 +8,7 @@ import { TouchableOpacity, Image, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthContext } from '@/lib/context/AuthContext';
-import { PeekProvider, usePeek } from '@/lib/context/PeekContext';
+import { PeekProvider, usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 import DishesScreen from './dishes';
@@ -33,7 +33,7 @@ const Stack = createNativeStackNavigator();
 
 function TabsLayout() {
   const { isDarkMode } = useTheme();
-  const { isPeeking } = usePeek();
+  const { isPeeking } = usePeekState();
   return (
     <TopTab.Navigator
       screenOptions={{

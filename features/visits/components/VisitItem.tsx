@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { PeekPreviewData } from '@/components/peek/types';
 import PeekablePressable from '@/components/PeekablePressable';
@@ -16,7 +17,7 @@ interface VisitItemProps {
   restaurantDeleted?: boolean;
 }
 
-const VisitItem: React.FC<VisitItemProps> = ({
+const VisitItem = React.memo<VisitItemProps>(({
   imageUrl,
   date,
   title,
@@ -36,14 +37,16 @@ const VisitItem: React.FC<VisitItemProps> = ({
     >
       {imageUrl ? (
         <Image
-          source={{ uri: imageUrl }}
-          className="w-14 h-14 rounded mr-3"
-          resizeMode="cover"
+          source={imageUrl}
+          style={{ width: 56, height: 56, borderRadius: 4 }}
+          contentFit="cover"
+          recyclingKey={`visit-${imageUrl}`}
+          cachePolicy="memory-disk"
         />
       ) : (
-        <View className="w-14 h-14 rounded bg-gray-300 dark:bg-gray-700 mr-3" />
+        <View className="w-14 h-14 rounded bg-gray-300 dark:bg-gray-700" />
       )}
-      <View className="flex-1">
+      <View className="flex-1 ml-3">
         <View className="flex-row items-center">
           <Text className="text-sm font-bold text-gray-800 dark:text-gray-200 flex-1">
             {date} - <Text className="text-gray-900 dark:text-gray-100">{title}</Text>
@@ -73,6 +76,8 @@ const VisitItem: React.FC<VisitItemProps> = ({
       <Ionicons name="chevron-forward-outline" size={20} color="#6b6b6b" className="dark:text-gray-400" />
     </PeekablePressable>
   );
-};
+});
+
+VisitItem.displayName = 'VisitItem';
 
 export default VisitItem;

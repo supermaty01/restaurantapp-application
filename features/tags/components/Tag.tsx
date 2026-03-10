@@ -7,10 +7,6 @@ export interface TagProps {
   deleted?: boolean;
 }
 
-/**
- * Calcula el color de texto (blanco o negro) según el color de fondo,
- * usando la fórmula YIQ para asegurar un contraste adecuado.
- */
 function getContrastYIQ(hexColor: string): string {
   const color = hexColor.replace(/^#/, '');
   const r = parseInt(color.substring(0, 2), 16);
@@ -20,7 +16,7 @@ function getContrastYIQ(hexColor: string): string {
   return yiq >= 128 ? '#000000' : '#ffffff';
 }
 
-const Tag: React.FC<TagProps> = ({ name, color, deleted }) => {
+const Tag = React.memo<TagProps>(({ name, color, deleted }) => {
   const textColor = getContrastYIQ(color);
   return (
     <View
@@ -35,6 +31,8 @@ const Tag: React.FC<TagProps> = ({ name, color, deleted }) => {
       </Text>
     </View>
   );
-};
+});
+
+Tag.displayName = 'Tag';
 
 export default Tag;

@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo } from 'react';
-import { FlatList, Text, TouchableOpacity, View, Image, useWindowDimensions, TextInput } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { FlatList, Text, TouchableOpacity, View, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
@@ -10,6 +11,8 @@ import { useVisitList } from '@/features/visits/hooks/useVisitList';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { formatVisitDate } from '@/lib/helpers/date';
+
+const keyExtractor = (item: VisitListDTO) => item.id.toString();
 
 export default function VisitsScreen() {
   const router = useRouter();
@@ -28,7 +31,7 @@ export default function VisitsScreen() {
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
 
-  const buildPreviewData = (item: VisitListDTO) => {
+  const buildPreviewData = useCallback((item: VisitListDTO) => {
     return {
       type: 'visit',
       id: item.id,
@@ -37,7 +40,7 @@ export default function VisitsScreen() {
       comments: item.comments,
       imageUrl: item.images && item.images.length > 0 ? item.images[0].uri : undefined,
     } as const;
-  };
+  }, []);
 
   const restaurantOptions = useMemo(() => {
     const uniqueRestaurants = new Map<number, { id: number; name: string }>();
@@ -82,6 +85,65 @@ export default function VisitsScreen() {
 
     return result;
   }, [visits, filterOptions, searchQuery]);
+
+  const navigateToVisit = useCallback((id: number) => {
+    router.push({ pathname: '/visits/[id]/view', params: { id } });
+  }, [router]);
+
+  const renderListItem = useCallback(({ item }: { item: VisitListDTO }) => {
+    const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
+    const previewData = buildPreviewData(item);
+    const formattedVisitDate = formatVisitDate(item.visited_at);
+
+    return (
+      <VisitItem
+        imageUrl={imageUrl}
+        date={formattedVisitDate}
+        title={item.restaurant.name}
+        comments={item.comments}
+        deleted={item.deleted}
+        restaurantDeleted={item.restaurant.deleted}
+        previewData={previewData}
+        onPress={() => navigateToVisit(item.id)}
+      />
+    );
+  }, [buildPreviewData, navigateToVisit]);
+
+  const renderGridItem = useCallback(({ item }: { item: VisitListDTO }) => {
+    const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
+    const previewData = buildPreviewData(item);
+    const formattedVisitDate = formatVisitDate(item.visited_at);
+
+    return (
+      <GridPeekItem
+        style={{ flex: 1 / numColumns }}
+        previewData={previewData}
+        onPress={() => navigateToVisit(item.id)}
+      >
+        {imageUrl ? (
+          <Image
+            source={imageUrl}
+            style={{ width: '100%', height: 100 }}
+            contentFit="cover"
+            recyclingKey={`grid-visit-${item.id}`}
+            cachePolicy="memory-disk"
+          />
+        ) : (
+          <View style={{ width: '100%', height: 100 }} className="bg-gray-200 dark:bg-gray-700" />
+        )}
+        <View className="p-2">
+          <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.restaurant.name}</Text>
+          <Text className="text-xs text-gray-500 dark:text-gray-400">{formattedVisitDate}</Text>
+        </View>
+      </GridPeekItem>
+    );
+  }, [buildPreviewData, navigateToVisit, numColumns]);
+
+  const listEmptyComponent = useMemo(() => (
+    <View className="flex-1 justify-center items-center mt-10">
+      <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron visitas.</Text>
+    </View>
+  ), []);
 
   return (
     <View className="flex-1 bg-muted dark:bg-dark-muted px-4 pt-2 relative">
@@ -131,58 +193,16 @@ export default function VisitsScreen() {
       <FlatList
         key={isGridView ? `grid-${numColumns}` : 'list'}
         data={filteredAndSortedVisits}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={keyExtractor}
         numColumns={isGridView ? numColumns : 1}
         columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        renderItem={({ item }) => {
-          const imageUrl = item.images && item.images.length > 0 ? item.images[0].uri : null;
-          const previewData = buildPreviewData(item);
-          const formattedVisitDate = formatVisitDate(item.visited_at);
-
-          if (isGridView) {
-            return (
-              <GridPeekItem
-                style={{ flex: 1 / numColumns }}
-                previewData={previewData}
-                onPress={() => router.push({
-                  pathname: '/visits/[id]/view',
-                  params: { id: item.id },
-                })}
-              >
-                {imageUrl ? (
-                  <Image source={{ uri: imageUrl }} style={{ width: '100%', height: 100 }} resizeMode="cover" />
-                ) : (
-                  <View style={{ width: '100%', height: 100 }} className="bg-gray-200 dark:bg-gray-700" />
-                )}
-                <View className="p-2">
-                  <Text className="text-sm font-bold text-gray-800 dark:text-gray-200" numberOfLines={1}>{item.restaurant.name}</Text>
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">{formattedVisitDate}</Text>
-                </View>
-              </GridPeekItem>
-            );
-          }
-          return (
-            <VisitItem
-              imageUrl={imageUrl}
-              date={formattedVisitDate}
-              title={item.restaurant.name}
-              comments={item.comments}
-              deleted={item.deleted}
-              restaurantDeleted={item.restaurant.deleted}
-              previewData={previewData}
-              onPress={() => router.push({
-                pathname: '/visits/[id]/view',
-                params: { id: item.id },
-              })}
-            />
-          );
-        }}
+        renderItem={isGridView ? renderGridItem : renderListItem}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View className="flex-1 justify-center items-center mt-10">
-            <Text className="text-base text-gray-800 dark:text-gray-200">No se encontraron visitas.</Text>
-          </View>
-        }
+        ListEmptyComponent={listEmptyComponent}
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews
       />
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}

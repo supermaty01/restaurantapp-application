@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
+import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 
 import { useDishesByRestaurant } from '@/features/dishes/hooks/useDishesByRestaurant';
 import { RestaurantDetailsDTO } from '@/features/restaurants/types/restaurant-dto';
@@ -34,9 +35,10 @@ export default function RestaurantDishes({ restaurant }: RestaurantDishesProps) 
             >
               {imageUrl ? (
                 <Image
-                  source={{ uri: imageUrl }}
-                  className="w-14 h-14 rounded mr-3"
-                  resizeMode="cover"
+                  source={imageUrl}
+                  style={{ width: 56, height: 56, borderRadius: 4 }}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
                 />
               ) : (
                 <View className="w-14 h-14 rounded bg-gray-300 dark:bg-gray-700 mr-3" />

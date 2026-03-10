@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 
 import { PeekPreviewData } from '@/components/peek/types';
 import PeekablePressable from '@/components/PeekablePressable';
@@ -19,7 +20,7 @@ interface DishItemProps {
   onPress?: () => void;
 }
 
-const DishItem: React.FC<DishItemProps> = ({
+const DishItem = React.memo<DishItemProps>(({
   name,
   comments,
   tags,
@@ -40,15 +41,17 @@ const DishItem: React.FC<DishItemProps> = ({
       <View className="flex-row mb-2">
         {imageUrl ? (
           <Image
-            source={{ uri: imageUrl }}
-            className="w-20 h-20 rounded-lg mr-3"
-            resizeMode="cover"
+            source={imageUrl}
+            style={{ width: 80, height: 80, borderRadius: 8 }}
+            contentFit="cover"
+            recyclingKey={`dish-${imageUrl}`}
+            cachePolicy="memory-disk"
           />
         ) : (
-          <View className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-gray-700 mr-3" />
+          <View className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-gray-700" />
         )}
 
-        <View className="flex-1">
+        <View className="flex-1 ml-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-bold text-gray-800 dark:text-gray-200 flex-1 pr-2">
               {name}
@@ -77,6 +80,8 @@ const DishItem: React.FC<DishItemProps> = ({
       </View>
     </PeekablePressable>
   );
-};
+});
+
+DishItem.displayName = 'DishItem';
 
 export default DishItem;

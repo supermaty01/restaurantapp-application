@@ -1,5 +1,6 @@
+import { Image } from 'expo-image';
 import React, { useState } from "react";
-import { View, ScrollView, TouchableOpacity, Modal, Dimensions, Image, Text } from "react-native";
+import { View, ScrollView, TouchableOpacity, Modal, Dimensions, Text } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 
 import { ImageDTO } from "@/features/images/types/image-dto";
@@ -18,7 +19,6 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
 
   return (
     <>
-      {/* Carrusel de imágenes */}
       <View>
         <ScrollView
           horizontal
@@ -29,7 +29,7 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
             const index = Math.round(offsetX / screenWidth);
             setCurrentImageIndex(index);
           }}
-          scrollEventThrottle={16}
+          scrollEventThrottle={32}
         >
           {images.length > 0 ? (
             images.map((img, index) => (
@@ -42,10 +42,11 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
                 }}
               >
                 <Image
-                  source={{ uri: img.uri }}
-                  className="h-56"
-                  style={{ width: screenWidth }}
-                  resizeMode="cover"
+                  source={img.uri}
+                  style={{ width: screenWidth, height: 224 }}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  recyclingKey={`display-${img.id}`}
                 />
               </TouchableOpacity>
             ))
@@ -59,7 +60,6 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
           )}
         </ScrollView>
 
-        {/* Puntos de paginación del carrusel */}
         <View className="flex-row justify-center items-center my-2">
           {images.map((_, index) => (
             <View
@@ -71,7 +71,6 @@ export function ImageDisplay({ images }: ImageDisplayProps) {
         </View>
       </View>
 
-      {/* Visualizador de imágenes expandido con react-native-image-zoom-viewer */}
       <Modal visible={isImageViewerVisible} transparent={true}>
         <ImageViewer
           imageUrls={images.map((img) => ({ url: img.uri }))}

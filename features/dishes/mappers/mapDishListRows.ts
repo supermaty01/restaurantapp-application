@@ -17,12 +17,12 @@ export interface DishListRow {
 }
 
 export function mapDishListRows(rows: DishListRow[]): DishListDTO[] {
-  return rows.reduce<DishListDTO[]>((acc, row) => {
-    if (!row.dishId) {
-      return acc;
-    }
+  const map = new Map<number, DishListDTO>();
 
-    let dish = acc.find((item) => item.id === row.dishId);
+  for (const row of rows) {
+    if (!row.dishId) continue;
+
+    let dish = map.get(row.dishId);
 
     if (!dish) {
       dish = {
@@ -34,7 +34,7 @@ export function mapDishListRows(rows: DishListRow[]): DishListDTO[] {
         tags: [],
         images: [],
       };
-      acc.push(dish);
+      map.set(row.dishId, dish);
     }
 
     if (row.tagId && row.tagName && row.tagColor && !dish.tags.some((tag) => tag.id === row.tagId)) {
@@ -52,7 +52,7 @@ export function mapDishListRows(rows: DishListRow[]): DishListDTO[] {
         uri: imagePathToUri(row.imagePath),
       });
     }
+  }
 
-    return acc;
-  }, []);
+  return Array.from(map.values());
 }
