@@ -9,6 +9,7 @@ import GridPeekItem from '@/components/GridPeekItem';
 import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
+import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { formatVisitDate } from '@/lib/helpers/date';
 
@@ -17,6 +18,7 @@ const keyExtractor = (item: VisitListDTO) => item.id.toString();
 export default function VisitsScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const { isPeeking } = usePeekState();
 
   const visits = useVisitList(false);
 
@@ -199,10 +201,10 @@ export default function VisitsScreen() {
         renderItem={isGridView ? renderGridItem : renderListItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={listEmptyComponent}
+        scrollEnabled={!isPeeking}
         initialNumToRender={8}
         maxToRenderPerBatch={6}
         windowSize={5}
-        removeClippedSubviews
       />
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}

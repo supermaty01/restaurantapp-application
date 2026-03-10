@@ -10,6 +10,7 @@ import RatingStars from '@/components/RatingStars';
 import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantList';
 import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
+import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 const keyExtractor = (item: RestaurantListDTO) => item.id.toString();
@@ -29,6 +30,7 @@ const buildPreviewData = (item: RestaurantListDTO) => {
 export default function RestaurantsScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const { isPeeking } = usePeekState();
 
   const restaurants = useRestaurantList(false);
 
@@ -201,10 +203,10 @@ export default function RestaurantsScreen() {
         renderItem={isGridView ? renderGridItem : renderListItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={listEmptyComponent}
+        scrollEnabled={!isPeeking}
         initialNumToRender={8}
         maxToRenderPerBatch={6}
         windowSize={5}
-        removeClippedSubviews
       />
       <TouchableOpacity
         onPress={() => router.push('/restaurants/new')}

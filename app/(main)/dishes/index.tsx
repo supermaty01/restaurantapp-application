@@ -10,6 +10,7 @@ import RatingStars from '@/components/RatingStars';
 import DishItem from '@/features/dishes/components/DishItem';
 import { useDishList } from '@/features/dishes/hooks/useDishList';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
+import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
 
 const keyExtractor = (item: DishListDTO) => item.id.toString();
@@ -29,6 +30,7 @@ const buildPreviewData = (item: DishListDTO) => {
 export default function DishesScreen() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
+  const { isPeeking } = usePeekState();
 
   const dishes = useDishList(false);
 
@@ -194,10 +196,10 @@ export default function DishesScreen() {
         renderItem={isGridView ? renderGridItem : renderListItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={listEmptyComponent}
+        scrollEnabled={!isPeeking}
         initialNumToRender={8}
         maxToRenderPerBatch={6}
         windowSize={5}
-        removeClippedSubviews
       />
       <TouchableOpacity
         onPress={() => router.push('/dishes/new')}
