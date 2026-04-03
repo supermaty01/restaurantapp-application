@@ -6,7 +6,6 @@ import { FlatList, Text, TouchableOpacity, View, useWindowDimensions, TextInput 
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
-import PinchToToggleView from '@/components/PinchToToggleView';
 import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
@@ -207,22 +206,20 @@ export default function VisitsScreen() {
         </View>
       </View>
 
-      <PinchToToggleView isGridView={isGridView} onToggle={setIsGridView}>
-        <FlatList
-          key={isGridView ? `grid-${numColumns}` : 'list'}
-          data={filteredAndSortedVisits}
-          keyExtractor={keyExtractor}
-          numColumns={isGridView ? numColumns : 1}
-          columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-          renderItem={isGridView ? renderGridItem : renderListItem}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={listEmptyComponent}
-          scrollEnabled={!isPeeking}
-          initialNumToRender={8}
-          maxToRenderPerBatch={6}
-          windowSize={5}
-        />
-      </PinchToToggleView>
+      <FlatList
+        key={isGridView ? `grid-${numColumns}` : 'list'}
+        data={filteredAndSortedVisits}
+        keyExtractor={keyExtractor}
+        numColumns={isGridView ? numColumns : 1}
+        columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
+        renderItem={isGridView ? renderGridItem : renderListItem}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={listEmptyComponent}
+        scrollEnabled={!isPeeking}
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+      />
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary dark:bg-dark-primary rounded-full items-center justify-center"

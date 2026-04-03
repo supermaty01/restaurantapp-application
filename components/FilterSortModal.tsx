@@ -7,6 +7,7 @@ import ReanimatedAnimated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  cancelAnimation,
   runOnJS,
 } from 'react-native-reanimated';
 
@@ -65,6 +66,7 @@ export default function FilterSortModal({
   useEffect(() => {
     if (visible) {
       setLocalOptions(options);
+      cancelAnimation(translateY);
       translateY.value = 0;
     }
   }, [visible, options, translateY]);
@@ -156,7 +158,7 @@ export default function FilterSortModal({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <View className="flex-1 bg-black/50 justify-end">
+        <View className="flex-1 justify-end">
           <ReanimatedAnimated.View
             style={[animatedStyle, { maxHeight: '85%' }]}
             className="bg-white dark:bg-dark-card rounded-t-3xl"

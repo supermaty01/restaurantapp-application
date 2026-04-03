@@ -6,7 +6,6 @@ import { FlatList, TouchableOpacity, View, Text, useWindowDimensions, TextInput 
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
-import PinchToToggleView from '@/components/PinchToToggleView';
 import RatingStars from '@/components/RatingStars';
 import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantList';
@@ -213,22 +212,20 @@ export default function RestaurantsScreen() {
           )}
         </View>
       </View>
-      <PinchToToggleView isGridView={isGridView} onToggle={setIsGridView}>
-        <FlatList
-          key={isGridView ? `grid-${numColumns}` : 'list'}
-          data={filteredAndSortedRestaurants}
-          keyExtractor={keyExtractor}
-          numColumns={isGridView ? numColumns : 1}
-          columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-          renderItem={isGridView ? renderGridItem : renderListItem}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={listEmptyComponent}
-          scrollEnabled={!isPeeking}
-          initialNumToRender={8}
-          maxToRenderPerBatch={6}
-          windowSize={5}
-        />
-      </PinchToToggleView>
+      <FlatList
+        key={isGridView ? `grid-${numColumns}` : 'list'}
+        data={filteredAndSortedRestaurants}
+        keyExtractor={keyExtractor}
+        numColumns={isGridView ? numColumns : 1}
+        columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
+        renderItem={isGridView ? renderGridItem : renderListItem}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={listEmptyComponent}
+        scrollEnabled={!isPeeking}
+        initialNumToRender={8}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+      />
       <TouchableOpacity
         onPress={() => router.push('/restaurants/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
