@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { FlatList, TouchableOpacity, View, Text, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
@@ -12,6 +12,7 @@ import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantLis
 import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
 import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { useListPreferences } from '@/lib/hooks/useListPreferences';
 
 const keyExtractor = (item: RestaurantListDTO) => item.id.toString();
 
@@ -33,13 +34,30 @@ export default function RestaurantsScreen() {
   const { isPeeking } = usePeekState();
 
   const restaurants = useRestaurantList(false);
+  const prefs = useListPreferences('restaurant');
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>(defaultFilterSortOptions);
-  const [isGridView, setIsGridView] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>({
+    ...defaultFilterSortOptions,
+    sortField: prefs.sortField,
+    sortOrder: prefs.sortOrder,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
+
+  const isGridView = prefs.isGridView;
+  const setIsGridView = prefs.setIsGridView;
+
+  useEffect(() => {
+    if (prefs.loaded) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        sortField: prefs.sortField,
+        sortOrder: prefs.sortOrder,
+      }));
+    }
+  }, [prefs.loaded, prefs.sortField, prefs.sortOrder]);
 
   const hasActiveFilters = filterOptions.selectedTags.length > 0 ||
     filterOptions.minRating !== null ||
@@ -155,7 +173,7 @@ export default function RestaurantsScreen() {
               color={isDarkMode ? '#ccc' : '#666'}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsGridView((v) => !v)}>
+          <TouchableOpacity onPress={() => setIsGridView(!isGridView)}>
             <Ionicons
               name={isGridView ? 'list' : 'grid'}
               size={22}
@@ -219,7 +237,11 @@ export default function RestaurantsScreen() {
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
         options={filterOptions}
-        onApply={setFilterOptions}
+        onApply={(opts) => {
+          setFilterOptions(opts);
+          prefs.setSortField(opts.sortField);
+          prefs.setSortOrder(opts.sortOrder);
+        }}
         entityType="restaurant"
       />
     </View>

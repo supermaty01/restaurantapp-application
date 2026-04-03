@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { FlatList, TouchableOpacity, View, Text, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
@@ -12,6 +12,7 @@ import { useDishList } from '@/features/dishes/hooks/useDishList';
 import { DishListDTO } from '@/features/dishes/types/dish-dto';
 import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { useListPreferences } from '@/lib/hooks/useListPreferences';
 
 const keyExtractor = (item: DishListDTO) => item.id.toString();
 
@@ -33,13 +34,30 @@ export default function DishesScreen() {
   const { isPeeking } = usePeekState();
 
   const dishes = useDishList(false);
+  const prefs = useListPreferences('dish');
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>(defaultFilterSortOptions);
-  const [isGridView, setIsGridView] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>({
+    ...defaultFilterSortOptions,
+    sortField: prefs.sortField,
+    sortOrder: prefs.sortOrder,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
+
+  const isGridView = prefs.isGridView;
+  const setIsGridView = prefs.setIsGridView;
+
+  useEffect(() => {
+    if (prefs.loaded) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        sortField: prefs.sortField,
+        sortOrder: prefs.sortOrder,
+      }));
+    }
+  }, [prefs.loaded, prefs.sortField, prefs.sortOrder]);
 
   const hasActiveFilters = filterOptions.selectedTags.length > 0 ||
     filterOptions.minRating !== null ||
@@ -147,7 +165,7 @@ export default function DishesScreen() {
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Platos</Text>
         <View className="flex-row items-center" style={{ gap: 12 }}>
-          <TouchableOpacity onPress={() => setIsGridView((v) => !v)}>
+          <TouchableOpacity onPress={() => setIsGridView(!isGridView)}>
             <Ionicons
               name={isGridView ? 'list' : 'grid'}
               size={22}
@@ -212,7 +230,11 @@ export default function DishesScreen() {
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
         options={filterOptions}
-        onApply={setFilterOptions}
+        onApply={(opts) => {
+          setFilterOptions(opts);
+          prefs.setSortField(opts.sortField);
+          prefs.setSortOrder(opts.sortOrder);
+        }}
         entityType="dish"
       />
     </View>
