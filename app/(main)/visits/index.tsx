@@ -1,17 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { FlatList, Text, TouchableOpacity, View, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
+import PinchToToggleView from '@/components/PinchToToggleView';
 import VisitItem from '@/features/visits/components/VisitItem'
 import { useVisitList } from '@/features/visits/hooks/useVisitList';
 import { VisitListDTO } from '@/features/visits/types/visit-dto';
 import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
 import { formatVisitDate } from '@/lib/helpers/date';
+import { useListPreferences } from '@/lib/hooks/useListPreferences';
 
 const keyExtractor = (item: VisitListDTO) => item.id.toString();
 
@@ -21,17 +23,30 @@ export default function VisitsScreen() {
   const { isPeeking } = usePeekState();
 
   const visits = useVisitList(false);
+  const prefs = useListPreferences('visit');
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filterOptions, setFilterOptions] = useState<FilterSortOptions>({
     ...defaultFilterSortOptions,
-    sortField: 'date',
-    sortOrder: 'desc',
+    sortField: prefs.sortField,
+    sortOrder: prefs.sortOrder,
   });
-  const [isGridView, setIsGridView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
+
+  const isGridView = prefs.isGridView;
+  const setIsGridView = prefs.setIsGridView;
+
+  useEffect(() => {
+    if (prefs.loaded) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        sortField: prefs.sortField,
+        sortOrder: prefs.sortOrder,
+      }));
+    }
+  }, [prefs.loaded, prefs.sortField, prefs.sortOrder]);
 
   const buildPreviewData = useCallback((item: VisitListDTO) => {
     return {
@@ -152,7 +167,7 @@ export default function VisitsScreen() {
       <View className="flex-row items-center justify-between mb-4">
         <Text className="text-2xl font-bold text-gray-800 dark:text-gray-200">Visitas</Text>
         <View className="flex-row items-center" style={{ gap: 12 }}>
-          <TouchableOpacity onPress={() => setIsGridView((v) => !v)}>
+          <TouchableOpacity onPress={() => setIsGridView(!isGridView)}>
             <Ionicons
               name={isGridView ? 'list' : 'grid'}
               size={22}
@@ -192,20 +207,22 @@ export default function VisitsScreen() {
         </View>
       </View>
 
-      <FlatList
-        key={isGridView ? `grid-${numColumns}` : 'list'}
-        data={filteredAndSortedVisits}
-        keyExtractor={keyExtractor}
-        numColumns={isGridView ? numColumns : 1}
-        columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        renderItem={isGridView ? renderGridItem : renderListItem}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={listEmptyComponent}
-        scrollEnabled={!isPeeking}
-        initialNumToRender={8}
-        maxToRenderPerBatch={6}
-        windowSize={5}
-      />
+      <PinchToToggleView isGridView={isGridView} onToggle={setIsGridView}>
+        <FlatList
+          key={isGridView ? `grid-${numColumns}` : 'list'}
+          data={filteredAndSortedVisits}
+          keyExtractor={keyExtractor}
+          numColumns={isGridView ? numColumns : 1}
+          columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
+          renderItem={isGridView ? renderGridItem : renderListItem}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={listEmptyComponent}
+          scrollEnabled={!isPeeking}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+        />
+      </PinchToToggleView>
       <TouchableOpacity
         onPress={() => router.push('/visits/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary dark:bg-dark-primary rounded-full items-center justify-center"
@@ -217,7 +234,11 @@ export default function VisitsScreen() {
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
         options={filterOptions}
-        onApply={setFilterOptions}
+        onApply={(opts) => {
+          setFilterOptions(opts);
+          prefs.setSortField(opts.sortField);
+          prefs.setSortOrder(opts.sortOrder);
+        }}
         entityType="visit"
         restaurants={restaurantOptions}
       />

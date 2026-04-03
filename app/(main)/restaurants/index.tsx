@@ -1,17 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { FlatList, TouchableOpacity, View, Text, useWindowDimensions, TextInput } from 'react-native';
 
 import FilterSortModal, { FilterSortOptions, defaultFilterSortOptions } from '@/components/FilterSortModal';
 import GridPeekItem from '@/components/GridPeekItem';
+import PinchToToggleView from '@/components/PinchToToggleView';
 import RatingStars from '@/components/RatingStars';
 import RestaurantItem from '@/features/restaurants/components/RestaurantItem';
 import { useRestaurantList } from '@/features/restaurants/hooks/useRestaurantList';
 import { RestaurantListDTO } from '@/features/restaurants/types/restaurant-dto';
 import { usePeekState } from '@/lib/context/PeekContext';
 import { useTheme } from '@/lib/context/ThemeContext';
+import { useListPreferences } from '@/lib/hooks/useListPreferences';
 
 const keyExtractor = (item: RestaurantListDTO) => item.id.toString();
 
@@ -33,13 +35,30 @@ export default function RestaurantsScreen() {
   const { isPeeking } = usePeekState();
 
   const restaurants = useRestaurantList(false);
+  const prefs = useListPreferences('restaurant');
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>(defaultFilterSortOptions);
-  const [isGridView, setIsGridView] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterSortOptions>({
+    ...defaultFilterSortOptions,
+    sortField: prefs.sortField,
+    sortOrder: prefs.sortOrder,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const { width } = useWindowDimensions();
   const numColumns = width >= 600 ? 3 : 2;
+
+  const isGridView = prefs.isGridView;
+  const setIsGridView = prefs.setIsGridView;
+
+  useEffect(() => {
+    if (prefs.loaded) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        sortField: prefs.sortField,
+        sortOrder: prefs.sortOrder,
+      }));
+    }
+  }, [prefs.loaded, prefs.sortField, prefs.sortOrder]);
 
   const hasActiveFilters = filterOptions.selectedTags.length > 0 ||
     filterOptions.minRating !== null ||
@@ -155,7 +174,7 @@ export default function RestaurantsScreen() {
               color={isDarkMode ? '#ccc' : '#666'}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsGridView((v) => !v)}>
+          <TouchableOpacity onPress={() => setIsGridView(!isGridView)}>
             <Ionicons
               name={isGridView ? 'list' : 'grid'}
               size={22}
@@ -194,20 +213,22 @@ export default function RestaurantsScreen() {
           )}
         </View>
       </View>
-      <FlatList
-        key={isGridView ? `grid-${numColumns}` : 'list'}
-        data={filteredAndSortedRestaurants}
-        keyExtractor={keyExtractor}
-        numColumns={isGridView ? numColumns : 1}
-        columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
-        renderItem={isGridView ? renderGridItem : renderListItem}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={listEmptyComponent}
-        scrollEnabled={!isPeeking}
-        initialNumToRender={8}
-        maxToRenderPerBatch={6}
-        windowSize={5}
-      />
+      <PinchToToggleView isGridView={isGridView} onToggle={setIsGridView}>
+        <FlatList
+          key={isGridView ? `grid-${numColumns}` : 'list'}
+          data={filteredAndSortedRestaurants}
+          keyExtractor={keyExtractor}
+          numColumns={isGridView ? numColumns : 1}
+          columnWrapperStyle={isGridView ? { gap: 8 } : undefined}
+          renderItem={isGridView ? renderGridItem : renderListItem}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={listEmptyComponent}
+          scrollEnabled={!isPeeking}
+          initialNumToRender={8}
+          maxToRenderPerBatch={6}
+          windowSize={5}
+        />
+      </PinchToToggleView>
       <TouchableOpacity
         onPress={() => router.push('/restaurants/new')}
         className="absolute bottom-5 right-5 w-12 h-12 bg-primary rounded-full items-center justify-center"
@@ -219,7 +240,11 @@ export default function RestaurantsScreen() {
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}
         options={filterOptions}
-        onApply={setFilterOptions}
+        onApply={(opts) => {
+          setFilterOptions(opts);
+          prefs.setSortField(opts.sortField);
+          prefs.setSortOrder(opts.sortOrder);
+        }}
         entityType="restaurant"
       />
     </View>

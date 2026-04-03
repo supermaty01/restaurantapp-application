@@ -34,7 +34,7 @@ export default function RestaurantVisits({ restaurant }: RestaurantVisitsProps) 
               {imageUrl ? (
                 <Image
                   source={imageUrl}
-                  style={{ width: 56, height: 56, borderRadius: 4 }}
+                  style={{ width: 56, height: 56, borderRadius: 4, marginRight: 12 }}
                   contentFit="cover"
                   cachePolicy="memory-disk"
                 />

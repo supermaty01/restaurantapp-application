@@ -42,7 +42,6 @@ const DishPicker: React.FC<DishPickerProps> = ({
       setSelectedDishes(newSelectedDishes);
       setValue(name, newSelectedDishes.map(d => d.id), { shouldValidate: true });
     }
-    setIsModalVisible(false);
   }, [name, selectedDishes, setSelectedDishes, setValue]);
 
   useEffect(() => {

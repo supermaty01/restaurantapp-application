@@ -1,11 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import clsx from 'clsx';
-import React from 'react';
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
+import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, FlatList } from 'react-native';
 
 import Tag from '@/features/tags/components/Tag';
 import { TagDTO } from '@/features/tags/types/tag-dto';
+import * as schema from '@/services/db/schema';
 
+import CreateTagModal from './CreateTagModal';
 import { useTagsList } from '../hooks/useTagsList';
 
 interface TagSelectorModalProps {
@@ -22,14 +27,33 @@ export default function TagSelectorModal({
   onChangeSelected,
 }: TagSelectorModalProps) {
   const tags = useTagsList();
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema });
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const handleToggle = (selectedTag: TagDTO) => {
     if (selectedTags.find((tag) => tag.id === selectedTag.id)) {
-      // Deseleccionar
       onChangeSelected(selectedTags.filter((tag) => tag.id !== selectedTag.id));
     } else {
-      // Seleccionar
       onChangeSelected([...selectedTags, selectedTag]);
+    }
+  };
+
+  const handleCreateTag = async (tagData: { name: string; color: string }) => {
+    try {
+      const result = await drizzleDb
+        .insert(schema.tags)
+        .values({ name: tagData.name, color: tagData.color });
+      const newTag: TagDTO = {
+        id: result.lastInsertRowId,
+        name: tagData.name,
+        color: tagData.color,
+        deleted: false,
+      };
+      onChangeSelected([...selectedTags, newTag]);
+      setShowCreateModal(false);
+    } catch {
+      setShowCreateModal(false);
     }
   };
 
@@ -63,7 +87,14 @@ export default function TagSelectorModal({
               </View>
             }
           />
-          <View className="flex-row justify-end mt-4">
+          <View className="flex-row justify-between mt-4">
+            <TouchableOpacity
+              onPress={() => setShowCreateModal(true)}
+              className="flex-row items-center px-4 py-2 bg-primary dark:bg-dark-primary rounded-md"
+            >
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text className="text-white ml-1 font-semibold">Crear</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={onClose}
               className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-md"
@@ -73,6 +104,12 @@ export default function TagSelectorModal({
           </View>
         </View>
       </View>
-    </Modal >
+
+      <CreateTagModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onAdd={handleCreateTag}
+      />
+    </Modal>
   );
 }

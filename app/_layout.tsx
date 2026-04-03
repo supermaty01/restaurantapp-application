@@ -4,6 +4,7 @@ import { Slot } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import React, { Suspense, useState, createContext, useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { IntentHandler } from '@/components/IntentHandler';
 import migrations from '@/drizzle/migrations';
@@ -38,29 +39,30 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <DBVersionContext.Provider value={() => setDbVersion(v => v + 1)}>
-      <Suspense fallback={<ActivityIndicator size="large" color="#905c36" />}>
-        <SQLiteProvider
-          // El key basado en dbVersion desencadena un unmount+remount
-          key={dbVersion}
-          databaseName={DATABASE_NAME}
-          options={{ enableChangeListener: true }}
-          useSuspense
-        >
-          <MigrationsRunner>
-            <AuthProvider>
-              <ThemeProvider>
-                <NewRestaurantProvider>
-                  <NewDishProvider>
-                    <IntentHandler />
-                    <Slot />
-                  </NewDishProvider>
-                </NewRestaurantProvider>
-              </ThemeProvider>
-            </AuthProvider>
-          </MigrationsRunner>
-        </SQLiteProvider>
-      </Suspense>
-    </DBVersionContext.Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <DBVersionContext.Provider value={() => setDbVersion(v => v + 1)}>
+        <Suspense fallback={<ActivityIndicator size="large" color="#905c36" />}>
+          <SQLiteProvider
+            key={dbVersion}
+            databaseName={DATABASE_NAME}
+            options={{ enableChangeListener: true }}
+            useSuspense
+          >
+            <MigrationsRunner>
+              <AuthProvider>
+                <ThemeProvider>
+                  <NewRestaurantProvider>
+                    <NewDishProvider>
+                      <IntentHandler />
+                      <Slot />
+                    </NewDishProvider>
+                  </NewRestaurantProvider>
+                </ThemeProvider>
+              </AuthProvider>
+            </MigrationsRunner>
+          </SQLiteProvider>
+        </Suspense>
+      </DBVersionContext.Provider>
+    </GestureHandlerRootView>
   );
 }

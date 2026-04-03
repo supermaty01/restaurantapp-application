@@ -1,6 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import ReanimatedAnimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 import Tag from '@/features/tags/components/Tag';
 import { useTagsList } from '@/features/tags/hooks/useTagsList';
@@ -51,12 +59,39 @@ export default function FilterSortModal({
   const { isDarkMode } = useTheme();
 
   const [localOptions, setLocalOptions] = useState<FilterSortOptions>(options);
+  const translateY = useSharedValue(0);
+  const screenHeight = Dimensions.get('window').height;
 
   useEffect(() => {
     if (visible) {
       setLocalOptions(options);
+      translateY.value = 0;
     }
-  }, [visible, options]);
+  }, [visible, options, translateY]);
+
+  const dismiss = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((e) => {
+      if (e.translationY > 0) {
+        translateY.value = e.translationY;
+      }
+    })
+    .onEnd((e) => {
+      if (e.translationY > 100 || e.velocityY > 500) {
+        translateY.value = withTiming(screenHeight, { duration: 200 }, () => {
+          runOnJS(dismiss)();
+        });
+      } else {
+        translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const handleTagToggle = (tag: TagDTO) => {
     const isSelected = localOptions.selectedTags.some((t) => t.id === tag.id);
@@ -120,17 +155,35 @@ export default function FilterSortModal({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-black/50 justify-end">
-        <View className="bg-white dark:bg-dark-card rounded-t-3xl max-h-[85%]">
-          {/* Header */}
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <Text className="text-lg font-bold text-gray-800 dark:text-gray-200">
-              Filtros y Ordenación
-            </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={isDarkMode ? '#fff' : '#333'} />
-            </TouchableOpacity>
-          </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <ReanimatedAnimated.View
+            style={[animatedStyle, { maxHeight: '85%' }]}
+            className="bg-white dark:bg-dark-card rounded-t-3xl"
+          >
+            <GestureDetector gesture={panGesture}>
+              <ReanimatedAnimated.View
+                style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 8 }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: isDarkMode ? '#555' : '#ccc',
+                  }}
+                />
+              </ReanimatedAnimated.View>
+            </GestureDetector>
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+              <Text className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                Filtros y Ordenación
+              </Text>
+              <TouchableOpacity onPress={onClose}>
+                <Ionicons name="close" size={24} color={isDarkMode ? '#fff' : '#333'} />
+              </TouchableOpacity>
+            </View>
 
           <ScrollView className="p-4">
             {/* Tag Filter - Only for restaurants and dishes */}
@@ -269,25 +322,26 @@ export default function FilterSortModal({
             </View>
           </ScrollView>
 
-          {/* Footer Buttons */}
-          <View className="flex-row p-4 border-t border-gray-200 dark:border-gray-700">
-            <TouchableOpacity
-              onPress={handleReset}
-              className="flex-1 py-3 mr-2 rounded-lg bg-gray-200 dark:bg-gray-700"
-            >
-              <Text className="text-center text-gray-700 dark:text-gray-300 font-bold">
-                Limpiar
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleApply}
-              className="flex-1 py-3 ml-2 rounded-lg bg-primary dark:bg-dark-primary"
-            >
-              <Text className="text-center text-white font-bold">Aplicar</Text>
-            </TouchableOpacity>
-          </View>
+            {/* Footer Buttons */}
+            <View className="flex-row p-4 border-t border-gray-200 dark:border-gray-700">
+              <TouchableOpacity
+                onPress={handleReset}
+                className="flex-1 py-3 mr-2 rounded-lg bg-gray-200 dark:bg-gray-700"
+              >
+                <Text className="text-center text-gray-700 dark:text-gray-300 font-bold">
+                  Limpiar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleApply}
+                className="flex-1 py-3 ml-2 rounded-lg bg-primary dark:bg-dark-primary"
+              >
+                <Text className="text-center text-white font-bold">Aplicar</Text>
+              </TouchableOpacity>
+            </View>
+          </ReanimatedAnimated.View>
         </View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }

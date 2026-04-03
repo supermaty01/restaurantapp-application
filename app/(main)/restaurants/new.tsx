@@ -20,25 +20,35 @@ import { uploadImages } from '@/lib/helpers/upload-images';
 import * as schema from '@/services/db/schema';
 
 export default function RestaurantCreateScreen() {
+  const { useBackRedirect, prefillName, prefillLatitude, prefillLongitude } = useGlobalSearchParams<{
+    useBackRedirect?: string;
+    prefillName?: string;
+    prefillLatitude?: string;
+    prefillLongitude?: string;
+  }>();
+
+  const prefillLocation = prefillLatitude && prefillLongitude
+    ? { latitude: parseFloat(prefillLatitude as string), longitude: parseFloat(prefillLongitude as string) }
+    : null;
+
   const {
     control,
     handleSubmit,
   } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
-      name: '',
+      name: (prefillName as string) || '',
       comments: '',
       rating: undefined,
       location: undefined,
     },
   });
 
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(prefillLocation);
   const [selectedTags, setSelectedTags] = useState<TagDTO[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isTagModalVisible, setTagModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { useBackRedirect } = useGlobalSearchParams();
   const { setNewRestaurantId } = useNewRestaurant();
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema });
